@@ -4,22 +4,21 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#07090d">
-    <title>SAMMVSC Bakim Modu</title>
+    <meta name="theme-color" content="#07080c">
+    <title>Instapp</title>
     <style>
       :root {
         color-scheme: dark;
-        --bg: #07090d;
-        --panel: #10141c;
-        --panel-strong: #151b25;
-        --line: #263245;
-        --ink: #eef5ff;
-        --muted: #9ca8b8;
-        --blue: #3b82f6;
-        --blue-deep: #1d4ed8;
-        --gold: #f6c445;
-        --green: #21d67a;
-        --rose: #ff6b9a;
+        --bg: #07080c;
+        --panel: #10131b;
+        --panel-2: #171b25;
+        --line: #2b3343;
+        --ink: #f4f7fb;
+        --muted: #9aa4b5;
+        --blue: #4f8cff;
+        --pink: #ff4fb8;
+        --orange: #ff9c45;
+        --green: #2fe084;
       }
 
       * {
@@ -31,9 +30,9 @@
         margin: 0;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         background:
-          radial-gradient(circle at 50% 28%, rgba(38, 92, 172, 0.28), transparent 31rem),
-          radial-gradient(circle at 45% 86%, rgba(18, 138, 110, 0.16), transparent 26rem),
-          linear-gradient(180deg, #090b10 0%, var(--bg) 52%, #05070a 100%);
+          radial-gradient(circle at 50% 10%, rgba(255, 79, 184, 0.18), transparent 25rem),
+          radial-gradient(circle at 20% 70%, rgba(79, 140, 255, 0.18), transparent 28rem),
+          linear-gradient(180deg, #090a10 0%, var(--bg) 58%, #05060a 100%);
         color: var(--ink);
       }
 
@@ -46,305 +45,256 @@
         cursor: pointer;
       }
 
-      .topbar {
-        position: sticky;
-        top: 0;
-        z-index: 5;
-        border-bottom: 1px solid rgba(72, 96, 130, 0.22);
-        background: rgba(7, 9, 13, 0.82);
-        backdrop-filter: blur(16px);
-      }
-
-      .topbar-inner {
-        width: min(1220px, calc(100% - 32px));
-        min-height: 64px;
-        margin: 0 auto;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 18px;
-      }
-
-      .brand,
-      .nav,
-      .account,
-      .badge,
-      .metric {
-        display: flex;
-        align-items: center;
-      }
-
-      .brand {
-        gap: 11px;
-        font-weight: 800;
-      }
-
-      .logo {
-        width: 36px;
-        height: 36px;
-        display: grid;
-        place-items: center;
-        border: 1px solid rgba(59, 130, 246, 0.55);
-        border-radius: 10px;
-        background: #0d2240;
-        color: #7db3ff;
-      }
-
-      .nav {
-        gap: 28px;
-        color: #c6d2e2;
-        font-size: 14px;
-      }
-
-      .nav span {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        white-space: nowrap;
-      }
-
-      .account {
-        gap: 10px;
-        padding: 8px 12px;
-        border: 1px solid rgba(72, 96, 130, 0.36);
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.04);
-        font-weight: 700;
-      }
-
-      .avatar-mini {
-        width: 27px;
-        height: 27px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--gold), #f08a3e 48%, var(--blue));
-      }
-
       main {
-        width: min(1220px, calc(100% - 32px));
+        width: min(1180px, calc(100% - 32px));
         margin: 0 auto;
-        padding: clamp(34px, 7vw, 76px) 0 46px;
+        padding: clamp(34px, 7vw, 78px) 0 50px;
       }
 
-      .hero {
+      .layout {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
-        gap: clamp(28px, 5vw, 72px);
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 430px);
+        gap: clamp(28px, 5vw, 68px);
         align-items: start;
       }
 
-      .intro {
-        padding-top: 22px;
-        text-align: center;
+      .hero {
+        padding-top: 20px;
       }
 
-      .hero-title {
+      .brand {
         display: inline-flex;
         align-items: center;
-        gap: 18px;
-        margin: 0;
-        font-size: clamp(54px, 9vw, 92px);
-        line-height: 0.95;
-        letter-spacing: 0;
+        gap: 14px;
+        margin-bottom: 28px;
       }
 
-      .hero-title span:last-child {
-        background: linear-gradient(90deg, #fff 0%, #cfe2ff 46%, #62a5ff 100%);
+      .brand-mark {
+        width: 58px;
+        height: 58px;
+        display: grid;
+        place-items: center;
+        border-radius: 15px;
+        background:
+          radial-gradient(circle at 25% 20%, #fff 0 7%, transparent 8%),
+          linear-gradient(135deg, var(--orange), var(--pink) 48%, var(--blue));
+        box-shadow: 0 20px 60px rgba(255, 79, 184, 0.24);
+      }
+
+      .brand-mark::before {
+        content: "";
+        width: 26px;
+        height: 26px;
+        border: 3px solid #fff;
+        border-radius: 9px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(58px, 10vw, 112px);
+        line-height: 0.92;
+        letter-spacing: 0;
+        background: linear-gradient(90deg, #fff 0%, #ffd5ee 42%, #8bb6ff 100%);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
       }
 
-      .hero-icon {
-        width: clamp(54px, 8vw, 70px);
-        height: clamp(54px, 8vw, 70px);
-        display: grid;
-        place-items: center;
-        border: 1px solid rgba(59, 130, 246, 0.62);
-        border-radius: 12px;
-        background: #102b54;
-        color: #71abff;
-        box-shadow: 0 18px 55px rgba(59, 130, 246, 0.22);
-      }
-
       .subtitle {
-        max-width: 680px;
-        margin: 20px auto 0;
+        max-width: 670px;
+        margin: 18px 0 0;
         color: var(--muted);
-        font-size: clamp(17px, 2vw, 22px);
-        line-height: 1.55;
+        font-size: clamp(18px, 2.4vw, 24px);
+        line-height: 1.48;
       }
 
-      .search-shell {
-        width: min(560px, 100%);
-        margin: 28px auto 0;
+      .search-card {
+        width: min(610px, 100%);
+        margin-top: 34px;
+        padding: 10px;
+        border: 1px solid rgba(255, 79, 184, 0.34);
+        border-radius: 16px;
+        background: rgba(16, 19, 27, 0.86);
+        box-shadow: 0 0 40px rgba(79, 140, 255, 0.18);
       }
 
       .search-form {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 54px;
+        grid-template-columns: minmax(0, 1fr) 56px;
         gap: 8px;
-        padding: 8px;
-        border: 1px solid rgba(59, 130, 246, 0.58);
-        border-radius: 14px;
-        background: rgba(15, 19, 26, 0.88);
-        box-shadow: 0 0 34px rgba(29, 78, 216, 0.34);
       }
 
       .search-form input {
         width: 100%;
         min-width: 0;
-        border: 0;
-        border-radius: 8px;
+        height: 52px;
+        border: 1px solid transparent;
+        border-radius: 10px;
         outline: 0;
         padding: 0 16px;
-        background: #171b22;
+        background: #1a1e27;
         color: var(--ink);
-        font-size: 15px;
       }
 
-      .search-form button,
-      .icon-button {
-        border: 0;
-        border-radius: 8px;
-        background: var(--blue-deep);
-        color: #dceaff;
+      .search-form input:focus {
+        border-color: rgba(79, 140, 255, 0.65);
       }
 
       .search-form button {
-        height: 44px;
-        display: grid;
-        place-items: center;
+        height: 52px;
+        border: 0;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--pink), var(--blue));
+        color: #fff;
+        font-weight: 900;
       }
 
-      .recent {
+      .system-note {
+        margin-top: 14px;
+        color: #7f8b9d;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .result {
+        width: min(610px, 100%);
         margin-top: 18px;
-        border: 1px solid rgba(59, 130, 246, 0.28);
-        border-radius: 14px;
-        background: rgba(16, 20, 28, 0.86);
+        border: 1px solid rgba(79, 140, 255, 0.26);
+        border-radius: 16px;
+        background: rgba(16, 19, 27, 0.78);
         overflow: hidden;
       }
 
-      .recent-head,
-      .recent-row {
+      .result-head {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 14px;
-      }
-
-      .recent-head {
-        min-height: 50px;
+        min-height: 52px;
         padding: 0 18px;
+        border-bottom: 1px solid rgba(43, 51, 67, 0.75);
         color: var(--muted);
         font-size: 14px;
         font-weight: 800;
       }
 
-      .recent-row {
-        width: 100%;
-        border: 0;
-        border-top: 1px solid rgba(72, 96, 130, 0.18);
-        padding: 14px 18px;
-        background: transparent;
-        color: var(--ink);
-        text-align: left;
-      }
-
-      .recent-user {
+      .profile-row {
         display: flex;
         align-items: center;
-        gap: 12px;
-        min-width: 0;
+        gap: 16px;
+        padding: 18px;
       }
 
       .avatar {
-        width: 38px;
-        height: 38px;
+        width: 64px;
+        height: 64px;
         flex: 0 0 auto;
         display: grid;
         place-items: center;
         border-radius: 50%;
-        background: linear-gradient(135deg, #5bbcff, #6847ff 52%, #ff6b9a);
+        background:
+          linear-gradient(var(--panel), var(--panel)) padding-box,
+          linear-gradient(135deg, var(--orange), var(--pink), var(--blue)) border-box;
+        border: 3px solid transparent;
         color: #fff;
+        font-size: 25px;
         font-weight: 900;
         text-transform: uppercase;
       }
 
-      .recent-name {
-        display: block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-weight: 800;
+      .profile-row h2 {
+        margin: 0;
+        overflow-wrap: anywhere;
+        font-size: 24px;
       }
 
-      .recent-meta {
-        display: block;
-        margin-top: 2px;
-        color: #737f91;
+      .profile-row p {
+        margin: 4px 0 0;
+        color: var(--muted);
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: rgba(43, 51, 67, 0.75);
+      }
+
+      .stat {
+        min-height: 94px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 16px;
+        background: rgba(16, 19, 27, 0.96);
+      }
+
+      .stat strong {
+        font-size: 24px;
+      }
+
+      .stat span {
+        margin-top: 5px;
+        color: var(--muted);
         font-size: 13px;
       }
 
-      .profile-panel {
+      .profile-card {
         position: sticky;
-        top: 86px;
-        border: 1px solid rgba(72, 96, 130, 0.36);
-        border-radius: 16px;
-        background: rgba(16, 20, 28, 0.82);
-        box-shadow: 0 26px 80px rgba(0, 0, 0, 0.35);
+        top: 28px;
+        border: 1px solid rgba(43, 51, 67, 0.92);
+        border-radius: 18px;
+        background: rgba(16, 19, 27, 0.88);
+        box-shadow: 0 28px 90px rgba(0, 0, 0, 0.38);
         overflow: hidden;
       }
 
       .cover {
-        height: 132px;
+        height: 150px;
         background:
-          linear-gradient(135deg, rgba(59, 130, 246, 0.32), rgba(246, 196, 69, 0.18)),
-          repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 16px),
-          #0b1a2b;
+          linear-gradient(135deg, rgba(255, 156, 69, 0.55), rgba(255, 79, 184, 0.45), rgba(79, 140, 255, 0.55)),
+          repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 18px);
       }
 
-      .profile-body {
-        padding: 0 22px 22px;
+      .card-body {
+        padding: 0 24px 24px;
       }
 
       .avatar-large {
-        width: 104px;
-        height: 104px;
+        width: 116px;
+        height: 116px;
         display: grid;
         place-items: center;
-        margin-top: -52px;
-        border: 6px solid var(--panel);
+        margin-top: -58px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #61d6ff, #2945d8 46%, #ff4fa6);
+        background:
+          linear-gradient(var(--panel), var(--panel)) padding-box,
+          linear-gradient(135deg, var(--orange), var(--pink), var(--blue)) border-box;
+        border: 5px solid transparent;
         color: #fff;
-        font-size: 42px;
+        font-size: 44px;
         font-weight: 900;
-        text-transform: uppercase;
       }
 
-      .profile-title {
+      .name-line {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
+        gap: 14px;
         margin-top: 16px;
       }
 
-      .profile-title h2 {
+      .name-line h2 {
         min-width: 0;
         margin: 0;
         overflow-wrap: anywhere;
-        font-size: 28px;
-        line-height: 1.1;
+        font-size: 30px;
       }
 
       .badge {
-        gap: 7px;
-        padding: 8px 10px;
-        border: 1px solid rgba(246, 196, 69, 0.45);
+        padding: 8px 11px;
         border-radius: 999px;
-        color: #ffe08a;
-        background: rgba(246, 196, 69, 0.12);
+        background: rgba(47, 224, 132, 0.12);
+        color: #9bf4c5;
         font-size: 12px;
         font-weight: 900;
         white-space: nowrap;
@@ -353,358 +303,259 @@
       .handle {
         margin-top: 8px;
         color: var(--muted);
-        overflow-wrap: anywhere;
       }
 
-      .metrics {
+      .bio {
+        margin-top: 16px;
+        color: #cbd4e2;
+        line-height: 1.55;
+      }
+
+      .big-stats {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 10px;
-        margin-top: 20px;
+        margin-top: 22px;
       }
 
-      .metric {
-        min-height: 74px;
-        flex-direction: column;
-        align-items: flex-start;
-        justify-content: center;
-        padding: 12px;
-        border: 1px solid rgba(72, 96, 130, 0.28);
+      .big-stat {
+        min-height: 82px;
+        padding: 13px;
+        border: 1px solid rgba(43, 51, 67, 0.9);
         border-radius: 10px;
         background: rgba(255, 255, 255, 0.035);
       }
 
-      .metric strong {
+      .big-stat strong {
+        display: block;
         color: #fff;
-        font-size: 20px;
+        font-size: 22px;
       }
 
-      .metric span {
-        margin-top: 4px;
+      .big-stat span {
+        display: block;
+        margin-top: 5px;
         color: var(--muted);
         font-size: 12px;
       }
 
-      .status-line {
-        display: flex;
-        align-items: center;
-        gap: 10px;
+      .api-state {
         margin-top: 18px;
         padding: 14px;
+        border: 1px solid rgba(79, 140, 255, 0.28);
         border-radius: 10px;
-        background: rgba(33, 214, 122, 0.1);
-        color: #aaf4ca;
-        font-weight: 700;
-      }
-
-      .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: var(--green);
-        box-shadow: 0 0 0 7px rgba(33, 214, 122, 0.12);
-      }
-
-      .notice {
-        margin-top: 18px;
-        padding: 14px;
-        border: 1px solid rgba(72, 96, 130, 0.28);
-        border-radius: 10px;
-        color: var(--muted);
+        color: #d4e3ff;
+        background: rgba(79, 140, 255, 0.08);
         font-size: 13px;
-        line-height: 1.5;
-      }
-
-      .sponsor-strip {
-        display: grid;
-        grid-template-columns: 1fr minmax(280px, 430px) 1fr;
-        gap: 34px;
-        align-items: end;
-        margin-top: 64px;
-      }
-
-      .sponsor {
-        min-height: 152px;
-        border: 1px solid rgba(72, 96, 130, 0.28);
-        border-radius: 12px;
-        background:
-          linear-gradient(180deg, rgba(18, 33, 50, 0.4), rgba(18, 33, 50, 0.9)),
-          radial-gradient(circle at 50% 20%, rgba(59, 130, 246, 0.45), transparent 12rem),
-          #10141c;
-      }
-
-      .sponsor.main {
-        min-height: 240px;
-        display: flex;
-        align-items: end;
-        justify-content: center;
-        padding: 22px;
-      }
-
-      .sponsor-card {
-        width: min(360px, 100%);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 14px;
-        border: 1px solid rgba(72, 96, 130, 0.4);
-        border-radius: 12px;
-        background: rgba(9, 12, 17, 0.78);
-        box-shadow: 0 18px 52px rgba(0, 0, 0, 0.36);
-      }
-
-      .sponsor-card strong {
-        display: block;
-        letter-spacing: 0.18em;
-      }
-
-      .sponsor-card span {
-        color: var(--green);
-        font-size: 13px;
-        font-weight: 800;
+        line-height: 1.48;
       }
 
       @media (max-width: 900px) {
-        .nav {
-          display: none;
-        }
-
-        .hero {
+        .layout {
           grid-template-columns: 1fr;
         }
 
-        .profile-panel {
+        .profile-card {
           position: static;
-        }
-
-        .sponsor-strip {
-          grid-template-columns: 1fr;
-        }
-
-        .sponsor:not(.main) {
-          display: none;
         }
       }
 
       @media (max-width: 560px) {
-        .topbar-inner,
         main {
-          width: min(100% - 24px, 1220px);
+          width: min(100% - 24px, 1180px);
         }
 
-        .account {
-          display: none;
-        }
-
-        .hero-title {
+        .brand {
+          align-items: flex-start;
           flex-direction: column;
-          gap: 12px;
         }
 
         .search-form {
-          grid-template-columns: minmax(0, 1fr) 48px;
+          grid-template-columns: minmax(0, 1fr) 50px;
         }
 
-        .metrics {
+        .stats,
+        .big-stats {
           grid-template-columns: 1fr;
         }
       }
     </style>
   </head>
   <body>
-    <header class="topbar">
-      <div class="topbar-inner">
-        <div class="brand">
-          <span class="logo" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
-              <path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-            </svg>
-          </span>
-          <span>SAMMVSC</span>
-        </div>
-        <nav class="nav" aria-label="Ana menu">
-          <span>Top 50</span>
-          <span>Kullanici Siralamasi</span>
-          <span>Sunucular</span>
-        </nav>
-        <div class="account">
-          <span class="avatar-mini" aria-hidden="true"></span>
-          <span>Habnet</span>
-        </div>
-      </div>
-    </header>
-
     <main>
-      <section class="hero" aria-labelledby="page-title">
-        <div class="intro">
-          <h1 class="hero-title" id="page-title">
-            <span class="hero-icon" aria-hidden="true">
-              <svg width="38" height="38" viewBox="0 0 24 24" fill="none">
-                <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
-                <path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-              </svg>
-            </span>
-            <span>Findcord</span>
-          </h1>
+      <section class="layout" aria-labelledby="page-title">
+        <div class="hero">
+          <div class="brand">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <h1 id="page-title">Instapp</h1>
+          </div>
+
           <p class="subtitle">
-            Bakimdayken profil arama deneyimini on izleyin. Kullanici adi girin, profil kartini buyutun ve takipci istatistiklerini gorun.
+            Kullanici adi ile profil bilgilerini buyutun: profil fotografi, gonderi sayisi, takipci ve takip edilenler tek ekranda gorunsun.
           </p>
 
-          <div class="search-shell">
+          <div class="search-card">
             <form class="search-form" id="searchForm">
-              <input id="usernameInput" type="text" autocomplete="off" maxlength="28" placeholder="Kullanici adi girin..." aria-label="Kullanici adi">
-              <button type="submit" aria-label="Profili ara">
-                <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
-                  <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
-                  <path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-                </svg>
-              </button>
+              <input id="usernameInput" type="text" autocomplete="off" maxlength="30" placeholder="Instagram kullanici adi yazin..." aria-label="Instagram kullanici adi">
+              <button type="submit" aria-label="Profili getir">Ara</button>
             </form>
-
-            <div class="recent">
-              <div class="recent-head">
-                <span>Son Aramalar</span>
-                <span id="recentCount">3</span>
-              </div>
-              <div id="recentList"></div>
+            <div class="system-note">
+              Bu on yuz gercek sisteme hazirlandi. Canli Instagram verisi icin backend API baglantisi eklendiginde burasi dogrudan gercek profil verisini gosterecek.
             </div>
           </div>
-        </div>
 
-        <aside class="profile-panel" aria-live="polite">
-          <div class="cover"></div>
-          <div class="profile-body">
-            <div class="avatar-large" id="profileInitial">S</div>
-            <div class="profile-title">
-              <h2 id="profileName">sammvsc</h2>
-              <span class="badge">ON IZLEME</span>
+          <section class="result" aria-live="polite">
+            <div class="result-head">
+              <span>Arama Sonucu</span>
+              <span id="sourceLabel">Demo veri</span>
             </div>
-            <div class="handle" id="profileHandle">@sammvsc</div>
-
-            <div class="metrics">
-              <div class="metric">
-                <strong id="followers">1.386</strong>
+            <div class="profile-row">
+              <div class="avatar" id="resultAvatar">K</div>
+              <div>
+                <h2 id="resultName">kenanalperr</h2>
+                <p id="resultBio">Profil buyutme on izlemesi</p>
+              </div>
+            </div>
+            <div class="stats">
+              <div class="stat">
+                <strong id="resultPosts">48</strong>
+                <span>Gonderi</span>
+              </div>
+              <div class="stat">
+                <strong id="resultFollowers">2.418</strong>
                 <span>Takipci</span>
               </div>
-              <div class="metric">
-                <strong id="servers">42</strong>
-                <span>Sunucu</span>
+              <div class="stat">
+                <strong id="resultFollowing">312</strong>
+                <span>Takip Edilen</span>
               </div>
-              <div class="metric">
-                <strong id="rank">#18</strong>
-                <span>Siralama</span>
+            </div>
+          </section>
+        </div>
+
+        <aside class="profile-card" aria-label="Ornek profil">
+          <div class="cover"></div>
+          <div class="card-body">
+            <div class="avatar-large" id="featuredAvatar">K</div>
+            <div class="name-line">
+              <h2 id="featuredName">kenanalperr</h2>
+              <span class="badge">ORNEK PROFIL</span>
+            </div>
+            <div class="handle" id="featuredHandle">@kenanalperr</div>
+            <div class="bio" id="featuredBio">
+              Kenan Alper profili. Gercek API baglandiginda profil fotografi ve istatistikler Instagram hesabindan cekilecek.
+            </div>
+
+            <div class="big-stats">
+              <div class="big-stat">
+                <strong id="featuredPosts">48</strong>
+                <span>Gonderi</span>
+              </div>
+              <div class="big-stat">
+                <strong id="featuredFollowers">2.418</strong>
+                <span>Takipci</span>
+              </div>
+              <div class="big-stat">
+                <strong id="featuredFollowing">312</strong>
+                <span>Takip Edilen</span>
               </div>
             </div>
 
-            <div class="status-line">
-              <span class="dot" aria-hidden="true"></span>
-              <span id="activity">Profil buyutuldu ve hazir.</span>
-            </div>
-
-            <div class="notice">
-              Bakim modu aktif. Bu ekrandaki sayilar simdilik demo veridir; gercek takipci ve profil verileri ana sistem acildiginda API uzerinden okunacak.
+            <div class="api-state">
+              Gercek veriler icin Instapp API katmani hazirlanacak. GitHub Pages sadece statik sayfa sundugu icin Instagram verisini guvenli sekilde cekmek backend uzerinden yapilmali.
             </div>
           </div>
         </aside>
-      </section>
-
-      <section class="sponsor-strip" aria-label="Sponsor alanlari">
-        <div class="sponsor"></div>
-        <div class="sponsor main">
-          <div class="sponsor-card">
-            <span class="avatar" aria-hidden="true">M</span>
-            <div>
-              <strong>MINAS</strong>
-              <span>Aktif - 1.386 takipci</span>
-            </div>
-          </div>
-        </div>
-        <div class="sponsor"></div>
       </section>
     </main>
 
     <script>
       const form = document.querySelector("#searchForm");
       const input = document.querySelector("#usernameInput");
-      const recentList = document.querySelector("#recentList");
-      const recentCount = document.querySelector("#recentCount");
-      const profileInitial = document.querySelector("#profileInitial");
-      const profileName = document.querySelector("#profileName");
-      const profileHandle = document.querySelector("#profileHandle");
-      const followers = document.querySelector("#followers");
-      const servers = document.querySelector("#servers");
-      const rank = document.querySelector("#rank");
-      const activity = document.querySelector("#activity");
+      const fields = {
+        resultAvatar: document.querySelector("#resultAvatar"),
+        resultName: document.querySelector("#resultName"),
+        resultBio: document.querySelector("#resultBio"),
+        resultPosts: document.querySelector("#resultPosts"),
+        resultFollowers: document.querySelector("#resultFollowers"),
+        resultFollowing: document.querySelector("#resultFollowing"),
+        sourceLabel: document.querySelector("#sourceLabel"),
+        featuredAvatar: document.querySelector("#featuredAvatar"),
+        featuredName: document.querySelector("#featuredName"),
+        featuredHandle: document.querySelector("#featuredHandle"),
+        featuredBio: document.querySelector("#featuredBio"),
+        featuredPosts: document.querySelector("#featuredPosts"),
+        featuredFollowers: document.querySelector("#featuredFollowers"),
+        featuredFollowing: document.querySelector("#featuredFollowing")
+      };
 
-      let recent = ["enesben", "cino", "minas"];
+      const knownProfiles = {
+        kenanalperr: {
+          username: "kenanalperr",
+          posts: 48,
+          followers: 2418,
+          following: 312,
+          bio: "Kenan Alper profili. Instapp icin ornek kullanici."
+        }
+      };
+
+      function cleanUsername(value) {
+        return value.trim().replace(/^@/, "").replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 30) || "kenanalperr";
+      }
 
       function hashName(name) {
-        return [...name].reduce((total, char) => total + char.charCodeAt(0) * 17, 0);
+        return [...name].reduce((total, char) => total + char.charCodeAt(0) * 19, 0);
       }
 
       function formatNumber(value) {
         return new Intl.NumberFormat("tr-TR").format(value);
       }
 
-      function profileFor(name) {
-        const clean = name.trim().replace(/[^a-zA-Z0-9_.-]/g, "").slice(0, 28) || "sammvsc";
-        const hash = hashName(clean.toLowerCase());
+      function fallbackProfile(username) {
+        const hash = hashName(username.toLowerCase());
         return {
-          name: clean,
-          followers: 350 + (hash % 14750),
-          servers: 5 + (hash % 94),
-          rank: 1 + (hash % 50)
+          username,
+          posts: 6 + (hash % 180),
+          followers: 120 + (hash % 22000),
+          following: 35 + (hash % 980),
+          bio: "Instapp profil on izlemesi. Gercek veriler API baglaninca otomatik guncellenecek."
         };
       }
 
-      function showProfile(name) {
-        const profile = profileFor(name);
-        profileInitial.textContent = profile.name[0] || "S";
-        profileName.textContent = profile.name;
-        profileHandle.textContent = `@${profile.name.toLowerCase()}`;
-        followers.textContent = formatNumber(profile.followers);
-        servers.textContent = formatNumber(profile.servers);
-        rank.textContent = `#${profile.rank}`;
-        activity.textContent = `${profile.name} profili buyutuldu.`;
-
-        recent = [profile.name, ...recent.filter((item) => item.toLowerCase() !== profile.name.toLowerCase())].slice(0, 4);
-        renderRecent();
+      function getProfile(username) {
+        const key = username.toLowerCase();
+        return knownProfiles[key] || fallbackProfile(username);
       }
 
-      function renderRecent() {
-        recentCount.textContent = recent.length;
-        recentList.innerHTML = recent.map((name) => {
-          const profile = profileFor(name);
-          return `
-            <button class="recent-row" type="button" data-name="${profile.name}">
-              <span class="recent-user">
-                <span class="avatar" aria-hidden="true">${profile.name[0]}</span>
-                <span>
-                  <span class="recent-name">${profile.name}</span>
-                  <span class="recent-meta">@${profile.name.toLowerCase()} - ${formatNumber(profile.followers)} takipci</span>
-                </span>
-              </span>
-              <span aria-hidden="true">&gt;</span>
-            </button>
-          `;
-        }).join("");
+      function renderProfile(profile, source) {
+        const initial = profile.username[0] || "I";
+        fields.resultAvatar.textContent = initial;
+        fields.resultName.textContent = profile.username;
+        fields.resultBio.textContent = profile.bio;
+        fields.resultPosts.textContent = formatNumber(profile.posts);
+        fields.resultFollowers.textContent = formatNumber(profile.followers);
+        fields.resultFollowing.textContent = formatNumber(profile.following);
+        fields.sourceLabel.textContent = source;
+
+        fields.featuredAvatar.textContent = initial;
+        fields.featuredName.textContent = profile.username;
+        fields.featuredHandle.textContent = `@${profile.username}`;
+        fields.featuredBio.textContent = profile.bio;
+        fields.featuredPosts.textContent = formatNumber(profile.posts);
+        fields.featuredFollowers.textContent = formatNumber(profile.followers);
+        fields.featuredFollowing.textContent = formatNumber(profile.following);
       }
 
       form.addEventListener("submit", (event) => {
         event.preventDefault();
-        showProfile(input.value);
+        const username = cleanUsername(input.value);
+        const profile = getProfile(username);
+        const source = knownProfiles[username.toLowerCase()] ? "Ornek profil" : "API bekleniyor";
+        renderProfile(profile, source);
         input.value = "";
       });
 
-      recentList.addEventListener("click", (event) => {
-        const row = event.target.closest("[data-name]");
-        if (row) {
-          showProfile(row.dataset.name);
-        }
-      });
-
-      renderRecent();
+      renderProfile(knownProfiles.kenanalperr, "Ornek profil");
     </script>
   </body>
 </html>
