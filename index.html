@@ -34,9 +34,8 @@
         overflow-x: hidden;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         background:
-          radial-gradient(circle at 50% 35%, rgba(37, 99, 235, 0.24), transparent 28rem),
-          radial-gradient(circle at 50% 88%, rgba(69, 212, 255, 0.12), transparent 28rem),
-          #05070b;
+          radial-gradient(circle at 50% 62%, rgba(37, 99, 235, 0.16), transparent 24rem),
+          linear-gradient(180deg, #050505 0%, #07080a 52%, #050505 100%);
         background-size: auto, auto, auto;
         color: var(--ink);
       }
@@ -54,13 +53,14 @@
       }
 
       body::after {
-        width: 42rem;
-        height: 42rem;
-        right: -18rem;
-        bottom: -18rem;
+        width: 38rem;
+        height: 24rem;
+        left: 50%;
+        bottom: -14rem;
         border-radius: 50%;
-        background: rgba(37, 99, 235, 0.16);
-        filter: blur(80px);
+        background: rgba(37, 99, 235, 0.12);
+        filter: blur(92px);
+        transform: translateX(-50%);
       }
 
       main {
@@ -318,6 +318,49 @@
         animation-delay: 0.9s;
       }
 
+      .report-button {
+        position: fixed;
+        right: 34px;
+        bottom: 34px;
+        z-index: 4;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        min-height: 64px;
+        padding: 0 24px 0 18px;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 18px;
+        background: rgba(18, 18, 18, 0.86);
+        color: #f3f6fb;
+        font-size: 15px;
+        font-weight: 800;
+        text-decoration: none;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+        backdrop-filter: blur(14px);
+      }
+
+      .report-button span {
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(88, 166, 255, 0.36);
+        border-radius: 12px;
+        background: rgba(37, 99, 235, 0.18);
+        color: #72b7ff;
+      }
+
+      .report-button svg {
+        width: 19px;
+        height: 19px;
+      }
+
+      .report-button:hover {
+        border-color: rgba(88, 166, 255, 0.3);
+        background: rgba(24, 24, 24, 0.94);
+      }
+
       @keyframes blinkBlue {
         0%,
         100% {
@@ -365,6 +408,14 @@
         .brand {
           letter-spacing: 0.14em;
         }
+
+        .report-button {
+          right: 16px;
+          bottom: 16px;
+          min-height: 54px;
+          padding: 0 16px 0 12px;
+          border-radius: 14px;
+        }
       }
     </style>
   </head>
@@ -372,6 +423,15 @@
     <span class="spark one" aria-hidden="true"></span>
     <span class="spark two" aria-hidden="true"></span>
     <span class="spark three" aria-hidden="true"></span>
+    <a class="report-button" href="mailto:destek@sammvsc.top?subject=Hata%20Bildirimi" aria-label="Hata bildir">
+      <span aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M6 5h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-5 4V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </span>
+      Hata Bildir
+    </a>
 
     <main>
       <section class="maintenance-card" aria-labelledby="maintenance-title">
