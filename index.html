@@ -4,18 +4,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#101820">
-    <title>Bakim Modu</title>
+    <meta name="theme-color" content="#07090d">
+    <title>SAMMVSC Bakim Modu</title>
     <style>
       :root {
-        color-scheme: light;
-        --ink: #101820;
-        --muted: #5f6b72;
-        --line: #d9e1e5;
-        --paper: #f7f4ef;
-        --accent: #167a72;
-        --accent-dark: #0e5751;
-        --warm: #d99b3d;
+        color-scheme: dark;
+        --bg: #07090d;
+        --panel: #10141c;
+        --panel-strong: #151b25;
+        --line: #263245;
+        --ink: #eef5ff;
+        --muted: #9ca8b8;
+        --blue: #3b82f6;
+        --blue-deep: #1d4ed8;
+        --gold: #f6c445;
+        --green: #21d67a;
+        --rose: #ff6b9a;
       }
 
       * {
@@ -25,175 +29,682 @@
       body {
         min-height: 100vh;
         margin: 0;
-        display: grid;
-        place-items: center;
-        padding: 32px 18px;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         background:
-          radial-gradient(circle at top left, rgba(217, 155, 61, 0.22), transparent 34rem),
-          linear-gradient(135deg, #fbfaf7 0%, var(--paper) 56%, #e8f0ef 100%);
+          radial-gradient(circle at 50% 28%, rgba(38, 92, 172, 0.28), transparent 31rem),
+          radial-gradient(circle at 45% 86%, rgba(18, 138, 110, 0.16), transparent 26rem),
+          linear-gradient(180deg, #090b10 0%, var(--bg) 52%, #05070a 100%);
         color: var(--ink);
       }
 
-      main {
-        width: min(760px, 100%);
-        padding: clamp(28px, 7vw, 64px);
-        border: 1px solid rgba(16, 24, 32, 0.12);
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.72);
-        box-shadow: 0 24px 70px rgba(16, 24, 32, 0.12);
-        backdrop-filter: blur(14px);
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        border-bottom: 1px solid rgba(72, 96, 130, 0.22);
+        background: rgba(7, 9, 13, 0.82);
+        backdrop-filter: blur(16px);
+      }
+
+      .topbar-inner {
+        width: min(1220px, calc(100% - 32px));
+        min-height: 64px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+      }
+
+      .brand,
+      .nav,
+      .account,
+      .badge,
+      .metric {
+        display: flex;
+        align-items: center;
       }
 
       .brand {
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 48px;
-        font-size: 15px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        gap: 11px;
+        font-weight: 800;
       }
 
-      .mark {
-        width: 42px;
-        height: 42px;
+      .logo {
+        width: 36px;
+        height: 36px;
         display: grid;
         place-items: center;
-        border-radius: 8px;
-        background: var(--ink);
-        color: #fff;
-        font-size: 17px;
+        border: 1px solid rgba(59, 130, 246, 0.55);
+        border-radius: 10px;
+        background: #0d2240;
+        color: #7db3ff;
       }
 
-      .status {
+      .nav {
+        gap: 28px;
+        color: #c6d2e2;
+        font-size: 14px;
+      }
+
+      .nav span {
         display: inline-flex;
         align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+      }
+
+      .account {
         gap: 10px;
-        margin-bottom: 22px;
-        padding: 9px 12px;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        color: var(--accent-dark);
-        background: #fff;
-        font-size: 14px;
+        padding: 8px 12px;
+        border: 1px solid rgba(72, 96, 130, 0.36);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.04);
         font-weight: 700;
       }
 
-      .pulse {
-        width: 10px;
-        height: 10px;
+      .avatar-mini {
+        width: 27px;
+        height: 27px;
         border-radius: 50%;
-        background: var(--warm);
-        box-shadow: 0 0 0 7px rgba(217, 155, 61, 0.18);
+        background: linear-gradient(135deg, var(--gold), #f08a3e 48%, var(--blue));
       }
 
-      h1 {
-        max-width: 660px;
+      main {
+        width: min(1220px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: clamp(34px, 7vw, 76px) 0 46px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+        gap: clamp(28px, 5vw, 72px);
+        align-items: start;
+      }
+
+      .intro {
+        padding-top: 22px;
+        text-align: center;
+      }
+
+      .hero-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 18px;
         margin: 0;
-        font-size: clamp(40px, 8vw, 76px);
-        line-height: 0.98;
+        font-size: clamp(54px, 9vw, 92px);
+        line-height: 0.95;
         letter-spacing: 0;
       }
 
-      p {
-        max-width: 580px;
-        margin: 24px 0 0;
-        color: var(--muted);
-        font-size: clamp(17px, 2.4vw, 20px);
-        line-height: 1.6;
+      .hero-title span:last-child {
+        background: linear-gradient(90deg, #fff 0%, #cfe2ff 46%, #62a5ff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
       }
 
-      .details {
+      .hero-icon {
+        width: clamp(54px, 8vw, 70px);
+        height: clamp(54px, 8vw, 70px);
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
-        margin-top: 38px;
+        place-items: center;
+        border: 1px solid rgba(59, 130, 246, 0.62);
+        border-radius: 12px;
+        background: #102b54;
+        color: #71abff;
+        box-shadow: 0 18px 55px rgba(59, 130, 246, 0.22);
       }
 
-      .detail {
-        padding: 18px;
-        border: 1px solid var(--line);
+      .subtitle {
+        max-width: 680px;
+        margin: 20px auto 0;
+        color: var(--muted);
+        font-size: clamp(17px, 2vw, 22px);
+        line-height: 1.55;
+      }
+
+      .search-shell {
+        width: min(560px, 100%);
+        margin: 28px auto 0;
+      }
+
+      .search-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 54px;
+        gap: 8px;
+        padding: 8px;
+        border: 1px solid rgba(59, 130, 246, 0.58);
+        border-radius: 14px;
+        background: rgba(15, 19, 26, 0.88);
+        box-shadow: 0 0 34px rgba(29, 78, 216, 0.34);
+      }
+
+      .search-form input {
+        width: 100%;
+        min-width: 0;
+        border: 0;
         border-radius: 8px;
-        background: rgba(255, 255, 255, 0.62);
+        outline: 0;
+        padding: 0 16px;
+        background: #171b22;
+        color: var(--ink);
+        font-size: 15px;
       }
 
-      .detail strong {
-        display: block;
-        margin-bottom: 7px;
-        font-size: 14px;
+      .search-form button,
+      .icon-button {
+        border: 0;
+        border-radius: 8px;
+        background: var(--blue-deep);
+        color: #dceaff;
       }
 
-      .detail span {
-        display: block;
+      .search-form button {
+        height: 44px;
+        display: grid;
+        place-items: center;
+      }
+
+      .recent {
+        margin-top: 18px;
+        border: 1px solid rgba(59, 130, 246, 0.28);
+        border-radius: 14px;
+        background: rgba(16, 20, 28, 0.86);
+        overflow: hidden;
+      }
+
+      .recent-head,
+      .recent-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .recent-head {
+        min-height: 50px;
+        padding: 0 18px;
         color: var(--muted);
         font-size: 14px;
-        line-height: 1.45;
+        font-weight: 800;
       }
 
-      a {
-        color: var(--accent);
+      .recent-row {
+        width: 100%;
+        border: 0;
+        border-top: 1px solid rgba(72, 96, 130, 0.18);
+        padding: 14px 18px;
+        background: transparent;
+        color: var(--ink);
+        text-align: left;
+      }
+
+      .recent-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .avatar {
+        width: 38px;
+        height: 38px;
+        flex: 0 0 auto;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #5bbcff, #6847ff 52%, #ff6b9a);
+        color: #fff;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .recent-name {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 800;
+      }
+
+      .recent-meta {
+        display: block;
+        margin-top: 2px;
+        color: #737f91;
+        font-size: 13px;
+      }
+
+      .profile-panel {
+        position: sticky;
+        top: 86px;
+        border: 1px solid rgba(72, 96, 130, 0.36);
+        border-radius: 16px;
+        background: rgba(16, 20, 28, 0.82);
+        box-shadow: 0 26px 80px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+      }
+
+      .cover {
+        height: 132px;
+        background:
+          linear-gradient(135deg, rgba(59, 130, 246, 0.32), rgba(246, 196, 69, 0.18)),
+          repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 16px),
+          #0b1a2b;
+      }
+
+      .profile-body {
+        padding: 0 22px 22px;
+      }
+
+      .avatar-large {
+        width: 104px;
+        height: 104px;
+        display: grid;
+        place-items: center;
+        margin-top: -52px;
+        border: 6px solid var(--panel);
+        border-radius: 50%;
+        background: linear-gradient(135deg, #61d6ff, #2945d8 46%, #ff4fa6);
+        color: #fff;
+        font-size: 42px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .profile-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .profile-title h2 {
+        min-width: 0;
+        margin: 0;
+        overflow-wrap: anywhere;
+        font-size: 28px;
+        line-height: 1.1;
+      }
+
+      .badge {
+        gap: 7px;
+        padding: 8px 10px;
+        border: 1px solid rgba(246, 196, 69, 0.45);
+        border-radius: 999px;
+        color: #ffe08a;
+        background: rgba(246, 196, 69, 0.12);
+        font-size: 12px;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+
+      .handle {
+        margin-top: 8px;
+        color: var(--muted);
+        overflow-wrap: anywhere;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .metric {
+        min-height: 74px;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 12px;
+        border: 1px solid rgba(72, 96, 130, 0.28);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .metric strong {
+        color: #fff;
+        font-size: 20px;
+      }
+
+      .metric span {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .status-line {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 18px;
+        padding: 14px;
+        border-radius: 10px;
+        background: rgba(33, 214, 122, 0.1);
+        color: #aaf4ca;
         font-weight: 700;
-        text-decoration: none;
       }
 
-      a:hover {
-        color: var(--accent-dark);
-        text-decoration: underline;
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 0 7px rgba(33, 214, 122, 0.12);
       }
 
-      @media (max-width: 620px) {
-        body {
-          place-items: stretch;
-          padding: 16px;
+      .notice {
+        margin-top: 18px;
+        padding: 14px;
+        border: 1px solid rgba(72, 96, 130, 0.28);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .sponsor-strip {
+        display: grid;
+        grid-template-columns: 1fr minmax(280px, 430px) 1fr;
+        gap: 34px;
+        align-items: end;
+        margin-top: 64px;
+      }
+
+      .sponsor {
+        min-height: 152px;
+        border: 1px solid rgba(72, 96, 130, 0.28);
+        border-radius: 12px;
+        background:
+          linear-gradient(180deg, rgba(18, 33, 50, 0.4), rgba(18, 33, 50, 0.9)),
+          radial-gradient(circle at 50% 20%, rgba(59, 130, 246, 0.45), transparent 12rem),
+          #10141c;
+      }
+
+      .sponsor.main {
+        min-height: 240px;
+        display: flex;
+        align-items: end;
+        justify-content: center;
+        padding: 22px;
+      }
+
+      .sponsor-card {
+        width: min(360px, 100%);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px;
+        border: 1px solid rgba(72, 96, 130, 0.4);
+        border-radius: 12px;
+        background: rgba(9, 12, 17, 0.78);
+        box-shadow: 0 18px 52px rgba(0, 0, 0, 0.36);
+      }
+
+      .sponsor-card strong {
+        display: block;
+        letter-spacing: 0.18em;
+      }
+
+      .sponsor-card span {
+        color: var(--green);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      @media (max-width: 900px) {
+        .nav {
+          display: none;
         }
 
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .profile-panel {
+          position: static;
+        }
+
+        .sponsor-strip {
+          grid-template-columns: 1fr;
+        }
+
+        .sponsor:not(.main) {
+          display: none;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .topbar-inner,
         main {
-          min-height: calc(100vh - 32px);
-          display: flex;
+          width: min(100% - 24px, 1220px);
+        }
+
+        .account {
+          display: none;
+        }
+
+        .hero-title {
           flex-direction: column;
-          justify-content: center;
+          gap: 12px;
         }
 
-        .brand {
-          margin-bottom: 36px;
+        .search-form {
+          grid-template-columns: minmax(0, 1fr) 48px;
         }
 
-        .details {
+        .metrics {
           grid-template-columns: 1fr;
         }
       }
     </style>
   </head>
   <body>
-    <main aria-labelledby="page-title">
-      <div class="brand" aria-label="SAMM">
-        <span class="mark">S</span>
-        <span>SAMM</span>
-      </div>
-
-      <div class="status">
-        <span class="pulse" aria-hidden="true"></span>
-        Bakim modu aktif
-      </div>
-
-      <h1 id="page-title">Sitemizi yeniliyoruz.</h1>
-      <p>
-        Daha iyi bir deneyim hazirlamak icin kisa bir bakim arasindayiz.
-        Calismalar tamamlandiginda tekrar yayinda olacagiz.
-      </p>
-
-      <section class="details" aria-label="Iletisim ve durum">
-        <div class="detail">
-          <strong>Durum</strong>
-          <span>Planli bakim calismasi devam ediyor.</span>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <span class="logo" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
+              <path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+            </svg>
+          </span>
+          <span>SAMMVSC</span>
         </div>
-        <div class="detail">
-          <strong>Iletisim</strong>
-          <span>Acil konular icin mevcut iletisim kanallarimizdan bize ulasabilirsiniz.</span>
+        <nav class="nav" aria-label="Ana menu">
+          <span>Top 50</span>
+          <span>Kullanici Siralamasi</span>
+          <span>Sunucular</span>
+        </nav>
+        <div class="account">
+          <span class="avatar-mini" aria-hidden="true"></span>
+          <span>Habnet</span>
         </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="intro">
+          <h1 class="hero-title" id="page-title">
+            <span class="hero-icon" aria-hidden="true">
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none">
+                <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
+                <path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+              </svg>
+            </span>
+            <span>Findcord</span>
+          </h1>
+          <p class="subtitle">
+            Bakimdayken profil arama deneyimini on izleyin. Kullanici adi girin, profil kartini buyutun ve takipci istatistiklerini gorun.
+          </p>
+
+          <div class="search-shell">
+            <form class="search-form" id="searchForm">
+              <input id="usernameInput" type="text" autocomplete="off" maxlength="28" placeholder="Kullanici adi girin..." aria-label="Kullanici adi">
+              <button type="submit" aria-label="Profili ara">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
+                  <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
+                  <path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                </svg>
+              </button>
+            </form>
+
+            <div class="recent">
+              <div class="recent-head">
+                <span>Son Aramalar</span>
+                <span id="recentCount">3</span>
+              </div>
+              <div id="recentList"></div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="profile-panel" aria-live="polite">
+          <div class="cover"></div>
+          <div class="profile-body">
+            <div class="avatar-large" id="profileInitial">S</div>
+            <div class="profile-title">
+              <h2 id="profileName">sammvsc</h2>
+              <span class="badge">ON IZLEME</span>
+            </div>
+            <div class="handle" id="profileHandle">@sammvsc</div>
+
+            <div class="metrics">
+              <div class="metric">
+                <strong id="followers">1.386</strong>
+                <span>Takipci</span>
+              </div>
+              <div class="metric">
+                <strong id="servers">42</strong>
+                <span>Sunucu</span>
+              </div>
+              <div class="metric">
+                <strong id="rank">#18</strong>
+                <span>Siralama</span>
+              </div>
+            </div>
+
+            <div class="status-line">
+              <span class="dot" aria-hidden="true"></span>
+              <span id="activity">Profil buyutuldu ve hazir.</span>
+            </div>
+
+            <div class="notice">
+              Bakim modu aktif. Bu ekrandaki sayilar simdilik demo veridir; gercek takipci ve profil verileri ana sistem acildiginda API uzerinden okunacak.
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="sponsor-strip" aria-label="Sponsor alanlari">
+        <div class="sponsor"></div>
+        <div class="sponsor main">
+          <div class="sponsor-card">
+            <span class="avatar" aria-hidden="true">M</span>
+            <div>
+              <strong>MINAS</strong>
+              <span>Aktif - 1.386 takipci</span>
+            </div>
+          </div>
+        </div>
+        <div class="sponsor"></div>
       </section>
     </main>
+
+    <script>
+      const form = document.querySelector("#searchForm");
+      const input = document.querySelector("#usernameInput");
+      const recentList = document.querySelector("#recentList");
+      const recentCount = document.querySelector("#recentCount");
+      const profileInitial = document.querySelector("#profileInitial");
+      const profileName = document.querySelector("#profileName");
+      const profileHandle = document.querySelector("#profileHandle");
+      const followers = document.querySelector("#followers");
+      const servers = document.querySelector("#servers");
+      const rank = document.querySelector("#rank");
+      const activity = document.querySelector("#activity");
+
+      let recent = ["enesben", "cino", "minas"];
+
+      function hashName(name) {
+        return [...name].reduce((total, char) => total + char.charCodeAt(0) * 17, 0);
+      }
+
+      function formatNumber(value) {
+        return new Intl.NumberFormat("tr-TR").format(value);
+      }
+
+      function profileFor(name) {
+        const clean = name.trim().replace(/[^a-zA-Z0-9_.-]/g, "").slice(0, 28) || "sammvsc";
+        const hash = hashName(clean.toLowerCase());
+        return {
+          name: clean,
+          followers: 350 + (hash % 14750),
+          servers: 5 + (hash % 94),
+          rank: 1 + (hash % 50)
+        };
+      }
+
+      function showProfile(name) {
+        const profile = profileFor(name);
+        profileInitial.textContent = profile.name[0] || "S";
+        profileName.textContent = profile.name;
+        profileHandle.textContent = `@${profile.name.toLowerCase()}`;
+        followers.textContent = formatNumber(profile.followers);
+        servers.textContent = formatNumber(profile.servers);
+        rank.textContent = `#${profile.rank}`;
+        activity.textContent = `${profile.name} profili buyutuldu.`;
+
+        recent = [profile.name, ...recent.filter((item) => item.toLowerCase() !== profile.name.toLowerCase())].slice(0, 4);
+        renderRecent();
+      }
+
+      function renderRecent() {
+        recentCount.textContent = recent.length;
+        recentList.innerHTML = recent.map((name) => {
+          const profile = profileFor(name);
+          return `
+            <button class="recent-row" type="button" data-name="${profile.name}">
+              <span class="recent-user">
+                <span class="avatar" aria-hidden="true">${profile.name[0]}</span>
+                <span>
+                  <span class="recent-name">${profile.name}</span>
+                  <span class="recent-meta">@${profile.name.toLowerCase()} - ${formatNumber(profile.followers)} takipci</span>
+                </span>
+              </span>
+              <span aria-hidden="true">&gt;</span>
+            </button>
+          `;
+        }).join("");
+      }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        showProfile(input.value);
+        input.value = "";
+      });
+
+      recentList.addEventListener("click", (event) => {
+        const row = event.target.closest("[data-name]");
+        if (row) {
+          showProfile(row.dataset.name);
+        }
+      });
+
+      renderRecent();
+    </script>
   </body>
 </html>
