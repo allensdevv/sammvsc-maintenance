@@ -718,26 +718,26 @@
           <section class="result" aria-live="polite">
             <div class="result-head">
               <span>Profil Ozeti</span>
-              <span id="sourceLabel">On izleme modu</span>
+              <span id="sourceLabel">Canli veri modu</span>
             </div>
             <div class="profile-row">
               <div class="avatar" id="resultAvatar">K</div>
               <div>
-                <h2 id="resultName">kenanalperr</h2>
-                <p id="resultBio">Yetkili metriklerle hazirlanan profil ozeti</p>
+                <h2 id="resultName">Profil analizi hazir</h2>
+                <p id="resultBio">Kullanici adi girildiginde analiz talebi olusturulur.</p>
               </div>
             </div>
             <div class="stats">
               <div class="stat">
-                <strong id="resultPosts">48</strong>
+                <strong id="resultPosts">--</strong>
                 <span>Gonderi</span>
               </div>
               <div class="stat">
-                <strong id="resultFollowers">2.418</strong>
+                <strong id="resultFollowers">--</strong>
                 <span>Takipci</span>
               </div>
               <div class="stat">
-                <strong id="resultFollowing">312</strong>
+                <strong id="resultFollowing">--</strong>
                 <span>Takip Edilen</span>
               </div>
             </div>
@@ -754,30 +754,30 @@
           </section>
         </div>
 
-        <aside class="profile-card" aria-label="Ornek profil">
+        <aside class="profile-card" aria-label="Analiz durumu">
           <div class="cover"></div>
           <div class="card-body">
-            <div class="avatar-large" id="featuredAvatar">K</div>
+            <div class="avatar-large" id="featuredAvatar">I</div>
             <div class="name-line">
-              <h2 id="featuredName">kenanalperr</h2>
-              <span class="badge">ANALIZ OZETI</span>
+              <h2 id="featuredName">Gercek veri akisi</h2>
+              <span class="badge">PROFESYONEL</span>
             </div>
-            <div class="handle" id="featuredHandle">@kenanalperr</div>
+            <div class="handle" id="featuredHandle">Instagram analiz sistemi</div>
             <div class="bio" id="featuredBio">
-              Profilin herkese acik sayisal metrikleri izlenir; takipci kisileri ve hassas veri alanlari anonim kalir.
+              Bu sayfa sahte metrik uretmez. Canli analiz icin Instagram/Meta izinli backend baglantisi kullanilir.
             </div>
 
             <div class="big-stats">
               <div class="big-stat">
-                <strong id="featuredPosts">48</strong>
+                <strong id="featuredPosts">--</strong>
                 <span>Gonderi</span>
               </div>
               <div class="big-stat">
-                <strong id="featuredFollowers">2.418</strong>
+                <strong id="featuredFollowers">--</strong>
                 <span>Takipci</span>
               </div>
               <div class="big-stat">
-                <strong id="featuredFollowing">312</strong>
+                <strong id="featuredFollowing">--</strong>
                 <span>Takip Edilen</span>
               </div>
             </div>
@@ -785,7 +785,7 @@
             <div class="signal-list" aria-label="Analiz sinyalleri">
               <div class="signal">
                 <span>Veri durumu</span>
-                <strong id="signalData">Backend baglantisi bekliyor</strong>
+                <strong id="signalData">Baglanti hazirlaniyor</strong>
               </div>
               <div class="signal">
                 <span>Gizlilik modu</span>
@@ -793,14 +793,14 @@
               </div>
               <div class="signal">
                 <span>Profil puani</span>
-                <strong id="signalScore">86 / 100</strong>
+                <strong id="signalScore">Veri gelince hesaplanir</strong>
               </div>
             </div>
 
             <div class="photo-carousel" aria-label="Coklu profil fotograflari">
               <div class="photo-frame" id="photoFrame"></div>
               <div class="photo-meta">
-                <span id="photoLabel">Gorsel on izleme</span>
+                <span id="photoLabel">Canli veri alani</span>
                 <div class="dots" id="photoDots" aria-hidden="true"></div>
               </div>
             </div>
@@ -845,88 +845,47 @@
       };
 
       let activePhotoIndex = 0;
-      let activePhotos = [];
       let carouselTimer = null;
 
-      const knownProfiles = {
-        kenanalperr: {
-          username: "kenanalperr",
-          posts: 48,
-          followers: 2418,
-          following: 312,
-          bio: "Profilin herkese acik sayisal metrikleri izlenir; takipci kisileri ve hassas veri alanlari anonim kalir.",
-          verified: true,
-          score: 86,
-          photos: [
-            "linear-gradient(135deg, #ff9c45, #ff4fb8 52%, #4f8cff)",
-            "linear-gradient(135deg, #111827, #4f8cff 48%, #2fe084)",
-            "linear-gradient(135deg, #2b1747, #ff4fb8 46%, #ffcf5a)",
-            "linear-gradient(135deg, #0f172a, #64748b 45%, #f97316)"
-          ]
-        }
+      const emptyMetrics = {
+        posts: "--",
+        followers: "--",
+        following: "--"
       };
 
       function cleanUsername(value) {
-        return value.trim().replace(/^@/, "").replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 30) || "kenanalperr";
+        return value.trim().replace(/^@/, "").replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 30);
       }
 
-      function hashName(name) {
-        return [...name].reduce((total, char) => total + char.charCodeAt(0) * 19, 0);
-      }
-
-      function formatNumber(value) {
-        return new Intl.NumberFormat("tr-TR").format(value);
-      }
-
-      function fallbackProfile(username) {
-        const hash = hashName(username.toLowerCase());
-        return {
-          username,
-          posts: 6 + (hash % 180),
-          followers: 120 + (hash % 22000),
-          following: 35 + (hash % 980),
-          bio: "Bu profil icin arayuz on izlemesi olusturuldu. Canli API baglantisinda metrikler dogrudan yetkili kaynaktan gelir.",
-          verified: false,
-          score: 58 + (hash % 34),
-          photos: makePhotoSet(username, hash)
-        };
-      }
-
-      function makePhotoSet(username, hash) {
-        const palettes = [
-          ["#ff9c45", "#ff4fb8", "#4f8cff"],
-          ["#2fe084", "#4f8cff", "#1d2433"],
-          ["#ff4fb8", "#7c3aed", "#111827"],
-          ["#f59e0b", "#ef4444", "#312e81"],
-          ["#06b6d4", "#2563eb", "#020617"]
-        ];
-        return [0, 1, 2, 3].map((offset) => {
-          const colors = palettes[(hash + offset + username.length) % palettes.length];
-          return `linear-gradient(135deg, ${colors[0]}, ${colors[1]} 48%, ${colors[2]})`;
-        });
-      }
-
-      function renderPhotos(profile) {
-        activePhotos = profile.photos && profile.photos.length ? profile.photos : makePhotoSet(profile.username, hashName(profile.username));
+      function renderPhotos(username) {
         activePhotoIndex = 0;
-        fields.photoFrame.innerHTML = activePhotos.map((background, index) => `
+        const photos = [
+          "linear-gradient(135deg, #121826, #314266 48%, #4f8cff)",
+          "linear-gradient(135deg, #111827, #233044 48%, #2fe084)",
+          "linear-gradient(135deg, #17111f, #35244d 48%, #ff4fb8)"
+        ];
+        fields.photoFrame.innerHTML = photos.map((background, index) => `
           <div class="photo-slide${index === 0 ? " active" : ""}" data-photo-index="${index}">
             <div class="photo-art" style="--photo-bg: ${background}">
-              <span>${profile.username[0] || "I"}</span>
+              <span>${username ? username[0] : "I"}</span>
             </div>
           </div>
         `).join("") + `
           <button class="carousel-btn prev" type="button" data-carousel="prev" aria-label="Onceki fotograf">&lt;</button>
           <button class="carousel-btn next" type="button" data-carousel="next" aria-label="Sonraki fotograf">&gt;</button>
         `;
-        fields.photoDots.innerHTML = activePhotos.map((_, index) => `<span class="dot-indicator${index === 0 ? " active" : ""}"></span>`).join("");
-        fields.photoLabel.textContent = `${activePhotos.length} gorsel on izleme`;
+        fields.photoDots.innerHTML = photos.map((_, index) => `<span class="dot-indicator${index === 0 ? " active" : ""}"></span>`).join("");
+        fields.photoLabel.textContent = username ? `@${username} icin veri alani` : "Canli veri alani";
         restartCarousel();
       }
 
       function setPhoto(index) {
-        activePhotoIndex = (index + activePhotos.length) % activePhotos.length;
-        fields.photoFrame.querySelectorAll(".photo-slide").forEach((slide, slideIndex) => {
+        const slides = fields.photoFrame.querySelectorAll(".photo-slide");
+        if (!slides.length) {
+          return;
+        }
+        activePhotoIndex = (index + slides.length) % slides.length;
+        slides.forEach((slide, slideIndex) => {
           slide.classList.toggle("active", slideIndex === activePhotoIndex);
         });
         fields.photoDots.querySelectorAll(".dot-indicator").forEach((dot, dotIndex) => {
@@ -941,42 +900,37 @@
         }, 3200);
       }
 
-      function getProfile(username) {
-        const key = username.toLowerCase();
-        return knownProfiles[key] || fallbackProfile(username);
-      }
-
-      function renderProfile(profile, source) {
-        const initial = profile.username[0] || "I";
+      function renderProfile(username) {
+        const initial = username[0] || "I";
         fields.resultAvatar.textContent = initial;
-        fields.resultName.textContent = profile.username;
-        fields.resultBio.textContent = profile.bio;
-        fields.resultPosts.textContent = formatNumber(profile.posts);
-        fields.resultFollowers.textContent = formatNumber(profile.followers);
-        fields.resultFollowing.textContent = formatNumber(profile.following);
-        fields.resultIntegrity.textContent = profile.verified
-          ? "Ornek profil metrikleri sabit kayittan okunuyor; canli modda takipci sayisi yetkili API ile dogrulanir."
-          : "Canli veri baglantisi bekleniyor; takipci listesi acilmadan yalnizca sayisal metrik alani hazirlanir.";
-        fields.sourceLabel.textContent = source;
+        fields.resultName.textContent = `@${username}`;
+        fields.resultBio.textContent = "Analiz talebi olusturuldu. Canli metrikler backend baglantisi aktif oldugunda burada gorunecek.";
+        fields.resultPosts.textContent = emptyMetrics.posts;
+        fields.resultFollowers.textContent = emptyMetrics.followers;
+        fields.resultFollowing.textContent = emptyMetrics.following;
+        fields.resultIntegrity.textContent = "Bu ekranda sahte takipci sayisi uretilmez; gercek metrik icin Meta/Instagram izinli veri kaynagi gerekir.";
+        fields.sourceLabel.textContent = "Baglanti gerekli";
 
         fields.featuredAvatar.textContent = initial;
-        fields.featuredName.textContent = profile.username;
-        fields.featuredHandle.textContent = `@${profile.username}`;
-        fields.featuredBio.textContent = profile.bio;
-        fields.featuredPosts.textContent = formatNumber(profile.posts);
-        fields.featuredFollowers.textContent = formatNumber(profile.followers);
-        fields.featuredFollowing.textContent = formatNumber(profile.following);
-        fields.signalData.textContent = profile.verified ? "Onayli ornek veri" : "Yetkili API bekleniyor";
-        fields.signalScore.textContent = `${profile.score || 72} / 100`;
-        renderPhotos(profile);
+        fields.featuredName.textContent = username;
+        fields.featuredHandle.textContent = `@${username}`;
+        fields.featuredBio.textContent = "Kisi listeleri gizli kalir. Gonderi, takipci ve takip edilen sayilari sadece yetkili baglanti ile doldurulur.";
+        fields.featuredPosts.textContent = emptyMetrics.posts;
+        fields.featuredFollowers.textContent = emptyMetrics.followers;
+        fields.featuredFollowing.textContent = emptyMetrics.following;
+        fields.signalData.textContent = "Meta API baglantisi gerekli";
+        fields.signalScore.textContent = "Veri gelince hesaplanir";
+        renderPhotos(username);
       }
 
       form.addEventListener("submit", (event) => {
         event.preventDefault();
         const username = cleanUsername(input.value);
-        const profile = getProfile(username);
-        const source = knownProfiles[username.toLowerCase()] ? "Onayli ornek veri" : "Yetkili API bekleniyor";
-        renderProfile(profile, source);
+        if (!username) {
+          input.focus();
+          return;
+        }
+        renderProfile(username);
         input.value = "";
       });
 
@@ -990,7 +944,7 @@
         restartCarousel();
       });
 
-      renderProfile(knownProfiles.kenanalperr, "Onayli ornek veri");
+      renderPhotos("");
     </script>
   </body>
 </html>
