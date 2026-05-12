@@ -4,947 +4,377 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#07080c">
-    <title>Instapp</title>
+    <meta name="theme-color" content="#05070b">
+    <title>Instapp | Bakım Modu</title>
     <style>
       :root {
         color-scheme: dark;
-        --bg: #07080c;
-        --panel: #10131b;
-        --panel-2: #171b25;
-        --line: #2b3343;
-        --ink: #f4f7fb;
-        --muted: #9aa4b5;
-        --blue: #4f8cff;
-        --pink: #ff4fb8;
-        --orange: #ff9c45;
-        --green: #2fe084;
+        --bg: #05070b;
+        --panel: rgba(12, 15, 22, 0.92);
+        --panel-soft: rgba(18, 24, 35, 0.72);
+        --line: rgba(83, 130, 205, 0.24);
+        --ink: #f5f8ff;
+        --muted: #8b96a8;
+        --blue: #2563eb;
+        --blue-2: #58a6ff;
+        --cyan: #45d4ff;
       }
 
       * {
         box-sizing: border-box;
       }
 
+      html {
+        min-height: 100%;
+      }
+
       body {
         min-height: 100vh;
         margin: 0;
+        overflow-x: hidden;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         background:
-          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-          linear-gradient(180deg, #080a0f 0%, var(--bg) 62%, #05060a 100%);
-        background-size: 42px 42px, 42px 42px, auto;
+          radial-gradient(circle at 50% 35%, rgba(37, 99, 235, 0.24), transparent 28rem),
+          radial-gradient(circle at 50% 88%, rgba(69, 212, 255, 0.12), transparent 28rem),
+          linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+          #05070b;
+        background-size: auto, auto, 46px 46px, 46px 46px, auto;
         color: var(--ink);
       }
 
-      button,
-      input {
-        font: inherit;
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        pointer-events: none;
       }
 
-      button {
-        cursor: pointer;
+      body::before {
+        inset: 0;
+        background: linear-gradient(180deg, rgba(5, 7, 11, 0.1), rgba(5, 7, 11, 0.84));
+      }
+
+      body::after {
+        width: 42rem;
+        height: 42rem;
+        right: -18rem;
+        bottom: -18rem;
+        border-radius: 50%;
+        background: rgba(37, 99, 235, 0.16);
+        filter: blur(80px);
       }
 
       main {
-        width: min(1180px, calc(100% - 32px));
+        position: relative;
+        z-index: 1;
+        width: min(100% - 32px, 1180px);
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
         margin: 0 auto;
-        padding: 28px 0 50px;
+        padding: 40px 0;
       }
 
-      .topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 18px;
-        min-height: 58px;
-        margin-bottom: clamp(28px, 5vw, 56px);
+      .maintenance-card {
+        width: min(520px, 100%);
+        padding: clamp(28px, 5vw, 48px);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background:
+          linear-gradient(180deg, rgba(18, 24, 35, 0.94), rgba(9, 12, 18, 0.92)),
+          var(--panel);
+        box-shadow:
+          0 0 0 1px rgba(88, 166, 255, 0.05) inset,
+          0 34px 110px rgba(0, 0, 0, 0.56),
+          0 0 90px rgba(37, 99, 235, 0.18);
+        text-align: center;
       }
 
-      .brand-mini {
-        display: inline-flex;
-        align-items: center;
-        gap: 11px;
-        font-weight: 900;
-        letter-spacing: 0;
+      .icon-shell {
+        width: 82px;
+        height: 82px;
+        display: grid;
+        place-items: center;
+        margin: 12px auto 26px;
+        border: 1px solid rgba(88, 166, 255, 0.28);
+        border-radius: 22px;
+        background: linear-gradient(180deg, rgba(37, 99, 235, 0.18), rgba(13, 20, 32, 0.84));
+        box-shadow: 0 0 44px rgba(37, 99, 235, 0.28);
+        color: var(--blue-2);
       }
 
-      .brand-mini .brand-mark {
+      .icon-shell svg {
         width: 34px;
         height: 34px;
-        border-radius: 10px;
-        margin: 0;
-      }
-
-      .brand-mini .brand-mark::before {
-        width: 15px;
-        height: 15px;
-        border-width: 2px;
-        border-radius: 5px;
-      }
-
-      .topbar-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: var(--muted);
-        font-size: 13px;
-      }
-
-      .status-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        min-height: 34px;
-        padding: 0 12px;
-        border: 1px solid rgba(47, 224, 132, 0.28);
-        border-radius: 999px;
-        background: rgba(47, 224, 132, 0.08);
-        color: #bdf6d6;
-        font-weight: 800;
-      }
-
-      .layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1.08fr) minmax(320px, 410px);
-        gap: clamp(28px, 5vw, 58px);
-        align-items: start;
-      }
-
-      .hero {
-        padding-top: 20px;
       }
 
       .brand {
         display: inline-flex;
         align-items: center;
-        gap: 14px;
-        margin-bottom: 18px;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        color: #627089;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
       }
 
-      .brand-mark {
-        width: 58px;
-        height: 58px;
-        display: grid;
-        place-items: center;
-        border-radius: 15px;
-        background:
-          radial-gradient(circle at 25% 20%, #fff 0 7%, transparent 8%),
-          linear-gradient(135deg, var(--orange), var(--pink) 48%, var(--blue));
-        box-shadow: 0 20px 60px rgba(255, 79, 184, 0.24);
-      }
-
-      .brand-mark::before {
+      .brand::before,
+      .brand::after {
         content: "";
-        width: 26px;
-        height: 26px;
-        border: 3px solid #fff;
-        border-radius: 9px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--blue-2);
+        box-shadow: 0 0 14px var(--blue-2);
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 31px;
+        padding: 0 16px;
+        margin-bottom: 26px;
+        border: 1px solid rgba(88, 166, 255, 0.28);
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.12);
+        color: #8fc4ff;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .status::before {
+        content: "";
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--blue-2);
+        box-shadow: 0 0 0 5px rgba(88, 166, 255, 0.12), 0 0 18px var(--blue-2);
       }
 
       h1 {
-        margin: 0;
-        font-size: clamp(42px, 7vw, 78px);
-        line-height: 0.96;
+        max-width: 440px;
+        margin: 0 auto;
+        color: #fff;
+        font-size: clamp(34px, 7vw, 48px);
+        line-height: 1.02;
         letter-spacing: 0;
-        background: linear-gradient(90deg, #fff 0%, #d8e7ff 48%, #ffc8eb 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
       }
 
-      .subtitle {
-        max-width: 700px;
-        margin: 16px 0 0;
-        color: #b5c0d2;
-        font-size: clamp(17px, 2vw, 21px);
-        line-height: 1.48;
+      h1 span {
+        display: inline-block;
+        color: var(--blue-2);
+        text-shadow: 0 0 34px rgba(88, 166, 255, 0.4);
       }
 
-      .trust-row {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
-        width: min(670px, 100%);
-        margin-top: 26px;
-      }
-
-      .trust-item {
-        min-height: 84px;
-        padding: 14px;
-        border: 1px solid rgba(43, 51, 67, 0.8);
-        border-radius: 12px;
-        background: rgba(16, 19, 27, 0.78);
-      }
-
-      .trust-item strong {
-        display: block;
-        color: #fff;
-        font-size: 14px;
-      }
-
-      .trust-item span {
-        display: block;
-        margin-top: 6px;
+      .lead {
+        max-width: 410px;
+        margin: 18px auto 0;
         color: var(--muted);
-        font-size: 12px;
-        line-height: 1.45;
+        font-size: 15px;
+        line-height: 1.7;
       }
 
-      .search-card {
-        width: min(670px, 100%);
-        margin-top: 34px;
-        padding: 14px;
-        border: 1px solid rgba(79, 140, 255, 0.22);
-        border-radius: 14px;
-        background: rgba(13, 16, 23, 0.94);
-        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.26);
-      }
-
-      .search-form {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 118px;
-        gap: 10px;
-      }
-
-      .search-form input {
-        width: 100%;
-        min-width: 0;
-        height: 52px;
-        border: 1px solid transparent;
-        border-radius: 8px;
-        outline: 0;
-        padding: 0 16px;
-        background: #171b24;
-        color: var(--ink);
-      }
-
-      .search-form input:focus {
-        border-color: rgba(79, 140, 255, 0.65);
-      }
-
-      .search-form button {
-        height: 52px;
-        border: 0;
-        border-radius: 8px;
-        background: linear-gradient(135deg, #ff4fb8, #4f8cff);
-        color: #fff;
-        font-weight: 900;
-      }
-
-      .system-note {
-        margin-top: 14px;
-        color: #8f9bae;
-        font-size: 13px;
-        line-height: 1.5;
-      }
-
-      .result {
-        width: min(670px, 100%);
-        margin-top: 18px;
-        border: 1px solid rgba(43, 51, 67, 0.84);
-        border-radius: 14px;
-        background: rgba(12, 15, 22, 0.92);
+      .progress {
+        height: 3px;
+        margin: 40px 0 36px;
         overflow: hidden;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
       }
 
-      .result-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        min-height: 54px;
-        padding: 0 18px;
-        border-bottom: 1px solid rgba(43, 51, 67, 0.75);
-        color: #b7c2d6;
-        font-size: 14px;
-        font-weight: 800;
+      .progress span {
+        display: block;
+        width: 68%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #1d4ed8, var(--blue-2), var(--cyan));
+        box-shadow: 0 0 24px rgba(88, 166, 255, 0.62);
       }
 
-      .profile-row {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        padding: 18px;
-      }
-
-      .avatar {
-        width: 64px;
-        height: 64px;
-        flex: 0 0 auto;
-        display: grid;
-        place-items: center;
-        border-radius: 50%;
-        background:
-          linear-gradient(var(--panel), var(--panel)) padding-box,
-          linear-gradient(135deg, var(--orange), var(--pink), var(--blue)) border-box;
-        border: 3px solid transparent;
-        color: #fff;
-        font-size: 25px;
-        font-weight: 900;
-        text-transform: uppercase;
-      }
-
-      .profile-row h2 {
-        margin: 0;
-        overflow-wrap: anywhere;
-        font-size: 24px;
-      }
-
-      .profile-row p {
-        margin: 4px 0 0;
-        color: var(--muted);
-      }
-
-      .stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1px;
-        background: rgba(43, 51, 67, 0.75);
-      }
-
-      .privacy-grid {
+      .work-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1px;
-        background: rgba(43, 51, 67, 0.75);
-      }
-
-      .privacy-box {
-        min-height: 86px;
-        padding: 16px;
-        background: rgba(16, 19, 27, 0.96);
-      }
-
-      .privacy-box strong {
-        display: block;
-        color: #fff;
-        font-size: 14px;
-      }
-
-      .privacy-box span {
-        display: block;
-        margin-top: 7px;
-        color: var(--muted);
-        font-size: 12px;
-        line-height: 1.45;
-      }
-
-      .stat {
-        min-height: 94px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 16px;
-        background: rgba(16, 19, 27, 0.96);
-      }
-
-      .stat strong {
-        font-size: 24px;
-      }
-
-      .stat span {
-        margin-top: 5px;
-        color: var(--muted);
-        font-size: 13px;
-      }
-
-      .profile-card {
-        position: sticky;
-        top: 28px;
-        border: 1px solid rgba(43, 51, 67, 0.92);
-        border-radius: 18px;
-        background: rgba(16, 19, 27, 0.88);
-        box-shadow: 0 28px 90px rgba(0, 0, 0, 0.38);
-        overflow: hidden;
-      }
-
-      .cover {
-        height: 150px;
-        background:
-          linear-gradient(135deg, rgba(255, 156, 69, 0.55), rgba(255, 79, 184, 0.45), rgba(79, 140, 255, 0.55)),
-          repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 18px);
-      }
-
-      .signal-list {
-        display: grid;
-        gap: 10px;
-        margin-top: 20px;
-      }
-
-      .signal {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        padding: 13px 14px;
-        border: 1px solid rgba(43, 51, 67, 0.9);
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.035);
-      }
-
-      .signal span {
-        color: var(--muted);
-        font-size: 13px;
-      }
-
-      .signal strong {
-        color: #fff;
-        font-size: 14px;
-        text-align: right;
-      }
-
-      .card-body {
-        padding: 0 24px 24px;
-      }
-
-      .avatar-large {
-        width: 116px;
-        height: 116px;
-        display: grid;
-        place-items: center;
-        margin-top: -58px;
-        border-radius: 50%;
-        background:
-          linear-gradient(var(--panel), var(--panel)) padding-box,
-          linear-gradient(135deg, var(--orange), var(--pink), var(--blue)) border-box;
-        border: 5px solid transparent;
-        color: #fff;
-        font-size: 44px;
-        font-weight: 900;
-      }
-
-      .name-line {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        margin-top: 16px;
-      }
-
-      .name-line h2 {
-        min-width: 0;
-        margin: 0;
-        overflow-wrap: anywhere;
-        font-size: 30px;
-      }
-
-      .badge {
-        padding: 8px 11px;
-        border-radius: 999px;
-        background: rgba(47, 224, 132, 0.12);
-        color: #9bf4c5;
-        font-size: 12px;
-        font-weight: 900;
-        white-space: nowrap;
-      }
-
-      .handle {
-        margin-top: 8px;
-        color: var(--muted);
-      }
-
-      .bio {
-        margin-top: 16px;
-        color: #cbd4e2;
-        line-height: 1.55;
-      }
-
-      .big-stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        margin-top: 22px;
-      }
-
-      .big-stat {
-        min-height: 82px;
-        padding: 13px;
-        border: 1px solid rgba(43, 51, 67, 0.9);
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.035);
-      }
-
-      .big-stat strong {
-        display: block;
-        color: #fff;
-        font-size: 22px;
-      }
-
-      .big-stat span {
-        display: block;
-        margin-top: 5px;
-        color: var(--muted);
-        font-size: 12px;
-      }
-
-      .photo-carousel {
-        margin-top: 20px;
-        border: 1px solid rgba(43, 51, 67, 0.9);
-        border-radius: 14px;
-        background: #0d1017;
-        overflow: hidden;
-      }
-
-      .photo-frame {
-        position: relative;
-        aspect-ratio: 1 / 1;
-        background: #111620;
-      }
-
-      .photo-slide {
-        position: absolute;
-        inset: 0;
-        opacity: 0;
-        transition: opacity 260ms ease;
-      }
-
-      .photo-slide.active {
-        opacity: 1;
-      }
-
-      .photo-art {
-        width: 100%;
-        height: 100%;
-        display: grid;
-        place-items: center;
-        background:
-          radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.22), transparent 0 16%),
-          var(--photo-bg, linear-gradient(135deg, var(--orange), var(--pink), var(--blue)));
-      }
-
-      .photo-art span {
-        width: 76px;
-        height: 76px;
-        display: grid;
-        place-items: center;
-        border: 3px solid rgba(255, 255, 255, 0.84);
-        border-radius: 50%;
-        color: #fff;
-        background: rgba(0, 0, 0, 0.16);
-        font-size: 30px;
-        font-weight: 900;
-        text-transform: uppercase;
-        backdrop-filter: blur(8px);
-      }
-
-      .carousel-btn {
-        position: absolute;
-        top: 50%;
-        width: 36px;
-        height: 36px;
-        display: grid;
-        place-items: center;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 50%;
-        background: rgba(0, 0, 0, 0.42);
-        color: #fff;
-        transform: translateY(-50%);
-      }
-
-      .carousel-btn.prev {
-        left: 12px;
-      }
-
-      .carousel-btn.next {
-        right: 12px;
-      }
-
-      .photo-meta {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
         gap: 12px;
-        min-height: 48px;
-        padding: 0 14px;
-        color: var(--muted);
-        font-size: 13px;
+        text-align: left;
       }
 
-      .dots {
+      .work-item {
+        min-height: 84px;
+        padding: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        background: var(--panel-soft);
+      }
+
+      .work-icon {
+        width: 22px;
+        height: 22px;
+        display: grid;
+        place-items: center;
+        margin-bottom: 10px;
+        color: var(--blue-2);
+      }
+
+      .work-icon svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .work-item strong {
+        display: block;
+        color: #fff;
+        font-size: 14px;
+      }
+
+      .work-item span {
+        display: block;
+        margin-top: 5px;
+        color: #657184;
+        font-size: 12px;
+      }
+
+      .footer-note {
         display: flex;
         align-items: center;
-        gap: 6px;
-      }
-
-      .dot-indicator {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: #48556b;
-      }
-
-      .dot-indicator.active {
-        width: 18px;
-        border-radius: 999px;
-        background: linear-gradient(90deg, var(--pink), var(--blue));
-      }
-
-      .api-state {
-        margin-top: 18px;
-        padding: 14px;
-        border: 1px solid rgba(79, 140, 255, 0.28);
-        border-radius: 10px;
-        color: #d4e3ff;
-        background: rgba(79, 140, 255, 0.08);
+        justify-content: center;
+        gap: 8px;
+        margin-top: 36px;
+        padding-top: 28px;
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+        color: #657184;
         font-size: 13px;
-        line-height: 1.48;
       }
 
-      .scope-list {
-        display: grid;
-        gap: 9px;
-        margin-top: 16px;
+      .footer-note strong {
+        color: #79b7ff;
       }
 
-      .scope-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        color: #b8c4d6;
-        font-size: 13px;
-        line-height: 1.45;
-      }
-
-      .scope-item::before {
-        content: "";
-        width: 8px;
-        height: 8px;
-        flex: 0 0 auto;
-        margin-top: 5px;
+      .spark {
+        position: fixed;
+        z-index: 0;
+        width: 3px;
+        height: 3px;
         border-radius: 50%;
-        background: var(--green);
-        box-shadow: 0 0 0 4px rgba(47, 224, 132, 0.12);
+        background: rgba(88, 166, 255, 0.7);
+        box-shadow: 0 0 18px rgba(88, 166, 255, 0.9);
       }
 
-      @media (max-width: 900px) {
-        .layout {
-          grid-template-columns: 1fr;
-        }
+      .spark.one {
+        left: 17%;
+        top: 21%;
+      }
 
-        .profile-card {
-          position: static;
-        }
+      .spark.two {
+        right: 18%;
+        top: 25%;
+      }
+
+      .spark.three {
+        right: 27%;
+        bottom: 23%;
       }
 
       @media (max-width: 560px) {
         main {
           width: min(100% - 24px, 1180px);
+          padding: 24px 0;
         }
 
-        h1 {
-          font-size: 38px;
+        .maintenance-card {
+          border-radius: 22px;
+        }
+
+        .work-grid {
+          grid-template-columns: 1fr;
         }
 
         .brand {
-          align-items: flex-start;
-          flex-direction: column;
-        }
-
-        .search-form {
-          grid-template-columns: 1fr;
-        }
-
-        .topbar {
-          align-items: flex-start;
-          flex-direction: column;
-        }
-
-        .topbar-actions {
-          align-items: flex-start;
-          flex-direction: column;
-        }
-
-        .trust-row,
-        .privacy-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .stats,
-        .big-stats {
-          grid-template-columns: 1fr;
+          letter-spacing: 0.14em;
         }
       }
     </style>
   </head>
   <body>
+    <span class="spark one" aria-hidden="true"></span>
+    <span class="spark two" aria-hidden="true"></span>
+    <span class="spark three" aria-hidden="true"></span>
+
     <main>
-      <header class="topbar">
-        <div class="brand-mini">
-          <span class="brand-mark" aria-hidden="true"></span>
-          <span>Instapp Intelligence</span>
-        </div>
-        <div class="topbar-actions">
-          <span class="status-pill">Yetkili veri modeli</span>
-          <span>KVKK uyumlu profil analizi</span>
-        </div>
-      </header>
-
-      <section class="layout" aria-labelledby="page-title">
-        <div class="hero">
-          <div class="brand">
-            <span class="brand-mark" aria-hidden="true"></span>
-            <h1 id="page-title">Instagram profil analiz paneli</h1>
-          </div>
-
-          <p class="subtitle">
-            Herkese acik profil metriklerini tek ekranda okuyun; takipci, takip edilen ve gonderi sayisini gosterirken kisi listelerini gizli tutan guvenli analiz altyapisi.
-          </p>
-
-          <div class="trust-row" aria-label="Veri kapsami">
-            <div class="trust-item">
-              <strong>Gorunen metrikler</strong>
-              <span>Gonderi, takipci ve takip edilen sayilari yetkili kaynakla eslesir.</span>
-            </div>
-            <div class="trust-item">
-              <strong>Gizlenen kimlikler</strong>
-              <span>Takipci listesi ve tekil kullanici kimlikleri panelde acilmaz.</span>
-            </div>
-            <div class="trust-item">
-              <strong>Profesyonel rapor</strong>
-              <span>Profil ozeti, buyume sinyalleri ve veri guvenilirligi ayni ekranda sunulur.</span>
-            </div>
-          </div>
-
-          <div class="search-card">
-            <form class="search-form" id="searchForm">
-              <input id="usernameInput" type="text" autocomplete="off" maxlength="30" placeholder="@kullaniciadi" aria-label="Instagram kullanici adi">
-              <button type="submit" aria-label="Analizi baslat">Analiz Et</button>
-            </form>
-            <div class="system-note">
-              Canli sistemde sorgu backend API uzerinden calisir. Bu statik on yuz, gercek Instagram baglantisi eklendiginde ayni alanlarda yetkili metrikleri gosterecek sekilde hazirlandi.
-            </div>
-          </div>
-
-          <section class="result" aria-live="polite">
-            <div class="result-head">
-              <span>Profil Ozeti</span>
-              <span id="sourceLabel">Canli veri modu</span>
-            </div>
-            <div class="profile-row">
-              <div class="avatar" id="resultAvatar">K</div>
-              <div>
-                <h2 id="resultName">Profil analizi hazir</h2>
-                <p id="resultBio">Kullanici adi girildiginde analiz talebi olusturulur.</p>
-              </div>
-            </div>
-            <div class="stats">
-              <div class="stat">
-                <strong id="resultPosts">--</strong>
-                <span>Gonderi</span>
-              </div>
-              <div class="stat">
-                <strong id="resultFollowers">--</strong>
-                <span>Takipci</span>
-              </div>
-              <div class="stat">
-                <strong id="resultFollowing">--</strong>
-                <span>Takip Edilen</span>
-              </div>
-            </div>
-            <div class="privacy-grid">
-              <div class="privacy-box">
-                <strong>Takipci gercekligi</strong>
-                <span id="resultIntegrity">Sayisal metrikler dogrulanir; takipci kimlikleri anonim kalir.</span>
-              </div>
-              <div class="privacy-box">
-                <strong>Veri kapsam siniri</strong>
-                <span>KVKK geregi takipci listesi, mesajlar ve ozel hareketler gosterilmez.</span>
-              </div>
-            </div>
-          </section>
+      <section class="maintenance-card" aria-labelledby="maintenance-title">
+        <div class="icon-shell" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M14.7 6.3a4.3 4.3 0 0 0 4.9 5.7l-7.7 7.7a2.5 2.5 0 0 1-3.5 0l-4.1-4.1a2.5 2.5 0 0 1 0-3.5l7.7-7.7a4.3 4.3 0 0 0 2.7 1.9Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M7.8 14.2h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
         </div>
 
-        <aside class="profile-card" aria-label="Analiz durumu">
-          <div class="cover"></div>
-          <div class="card-body">
-            <div class="avatar-large" id="featuredAvatar">I</div>
-            <div class="name-line">
-              <h2 id="featuredName">Gercek veri akisi</h2>
-              <span class="badge">PROFESYONEL</span>
-            </div>
-            <div class="handle" id="featuredHandle">Instagram analiz sistemi</div>
-            <div class="bio" id="featuredBio">
-              Bu sayfa sahte metrik uretmez. Canli analiz icin Instagram/Meta izinli backend baglantisi kullanilir.
-            </div>
+        <div class="brand">Instapp Development</div>
+        <div class="status">Bakım devam ediyor</div>
 
-            <div class="big-stats">
-              <div class="big-stat">
-                <strong id="featuredPosts">--</strong>
-                <span>Gonderi</span>
-              </div>
-              <div class="big-stat">
-                <strong id="featuredFollowers">--</strong>
-                <span>Takipci</span>
-              </div>
-              <div class="big-stat">
-                <strong id="featuredFollowing">--</strong>
-                <span>Takip Edilen</span>
-              </div>
-            </div>
+        <h1 id="maintenance-title">Kısa süreliğine <span>bakımdayız</span></h1>
+        <p class="lead">
+          Instagram analiz sistemini daha güvenli, hızlı ve profesyonel hale getiriyoruz. Yeni sürüm tamamlandığında site tekrar aktif olacak.
+        </p>
 
-            <div class="signal-list" aria-label="Analiz sinyalleri">
-              <div class="signal">
-                <span>Veri durumu</span>
-                <strong id="signalData">Baglanti hazirlaniyor</strong>
-              </div>
-              <div class="signal">
-                <span>Gizlilik modu</span>
-                <strong>Takipci listesi kapali</strong>
-              </div>
-              <div class="signal">
-                <span>Profil puani</span>
-                <strong id="signalScore">Veri gelince hesaplanir</strong>
-              </div>
-            </div>
+        <div class="progress" aria-label="Bakım ilerlemesi">
+          <span></span>
+        </div>
 
-            <div class="photo-carousel" aria-label="Coklu profil fotograflari">
-              <div class="photo-frame" id="photoFrame"></div>
-              <div class="photo-meta">
-                <span id="photoLabel">Canli veri alani</span>
-                <div class="dots" id="photoDots" aria-hidden="true"></div>
-              </div>
+        <div class="work-grid">
+          <div class="work-item">
+            <div class="work-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="m16 18 6-6-6-6M8 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
-
-            <div class="api-state">
-              Canli veride Instagram/Meta izin akisi, backend token saklama ve sunucu tarafli sorgu kullanilir. Statik sayfa sadece arayuzu sunar; kisi listesi, mesaj ve gizli hesap icerigi islenmez.
-            </div>
-            <div class="scope-list" aria-label="Kapsam">
-              <div class="scope-item">Gosterilecek: profil adi, profil fotografi, gonderi sayisi, takipci sayisi, takip edilen sayisi.</div>
-              <div class="scope-item">Gosterilmeyecek: takipci isim listesi, takip edilen kisiler, DM, ozel profil icerigi.</div>
-              <div class="scope-item">Kaynak: kullanici izni veya herkese acik/Meta tarafindan izin verilen metrikler.</div>
-            </div>
+            <strong>Yeni özellikler</strong>
+            <span>Analiz altyapısı hazırlanıyor</span>
           </div>
-        </aside>
+
+          <div class="work-item">
+            <div class="work-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 3 20 7v5c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V7l8-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <strong>Güvenlik</strong>
+            <span>KVKK uyumlu veri akışı kuruluyor</span>
+          </div>
+
+          <div class="work-item">
+            <div class="work-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="m13 2-9 12h7l-1 8 10-13h-7l1-7Z" fill="currentColor"/>
+              </svg>
+            </div>
+            <strong>Performans</strong>
+            <span>Sayfa hızı optimize ediliyor</span>
+          </div>
+
+          <div class="work-item">
+            <div class="work-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 20h4l10.5-10.5a2.8 2.8 0 0 0-4-4L4 16v4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="m13.5 6.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <strong>Tasarım</strong>
+            <span>Arayüz yenileniyor</span>
+          </div>
+        </div>
+
+        <div class="footer-note">
+          Gelişmeler için <strong>çok yakında tekrar buradayız</strong>
+        </div>
       </section>
     </main>
-
-    <script>
-      const form = document.querySelector("#searchForm");
-      const input = document.querySelector("#usernameInput");
-      const fields = {
-        resultAvatar: document.querySelector("#resultAvatar"),
-        resultName: document.querySelector("#resultName"),
-        resultBio: document.querySelector("#resultBio"),
-        resultPosts: document.querySelector("#resultPosts"),
-        resultFollowers: document.querySelector("#resultFollowers"),
-        resultFollowing: document.querySelector("#resultFollowing"),
-        resultIntegrity: document.querySelector("#resultIntegrity"),
-        sourceLabel: document.querySelector("#sourceLabel"),
-        featuredAvatar: document.querySelector("#featuredAvatar"),
-        featuredName: document.querySelector("#featuredName"),
-        featuredHandle: document.querySelector("#featuredHandle"),
-        featuredBio: document.querySelector("#featuredBio"),
-        featuredPosts: document.querySelector("#featuredPosts"),
-        featuredFollowers: document.querySelector("#featuredFollowers"),
-        featuredFollowing: document.querySelector("#featuredFollowing"),
-        signalData: document.querySelector("#signalData"),
-        signalScore: document.querySelector("#signalScore"),
-        photoFrame: document.querySelector("#photoFrame"),
-        photoDots: document.querySelector("#photoDots"),
-        photoLabel: document.querySelector("#photoLabel")
-      };
-
-      let activePhotoIndex = 0;
-      let carouselTimer = null;
-
-      const emptyMetrics = {
-        posts: "--",
-        followers: "--",
-        following: "--"
-      };
-
-      function cleanUsername(value) {
-        return value.trim().replace(/^@/, "").replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 30);
-      }
-
-      function renderPhotos(username) {
-        activePhotoIndex = 0;
-        const photos = [
-          "linear-gradient(135deg, #121826, #314266 48%, #4f8cff)",
-          "linear-gradient(135deg, #111827, #233044 48%, #2fe084)",
-          "linear-gradient(135deg, #17111f, #35244d 48%, #ff4fb8)"
-        ];
-        fields.photoFrame.innerHTML = photos.map((background, index) => `
-          <div class="photo-slide${index === 0 ? " active" : ""}" data-photo-index="${index}">
-            <div class="photo-art" style="--photo-bg: ${background}">
-              <span>${username ? username[0] : "I"}</span>
-            </div>
-          </div>
-        `).join("") + `
-          <button class="carousel-btn prev" type="button" data-carousel="prev" aria-label="Onceki fotograf">&lt;</button>
-          <button class="carousel-btn next" type="button" data-carousel="next" aria-label="Sonraki fotograf">&gt;</button>
-        `;
-        fields.photoDots.innerHTML = photos.map((_, index) => `<span class="dot-indicator${index === 0 ? " active" : ""}"></span>`).join("");
-        fields.photoLabel.textContent = username ? `@${username} icin veri alani` : "Canli veri alani";
-        restartCarousel();
-      }
-
-      function setPhoto(index) {
-        const slides = fields.photoFrame.querySelectorAll(".photo-slide");
-        if (!slides.length) {
-          return;
-        }
-        activePhotoIndex = (index + slides.length) % slides.length;
-        slides.forEach((slide, slideIndex) => {
-          slide.classList.toggle("active", slideIndex === activePhotoIndex);
-        });
-        fields.photoDots.querySelectorAll(".dot-indicator").forEach((dot, dotIndex) => {
-          dot.classList.toggle("active", dotIndex === activePhotoIndex);
-        });
-      }
-
-      function restartCarousel() {
-        window.clearInterval(carouselTimer);
-        carouselTimer = window.setInterval(() => {
-          setPhoto(activePhotoIndex + 1);
-        }, 3200);
-      }
-
-      function renderProfile(username) {
-        const initial = username[0] || "I";
-        fields.resultAvatar.textContent = initial;
-        fields.resultName.textContent = `@${username}`;
-        fields.resultBio.textContent = "Analiz talebi olusturuldu. Canli metrikler backend baglantisi aktif oldugunda burada gorunecek.";
-        fields.resultPosts.textContent = emptyMetrics.posts;
-        fields.resultFollowers.textContent = emptyMetrics.followers;
-        fields.resultFollowing.textContent = emptyMetrics.following;
-        fields.resultIntegrity.textContent = "Bu ekranda sahte takipci sayisi uretilmez; gercek metrik icin Meta/Instagram izinli veri kaynagi gerekir.";
-        fields.sourceLabel.textContent = "Baglanti gerekli";
-
-        fields.featuredAvatar.textContent = initial;
-        fields.featuredName.textContent = username;
-        fields.featuredHandle.textContent = `@${username}`;
-        fields.featuredBio.textContent = "Kisi listeleri gizli kalir. Gonderi, takipci ve takip edilen sayilari sadece yetkili baglanti ile doldurulur.";
-        fields.featuredPosts.textContent = emptyMetrics.posts;
-        fields.featuredFollowers.textContent = emptyMetrics.followers;
-        fields.featuredFollowing.textContent = emptyMetrics.following;
-        fields.signalData.textContent = "Meta API baglantisi gerekli";
-        fields.signalScore.textContent = "Veri gelince hesaplanir";
-        renderPhotos(username);
-      }
-
-      form.addEventListener("submit", (event) => {
-        event.preventDefault();
-        const username = cleanUsername(input.value);
-        if (!username) {
-          input.focus();
-          return;
-        }
-        renderProfile(username);
-        input.value = "";
-      });
-
-      fields.photoFrame.addEventListener("click", (event) => {
-        const button = event.target.closest("[data-carousel]");
-        const direction = button ? button.dataset.carousel : "";
-        if (!direction) {
-          return;
-        }
-        setPhoto(activePhotoIndex + (direction === "next" ? 1 : -1));
-        restartCarousel();
-      });
-
-      renderPhotos("");
-    </script>
   </body>
 </html>
