@@ -36,10 +36,8 @@
         background:
           radial-gradient(circle at 50% 35%, rgba(37, 99, 235, 0.24), transparent 28rem),
           radial-gradient(circle at 50% 88%, rgba(69, 212, 255, 0.12), transparent 28rem),
-          linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
           #05070b;
-        background-size: auto, auto, 46px 46px, 46px 46px, auto;
+        background-size: auto, auto, auto;
         color: var(--ink);
       }
 
@@ -130,6 +128,7 @@
         border-radius: 50%;
         background: var(--blue-2);
         box-shadow: 0 0 14px var(--blue-2);
+        animation: blinkBlue 1.7s ease-in-out infinite;
       }
 
       .status {
@@ -157,6 +156,7 @@
         border-radius: 50%;
         background: var(--blue-2);
         box-shadow: 0 0 0 5px rgba(88, 166, 255, 0.12), 0 0 18px var(--blue-2);
+        animation: blinkBlue 1.1s ease-in-out infinite;
       }
 
       h1 {
@@ -215,12 +215,17 @@
       }
 
       .work-icon {
-        width: 22px;
-        height: 22px;
+        width: 34px;
+        height: 34px;
         display: grid;
         place-items: center;
         margin-bottom: 10px;
+        border: 1px solid rgba(88, 166, 255, 0.32);
+        border-radius: 9px;
+        background: rgba(37, 99, 235, 0.11);
         color: var(--blue-2);
+        box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.04) inset, 0 0 18px rgba(88, 166, 255, 0.08);
+        animation: iconPulse 1.8s ease-in-out infinite;
       }
 
       .work-icon svg {
@@ -257,6 +262,34 @@
         color: #79b7ff;
       }
 
+      .instagram-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 38px;
+        margin-top: 18px;
+        padding: 0 16px;
+        border: 1px solid rgba(88, 166, 255, 0.24);
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.1);
+        color: #9ccaff;
+        font-size: 13px;
+        font-weight: 800;
+        text-decoration: none;
+        box-shadow: 0 0 26px rgba(37, 99, 235, 0.1);
+      }
+
+      .instagram-link:hover {
+        border-color: rgba(88, 166, 255, 0.5);
+        color: #fff;
+      }
+
+      .instagram-link svg {
+        width: 17px;
+        height: 17px;
+      }
+
       .spark {
         position: fixed;
         z-index: 0;
@@ -265,6 +298,7 @@
         border-radius: 50%;
         background: rgba(88, 166, 255, 0.7);
         box-shadow: 0 0 18px rgba(88, 166, 255, 0.9);
+        animation: blinkBlue 1.9s ease-in-out infinite;
       }
 
       .spark.one {
@@ -275,11 +309,43 @@
       .spark.two {
         right: 18%;
         top: 25%;
+        animation-delay: 0.45s;
       }
 
       .spark.three {
         right: 27%;
         bottom: 23%;
+        animation-delay: 0.9s;
+      }
+
+      @keyframes blinkBlue {
+        0%,
+        100% {
+          opacity: 0.35;
+          transform: scale(0.82);
+          box-shadow: 0 0 8px rgba(88, 166, 255, 0.35);
+        }
+
+        50% {
+          opacity: 1;
+          transform: scale(1.18);
+          box-shadow: 0 0 0 6px rgba(88, 166, 255, 0.12), 0 0 26px rgba(88, 166, 255, 0.9);
+        }
+      }
+
+      @keyframes iconPulse {
+        0%,
+        100% {
+          border-color: rgba(88, 166, 255, 0.2);
+          color: #58a6ff;
+          box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.04) inset, 0 0 10px rgba(88, 166, 255, 0.08);
+        }
+
+        50% {
+          border-color: rgba(88, 166, 255, 0.7);
+          color: #bfe0ff;
+          box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.18) inset, 0 0 24px rgba(88, 166, 255, 0.38);
+        }
       }
 
       @media (max-width: 560px) {
@@ -374,6 +440,14 @@
         <div class="footer-note">
           Gelişmeler için <strong>çok yakında tekrar buradayız</strong>
         </div>
+        <a class="instagram-link" href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer" aria-label="Instagram profilini aç">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="4" y="4" width="16" height="16" rx="5" stroke="currentColor" stroke-width="1.8"/>
+            <circle cx="12" cy="12" r="3.4" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M16.8 7.2h.01" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+          </svg>
+          @kenanalperr
+        </a>
       </section>
     </main>
   </body>
