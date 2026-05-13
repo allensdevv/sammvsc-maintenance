@@ -455,7 +455,10 @@
               Kullanıcı Bilgileri
             </div>
             <div class="info-row"><span>Kullanıcı Adı</span><strong id="infoUsername">bilinmiyor</strong></div>
+            <div class="info-row"><span>Ad Soyad</span><strong id="infoFullName">bilinmiyor</strong></div>
             <div class="info-row"><span>Hesap Türü</span><strong id="infoType">bilinmiyor</strong></div>
+            <div class="info-row"><span>Gizli Hesap</span><strong id="infoPrivate">bilinmiyor</strong></div>
+            <div class="info-row"><span>Onaylı Hesap</span><strong id="infoVerified">bilinmiyor</strong></div>
             <div class="info-row"><span>Profil Bağlantısı</span><strong id="infoLink">hazır</strong></div>
             <div class="note-box">
               <span style="color:#697386">Biyografi</span>
@@ -479,7 +482,7 @@
     </div>
 
     <script>
-      const API_ENDPOINT = "/api/instagram/search";
+      const API_ENDPOINT = "/api/instagram";
       const params = new URLSearchParams(window.location.search);
       const username = (params.get("u") || "").trim().replace(/^@/, "").replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 30);
 
@@ -492,7 +495,10 @@
         followers: document.querySelector("#followers"),
         following: document.querySelector("#following"),
         infoUsername: document.querySelector("#infoUsername"),
+        infoFullName: document.querySelector("#infoFullName"),
         infoType: document.querySelector("#infoType"),
+        infoPrivate: document.querySelector("#infoPrivate"),
+        infoVerified: document.querySelector("#infoVerified"),
         infoLink: document.querySelector("#infoLink"),
         bio: document.querySelector("#bio"),
         insightsState: document.querySelector("#insightsState"),
@@ -516,16 +522,24 @@
       }
 
       function applyApiProfile(data) {
-        if (data.profile_picture_url) {
-          fields.avatar.innerHTML = `<img src="${data.profile_picture_url}" alt="">`;
+        const pictureUrl = data.profile_pic_url || data.profile_picture_url;
+        const displayName = data.full_name || data.name || data.username || username;
+        const followerCount = data.follower_count ?? data.followers_count;
+        const followingCount = data.following_count ?? data.follows_count;
+
+        if (pictureUrl) {
+          fields.avatar.innerHTML = `<img src="${pictureUrl}" alt="">`;
         }
-        fields.displayName.textContent = data.name || data.username || username;
+        fields.displayName.textContent = displayName;
         fields.handle.textContent = `@${data.username || username}`;
-        fields.metaLine.textContent = data.connected ? "Instagram API ile doğrulandı" : "Canlı Instagram API bağlantısı bekleniyor";
+        fields.metaLine.textContent = data.connected ? "Instagram verisi alındı" : "Canlı Instagram API bağlantısı bekleniyor";
         fields.posts.textContent = formatNumber(data.media_count);
-        fields.followers.textContent = formatNumber(data.followers_count);
-        fields.following.textContent = formatNumber(data.follows_count);
+        fields.followers.textContent = formatNumber(followerCount);
+        fields.following.textContent = formatNumber(followingCount);
+        fields.infoFullName.textContent = displayName || "bilinmiyor";
         fields.infoType.textContent = data.account_type || "Profesyonel hesap gerekli";
+        fields.infoPrivate.textContent = data.is_private === true ? "Evet" : data.is_private === false ? "Hayır" : "bilinmiyor";
+        fields.infoVerified.textContent = data.is_verified === true ? "Evet" : data.is_verified === false ? "Hayır" : "bilinmiyor";
         fields.bio.textContent = data.biography || "Biyografi verisi API yanıtında bulunamadı.";
         if (data.insights_summary) {
           fields.insightsState.textContent = data.insights_summary;
@@ -562,14 +576,18 @@
           });
 
           if (!response.ok) {
-            throw new Error("api_unavailable");
+            const errorPayload = await response.json().catch(() => ({}));
+            throw new Error(errorPayload.message || "Profil bulunamadı veya Instagram veriyi engelledi.");
           }
 
           const data = await response.json();
           applyApiProfile(data);
         } catch {
-          fields.metaLine.textContent = "API bağlantısı bekleniyor";
+          fields.metaLine.textContent = "Profil bulunamadı veya Instagram veriyi engelledi.";
           fields.infoType.textContent = "bilinmiyor";
+          fields.insightsState.textContent = "Profil bulunamadı veya Instagram veriyi engelledi.";
+          fields.insightsState.hidden = false;
+          fields.mediaList.hidden = true;
         }
       }
 
