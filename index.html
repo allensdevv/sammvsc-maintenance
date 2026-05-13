@@ -74,7 +74,16 @@
 
       .nav-brand,
       .nav-links,
-      .profile-chip {
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .login-button {
         display: flex;
         align-items: center;
       }
@@ -128,28 +137,22 @@
         height: 16px;
       }
 
-      .profile-chip {
+      .login-button {
         gap: 10px;
-        min-height: 40px;
-        padding: 0 12px;
-        border: 1px solid rgba(255, 255, 255, 0.11);
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.04);
-        color: #e8edf7;
+        min-height: 38px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: 999px;
+        background: #5865f2;
+        color: #fff;
         font-size: 14px;
-        font-weight: 800;
+        font-weight: 900;
+        box-shadow: 0 12px 28px rgba(88, 101, 242, 0.2);
       }
 
-      .profile-avatar {
-        width: 26px;
-        height: 26px;
-        display: grid;
-        place-items: center;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #facc15, #ffffff 48%, #58a6ff);
-        color: #07111f;
-        font-size: 11px;
-        font-weight: 950;
+      .login-button svg {
+        width: 17px;
+        height: 17px;
       }
 
       main {
@@ -215,24 +218,39 @@
         border: 1px solid rgba(37, 99, 235, 0.52);
         border-radius: 14px;
         background: rgba(17, 17, 17, 0.94);
-        box-shadow: 0 0 26px rgba(37, 99, 235, 0.32);
+        box-shadow: 0 0 18px rgba(37, 99, 235, 0.2);
+        transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+      }
+
+      .maintenance-search:hover,
+      .maintenance-search:focus-within {
+        border-color: rgba(88, 166, 255, 0.76);
+        box-shadow: 0 0 34px rgba(37, 99, 235, 0.5);
+        transform: translateY(-1px);
       }
 
       .maintenance-input {
-        display: flex;
-        align-items: center;
         min-width: 0;
+        width: 100%;
+        height: 48px;
+        border: 0;
+        outline: 0;
         padding: 0 16px;
         border-radius: 9px;
         background: #171717;
-        color: #7d8795;
+        color: #d9e1ee;
         font-size: 14px;
         text-align: left;
+      }
+
+      .maintenance-input::placeholder {
+        color: #697383;
       }
 
       .maintenance-submit {
         display: grid;
         place-items: center;
+        border: 0;
         border-radius: 10px;
         background: var(--blue);
         color: #dcecff;
@@ -263,7 +281,7 @@
       .recent-head {
         justify-content: space-between;
         min-height: 52px;
-        padding: 0 18px;
+        padding: 0 16px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.07);
         color: #9ba4b4;
         font-size: 13px;
@@ -283,8 +301,38 @@
       }
 
       .recent-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
         color: #5f6876;
         font-size: 12px;
+      }
+
+      .recent-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        color: #657082;
+        font-size: 12px;
+      }
+
+      .recent-action.icon-only {
+        width: 22px;
+        height: 22px;
+        display: grid;
+        place-items: center;
+      }
+
+      .recent-action svg {
+        width: 15px;
+        height: 15px;
+      }
+
+      .recent-action:hover {
+        color: #9db6d6;
       }
 
       .recent-row {
@@ -292,6 +340,7 @@
         gap: 16px;
         min-height: 62px;
         padding: 0 18px;
+        color: inherit;
       }
 
       .recent-row + .recent-row {
@@ -314,6 +363,15 @@
       .chev {
         color: #657082;
         font-size: 22px;
+      }
+
+      .empty-recent {
+        min-height: 62px;
+        display: flex;
+        align-items: center;
+        padding: 0 18px;
+        color: #657082;
+        font-size: 13px;
       }
 
       .section-title {
@@ -495,7 +553,7 @@
         }
 
         .nav-links,
-        .profile-chip {
+        .login-button {
           display: none;
         }
 
@@ -573,10 +631,14 @@
           </span>
         </nav>
 
-        <a class="profile-chip" href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer">
-          <span class="profile-avatar">IG</span>
-          kenanalperr
-        </a>
+        <button class="login-button" type="button">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M8 13.5c-2.4 0-4.5 1.5-4.5 3.4 0 1 .8 1.8 1.8 1.8h1.2l.8 1.3 1.4-1.3H12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 13.5c2.4 0 4.5 1.5 4.5 3.4 0 1-.8 1.8-1.8 1.8h-1.2l-.8 1.3-1.4-1.3H12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8.5 10.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7ZM15.5 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+          Giriş Yap
+        </button>
       </header>
 
       <main>
@@ -595,15 +657,15 @@
             Instagram profil analiz sistemi kısa süreli bakımda. Veri güvenliği, performans ve yeni analiz ekranları hazırlanıyor.
           </p>
 
-          <div class="maintenance-search" aria-label="Bakım durumu">
-            <div class="maintenance-input">Instagram kullanıcı adı arama yakında tekrar aktif olacak...</div>
-            <div class="maintenance-submit" aria-hidden="true">
+          <form class="maintenance-search" id="searchForm" aria-label="Instagram kullanıcı arama">
+            <input class="maintenance-input" id="usernameInput" type="text" autocomplete="off" maxlength="30" placeholder="Instagram kullanıcı adı girin...">
+            <button class="maintenance-submit" type="submit" aria-label="Kullanıcı ara">
               <svg viewBox="0 0 24 24" fill="none">
                 <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/>
                 <path d="m16 16 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
-            </div>
-          </div>
+            </button>
+          </form>
 
           <div class="recent-card">
             <div class="recent-head">
@@ -611,24 +673,24 @@
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M3 12a9 9 0 1 0 3-6.7M3 4v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                Bakım Notları <span>(3)</span>
+                Son Aramalar <span id="recentCount">(0)</span>
               </span>
-              <span class="recent-actions">Canlı mod kapalı</span>
+              <span class="recent-actions">
+                <button class="recent-action icon-only" type="button" id="toggleRecent" aria-label="Son aramaları gizle veya göster">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                    <circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.8"/>
+                  </svg>
+                </button>
+                <button class="recent-action" type="button" id="clearRecent" aria-label="Son aramaları temizle">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Temizle
+                </button>
+              </span>
             </div>
-            <div class="recent-row">
-              <div class="recent-copy">
-                <strong>Instagram API katmanı</strong>
-                <span>Yetkili veri akışı hazırlanıyor</span>
-              </div>
-              <span class="chev">›</span>
-            </div>
-            <div class="recent-row">
-              <div class="recent-copy">
-                <strong>KVKK uyumlu analiz</strong>
-                <span>Gizli kişi listeleri kapalı tutulacak</span>
-              </div>
-              <span class="chev">›</span>
-            </div>
+            <div id="recentList"></div>
           </div>
         </section>
 
@@ -660,5 +722,140 @@
         </section>
       </main>
     </div>
+    <script>
+      const API_ENDPOINT = "/api/instagram/search";
+      const RECENT_KEY = "instapp_recent_searches";
+      const form = document.querySelector("#searchForm");
+      const input = document.querySelector("#usernameInput");
+      const recentList = document.querySelector("#recentList");
+      const recentCount = document.querySelector("#recentCount");
+      const clearRecent = document.querySelector("#clearRecent");
+      const toggleRecent = document.querySelector("#toggleRecent");
+      let recentVisible = true;
+
+      function cleanUrl() {
+        if (window.location.hostname === "www.sammvsc.top") {
+          window.location.replace("https://sammvsc.top" + window.location.pathname);
+          return;
+        }
+
+        if (window.location.search || window.location.hash) {
+          window.history.replaceState({}, document.title, window.location.origin + window.location.pathname);
+        }
+      }
+
+      function cleanUsername(value) {
+        return value.trim().replace(/^@/, "").replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 30);
+      }
+
+      function getRecent() {
+        try {
+          return JSON.parse(window.localStorage.getItem(RECENT_KEY)) || [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveRecent(items) {
+        window.localStorage.setItem(RECENT_KEY, JSON.stringify(items.slice(0, 5)));
+      }
+
+      function addRecent(username, status) {
+        const items = getRecent().filter((item) => item.username.toLowerCase() !== username.toLowerCase());
+        items.unshift({
+          username,
+          status,
+          searchedAt: Date.now()
+        });
+        saveRecent(items);
+        renderRecent();
+      }
+
+      function timeAgo(time) {
+        const minutes = Math.max(0, Math.floor((Date.now() - time) / 60000));
+        if (minutes < 1) {
+          return "az önce";
+        }
+        if (minutes < 60) {
+          return `${minutes} dakika önce`;
+        }
+        const hours = Math.floor(minutes / 60);
+        return `${hours} saat önce`;
+      }
+
+      function renderRecent() {
+        const items = getRecent();
+        recentCount.textContent = `(${items.length})`;
+
+        if (!recentVisible) {
+          recentList.innerHTML = "";
+          return;
+        }
+
+        if (!items.length) {
+          recentList.innerHTML = `<div class="empty-recent">Henüz arama yapılmadı.</div>`;
+          return;
+        }
+
+        recentList.innerHTML = items.map((item) => `
+          <a class="recent-row" href="https://instagram.com/${item.username}" target="_blank" rel="noopener noreferrer">
+            <div class="recent-copy">
+              <strong>@${item.username}</strong>
+              <span>${item.status} · ${timeAgo(item.searchedAt)}</span>
+            </div>
+            <span class="chev">›</span>
+          </a>
+        `).join("");
+      }
+
+      async function searchInstagram(username) {
+        const url = `${API_ENDPOINT}?username=${encodeURIComponent(username)}`;
+        const response = await fetch(url, {
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error("api_unavailable");
+        }
+
+        return response.json();
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const username = cleanUsername(input.value);
+
+        if (!username) {
+          input.focus();
+          return;
+        }
+
+        input.value = "";
+        addRecent(username, "Sorgulanıyor");
+
+        try {
+          await searchInstagram(username);
+          addRecent(username, "Instagram API sonucu alındı");
+        } catch {
+          addRecent(username, "API bağlantısı bekleniyor");
+        }
+      });
+
+      clearRecent.addEventListener("click", () => {
+        saveRecent([]);
+        renderRecent();
+      });
+
+      toggleRecent.addEventListener("click", () => {
+        recentVisible = !recentVisible;
+        toggleRecent.setAttribute("aria-label", recentVisible ? "Son aramaları gizle" : "Son aramaları göster");
+        renderRecent();
+      });
+
+      cleanUrl();
+      renderRecent();
+    </script>
   </body>
 </html>
