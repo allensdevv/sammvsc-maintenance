@@ -57,27 +57,134 @@ function toBoolean(value) {
   return Boolean(value);
 }
 
+function getRawKeys(value) {
+  if (!value || typeof value !== "object") return [];
+  return Object.keys(value).slice(0, 30);
+}
+
+function parseMaybeJson(value) {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return value;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return value;
+  }
+}
+
+function hasProfileSignal(value) {
+  if (!value || typeof value !== "object") return false;
+  return Boolean(
+    pick(value, [
+      "username",
+      "user_name",
+      "full_name",
+      "fullName",
+      "biography",
+      "bio",
+      "profile_pic_url",
+      "profilePicUrl",
+      "profilePictureUrl",
+      "follower_count",
+      "followers_count",
+      "followersCount",
+      "edge_followed_by.count"
+    ])
+  );
+}
+
+function findProfileCandidate(value, depth = 0) {
+  const parsed = parseMaybeJson(value);
+  if (!parsed || typeof parsed !== "object" || depth > 5) return null;
+  if (Array.isArray(parsed)) {
+    for (const item of parsed) {
+      const found = findProfileCandidate(item, depth + 1);
+      if (found) return found;
+    }
+    return null;
+  }
+  if (hasProfileSignal(parsed)) return parsed;
+
+  const preferredKeys = [
+    "user_data",
+    "userData",
+    "basic_user",
+    "basicUser",
+    "profile",
+    "user",
+    "owner",
+    "account",
+    "data",
+    "result",
+    "response",
+    "graphql"
+  ];
+
+  for (const key of preferredKeys) {
+    const found = findProfileCandidate(parsed[key], depth + 1);
+    if (found) return found;
+  }
+
+  for (const key of Object.keys(parsed)) {
+    const found = findProfileCandidate(parsed[key], depth + 1);
+    if (found) return found;
+  }
+  return null;
+}
+
 function normalizeProfile(raw, username, source) {
   const candidate = Array.isArray(raw) ? raw[0] : raw;
-  const data = candidate?.data?.user || candidate?.data || candidate?.user || candidate?.result || candidate?.profile || candidate;
+  const data = findProfileCandidate(candidate) || candidate?.data?.user || candidate?.data || candidate?.user || candidate?.result || candidate?.profile || candidate;
   if (!data || typeof data !== "object") {
     return null;
   }
 
+  const pictureUrl = pick(data, [
+    "profile_pic_url_hd",
+    "profile_pic_url",
+    "profilePicUrlHD",
+    "profilePicUrl",
+    "profilePictureUrl",
+    "profile_picture",
+    "profilePicture",
+    "hd_profile_pic_url_info.url",
+    "hdProfilePicUrlInfo.url",
+    "avatar",
+    "image"
+  ]) || "";
+  const followerCount = toNumber(pick(data, [
+    "follower_count",
+    "followers_count",
+    "followersCount",
+    "followers",
+    "edge_followed_by.count",
+    "followerCount"
+  ]));
+  const followingCount = toNumber(pick(data, [
+    "following_count",
+    "follows_count",
+    "followingCount",
+    "followsCount",
+    "following",
+    "edge_follow.count",
+    "followingCount"
+  ]));
+
   const normalized = {
     source,
     connected: true,
-    username: pick(data, ["username", "user_name", "account", "handle"]) || username,
-    full_name: pick(data, ["full_name", "fullName", "name", "display_name"]) || "",
-    name: pick(data, ["full_name", "fullName", "name", "display_name", "username"]) || username,
-    profile_pic_url: pick(data, ["profile_pic_url_hd", "profile_pic_url", "profilePicUrlHD", "profilePicUrl", "profilePictureUrl", "profile_pic", "avatar", "image"]) || "",
-    profile_picture_url: pick(data, ["profile_pic_url_hd", "profile_pic_url", "profilePicUrlHD", "profilePicUrl", "profilePictureUrl", "profile_pic", "avatar", "image"]) || "",
-    follower_count: toNumber(pick(data, ["follower_count", "followers_count", "followersCount", "followers", "edge_followed_by.count"])),
-    following_count: toNumber(pick(data, ["following_count", "follows_count", "followingCount", "followsCount", "following", "edge_follow.count"])),
-    followers_count: toNumber(pick(data, ["follower_count", "followers_count", "followersCount", "followers", "edge_followed_by.count"])),
-    follows_count: toNumber(pick(data, ["following_count", "follows_count", "followingCount", "followsCount", "following", "edge_follow.count"])),
-    media_count: toNumber(pick(data, ["media_count", "posts_count", "mediaCount", "postsCount", "posts", "edge_owner_to_timeline_media.count"])),
-    biography: pick(data, ["biography", "bio", "description"]) || "",
+    username: pick(data, ["username", "user_name", "account", "handle", "instagram_username"]) || username,
+    full_name: pick(data, ["full_name", "fullName", "name", "display_name", "displayName"]) || "",
+    name: pick(data, ["full_name", "fullName", "name", "display_name", "displayName", "username"]) || username,
+    profile_pic_url: pictureUrl,
+    profile_picture_url: pictureUrl,
+    follower_count: followerCount,
+    following_count: followingCount,
+    followers_count: followerCount,
+    follows_count: followingCount,
+    media_count: toNumber(pick(data, ["media_count", "posts_count", "mediaCount", "postsCount", "posts", "edge_owner_to_timeline_media.count", "post_count"])),
+    biography: pick(data, ["biography", "bio", "description", "biography_with_entities.raw_text"]) || "",
     is_private: toBoolean(pick(data, ["is_private", "isPrivate", "private"])),
     is_verified: toBoolean(pick(data, ["is_verified", "isVerified", "verified"])),
     account_type: pick(data, ["account_type", "category_name", "category"]) || "Instagram",
@@ -175,6 +282,16 @@ async function fetchRapidApiProfile(username) {
 
   const response = await fetch(url, options);
   const payload = await response.json().catch(() => null);
+  const debug = {
+    provider: "rapidapi",
+    rapidApiStatus: response.status,
+    usedUrl: url,
+    rawKeys: getRawKeys(payload),
+    dataKeys: getRawKeys(payload?.data),
+    userDataKeys: getRawKeys(payload?.user_data || payload?.data?.user_data || payload?.data?.user)
+  };
+
+  console.log("[instagram-api] rapidapi", debug);
 
   if (!response.ok) {
     throw providerError(response.status, payload);
@@ -182,8 +299,9 @@ async function fetchRapidApiProfile(username) {
 
   const profile = normalizeProfile(payload, username, "rapidapi");
   if (!profile) {
-    throw providerError(502, "rapidapi_parse_error");
+    throw providerError(502, { reason: "rapidapi_parse_error", debug });
   }
+  profile.debug = debug;
   return profile;
 }
 

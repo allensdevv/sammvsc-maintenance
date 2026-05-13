@@ -582,8 +582,12 @@
           }
 
           const data = await response.json();
+          if (data.debug) {
+            console.log("Instagram API debug", data.debug);
+          }
           applyApiProfile(data);
-        } catch {
+        } catch (error) {
+          console.log("Instagram API error", error);
           fields.metaLine.textContent = API_ERROR_MESSAGE;
           fields.infoType.textContent = "bilinmiyor";
           fields.insightsState.textContent = API_ERROR_MESSAGE;
