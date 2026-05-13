@@ -1203,5 +1203,62 @@
 
       loadProfile();
     </script>
+    <script>
+      (function () {
+        const cv = document.createElement("canvas");
+        cv.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:9999;";
+        document.body.appendChild(cv);
+        const cx = cv.getContext("2d");
+        let W = cv.width = innerWidth, H = cv.height = innerHeight;
+        window.addEventListener("resize", () => { W = cv.width = innerWidth; H = cv.height = innerHeight; });
+
+        const streaks = [];
+        const trail = [];
+
+        document.addEventListener("mousemove", (e) => {
+          trail.push({ x: e.clientX, y: e.clientY });
+          if (trail.length > 40) trail.shift();
+          if (Math.random() < 0.12 && trail.length > 8) {
+            const back = trail[Math.max(0, trail.length - 8 - Math.floor(Math.random() * 14))];
+            streaks.push({
+              x1: back.x, y1: back.y,
+              x2: e.clientX, y2: e.clientY,
+              life: 0.85 + Math.random() * 0.15,
+              decay: 0.012 + Math.random() * 0.022,
+              w: 1 + Math.random() * 1.5
+            });
+          }
+        });
+
+        function draw() {
+          cx.clearRect(0, 0, W, H);
+          for (let i = streaks.length - 1; i >= 0; i--) {
+            const s = streaks[i];
+            s.life -= s.decay;
+            if (s.life <= 0) { streaks.splice(i, 1); continue; }
+            const { x1, y1, x2, y2, life, w } = s;
+            cx.save();
+            cx.lineCap = "round";
+            cx.shadowColor = "#ff2200";
+            cx.shadowBlur = 28;
+            cx.strokeStyle = `rgba(255,30,0,${life * 0.18})`;
+            cx.lineWidth = w * 9;
+            cx.beginPath(); cx.moveTo(x1, y1); cx.lineTo(x2, y2); cx.stroke();
+            cx.shadowBlur = 12;
+            cx.strokeStyle = `rgba(255,80,40,${life * 0.45})`;
+            cx.lineWidth = w * 3;
+            cx.beginPath(); cx.moveTo(x1, y1); cx.lineTo(x2, y2); cx.stroke();
+            cx.shadowColor = "#fff";
+            cx.shadowBlur = 4;
+            cx.strokeStyle = `rgba(255,210,200,${life * 0.95})`;
+            cx.lineWidth = w * 0.45;
+            cx.beginPath(); cx.moveTo(x1, y1); cx.lineTo(x2, y2); cx.stroke();
+            cx.restore();
+          }
+          requestAnimationFrame(draw);
+        }
+        draw();
+      })();
+    </script>
   </body>
 </html>
