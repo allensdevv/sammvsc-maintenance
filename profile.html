@@ -318,12 +318,6 @@
         font-weight: 780;
         text-transform: uppercase;
         overflow: hidden;
-        cursor: pointer;
-        transition: opacity 160ms;
-      }
-
-      .avatar:hover {
-        opacity: 0.88;
       }
 
       .avatar img {
@@ -1133,10 +1127,6 @@
         fields.lightboxImg.src = "";
         document.body.style.overflow = "";
       }
-
-      fields.avatar.addEventListener("click", () => {
-        if (currentPicUrl) openLightbox(fields.lightboxImg.src || currentPicUrl);
-      });
 
       fields.heroViewBtn.addEventListener("click", () => {
         if (currentPicUrl) openLightbox(currentPicUrl);
