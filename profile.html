@@ -482,7 +482,9 @@
     </div>
 
     <script>
-      const API_ENDPOINT = "/api/instagram";
+      const API_ENDPOINT = ["sammvsc.top", "www.sammvsc.top"].includes(window.location.hostname)
+        ? "https://www.sammvsc.top/api/instagram"
+        : "/api/instagram";
       const API_ERROR_MESSAGE = "Profil bilgileri \u015fu an al\u0131nam\u0131yor. L\u00fctfen sonra tekrar deneyin.";
       const params = new URLSearchParams(window.location.search);
       const username = (params.get("u") || "").trim().replace(/^@/, "").replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 30);
@@ -529,7 +531,11 @@
         const followingCount = data.following_count ?? data.follows_count;
 
         if (pictureUrl) {
-          fields.avatar.innerHTML = `<img src="${pictureUrl}" alt="">`;
+          const image = document.createElement("img");
+          image.src = pictureUrl;
+          image.alt = "";
+          image.referrerPolicy = "no-referrer";
+          fields.avatar.replaceChildren(image);
         }
         fields.displayName.textContent = displayName;
         fields.handle.textContent = `@${data.username || username}`;
@@ -571,8 +577,12 @@
 
         applyBaseProfile(username);
 
+        let data;
+
         try {
-          const response = await fetch(`${API_ENDPOINT}?username=${encodeURIComponent(username)}`, {
+          const url = `${API_ENDPOINT}?username=${encodeURIComponent(username)}&_=${Date.now()}`;
+          const response = await fetch(url, {
+            cache: "no-store",
             headers: { "Accept": "application/json" }
           });
 
@@ -581,11 +591,10 @@
             throw new Error(errorPayload.message || API_ERROR_MESSAGE);
           }
 
-          const data = await response.json();
+          data = await response.json();
           if (data.debug) {
             console.log("Instagram API debug", data.debug);
           }
-          applyApiProfile(data);
         } catch (error) {
           console.log("Instagram API error", error);
           fields.metaLine.textContent = API_ERROR_MESSAGE;
@@ -593,6 +602,13 @@
           fields.insightsState.textContent = API_ERROR_MESSAGE;
           fields.insightsState.hidden = false;
           fields.mediaList.hidden = true;
+          return;
+        }
+
+        try {
+          applyApiProfile(data);
+        } catch (error) {
+          console.log("Instagram render error", error, data);
         }
       }
 
