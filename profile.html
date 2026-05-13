@@ -390,6 +390,181 @@
         line-height: 1.45;
       }
 
+      .profile-skeleton {
+        display: none;
+        pointer-events: none;
+      }
+
+      .profile-loading .profile-skeleton {
+        display: block;
+      }
+
+      .profile-loading .profile-hero .view-pill,
+      .profile-loading .profile-hero .profile-layout,
+      .profile-loading .tabs .tab,
+      .profile-loading .panel > :not(.profile-skeleton) {
+        visibility: hidden;
+      }
+
+      .skeleton-shape {
+        display: block;
+        border-radius: 7px;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.045));
+        background-size: 220% 100%;
+        animation: skeletonPulse 1.7s ease-in-out infinite;
+      }
+
+      .hero-skeleton {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+      }
+
+      .skeleton-cover {
+        position: absolute;
+        inset: 24px 0 auto;
+        height: 190px;
+        border-radius: 0;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .skeleton-avatar {
+        position: absolute;
+        left: 28px;
+        bottom: 28px;
+        width: 122px;
+        height: 122px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.045);
+      }
+
+      .skeleton-name {
+        position: absolute;
+        left: 166px;
+        bottom: 86px;
+        width: 192px;
+        height: 32px;
+      }
+
+      .skeleton-handle {
+        position: absolute;
+        left: 166px;
+        bottom: 58px;
+        width: 128px;
+        height: 18px;
+      }
+
+      .skeleton-pills {
+        position: absolute;
+        left: 166px;
+        bottom: 26px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .skeleton-pills .skeleton-shape {
+        width: 28px;
+        height: 24px;
+      }
+
+      .skeleton-stats {
+        position: absolute;
+        right: 24px;
+        bottom: 26px;
+        display: grid;
+        grid-template-columns: repeat(3, 72px);
+        gap: 16px;
+      }
+
+      .skeleton-stat {
+        display: grid;
+        justify-items: end;
+        gap: 8px;
+      }
+
+      .skeleton-stat .skeleton-shape:first-child {
+        width: 48px;
+        height: 28px;
+      }
+
+      .skeleton-stat .skeleton-shape:last-child {
+        width: 64px;
+        height: 14px;
+      }
+
+      .tabs {
+        position: relative;
+      }
+
+      .tabs-skeleton {
+        position: absolute;
+        inset: 8px;
+        display: none;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 12px;
+      }
+
+      .profile-loading .tabs-skeleton {
+        display: grid;
+      }
+
+      .tabs-skeleton .skeleton-shape {
+        height: 42px;
+      }
+
+      .panel {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .panel-skeleton {
+        position: absolute;
+        inset: 24px;
+        display: none;
+      }
+
+      .profile-loading .panel-skeleton {
+        display: grid;
+        grid-template-columns: 1fr 0.85fr;
+        gap: 26px;
+        align-content: start;
+      }
+
+      .panel-skeleton-group {
+        display: grid;
+        gap: 16px;
+      }
+
+      .panel-skeleton-title {
+        width: 170px;
+        height: 24px;
+        margin-bottom: 2px;
+      }
+
+      .panel-skeleton-row {
+        height: 16px;
+      }
+
+      .panel-skeleton-row.short {
+        width: 72%;
+      }
+
+      @keyframes skeletonPulse {
+        0% {
+          background-position: 120% 0;
+          opacity: 0.72;
+        }
+
+        50% {
+          opacity: 1;
+        }
+
+        100% {
+          background-position: -120% 0;
+          opacity: 0.72;
+        }
+      }
+
       .report-button {
         position: fixed;
         right: 34px;
@@ -429,6 +604,40 @@
           grid-template-columns: repeat(2, 1fr);
         }
 
+        .profile-loading .tabs-skeleton {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .skeleton-name,
+        .skeleton-handle,
+        .skeleton-pills {
+          left: 28px;
+        }
+
+        .skeleton-avatar {
+          bottom: 118px;
+        }
+
+        .skeleton-name {
+          bottom: 76px;
+        }
+
+        .skeleton-handle {
+          bottom: 48px;
+        }
+
+        .skeleton-pills {
+          bottom: 18px;
+        }
+
+        .skeleton-stats {
+          display: none;
+        }
+
+        .profile-loading .panel-skeleton {
+          grid-template-columns: 1fr;
+        }
+
         .report-button {
           right: 16px;
           bottom: 16px;
@@ -436,7 +645,7 @@
       }
     </style>
   </head>
-  <body>
+  <body class="profile-loading">
     <a class="report-button" href="mailto:destek@sammvsc.top?subject=Hata%20Bildirimi" aria-label="Hata bildir">
       <span class="report-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none"><path d="M6 5h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-5 4V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -462,6 +671,31 @@
 
       <main>
         <section class="profile-hero">
+          <div class="profile-skeleton hero-skeleton" aria-hidden="true">
+            <span class="skeleton-cover skeleton-shape"></span>
+            <span class="skeleton-avatar skeleton-shape"></span>
+            <span class="skeleton-name skeleton-shape"></span>
+            <span class="skeleton-handle skeleton-shape"></span>
+            <span class="skeleton-pills">
+              <span class="skeleton-shape"></span>
+              <span class="skeleton-shape"></span>
+              <span class="skeleton-shape"></span>
+            </span>
+            <span class="skeleton-stats">
+              <span class="skeleton-stat">
+                <span class="skeleton-shape"></span>
+                <span class="skeleton-shape"></span>
+              </span>
+              <span class="skeleton-stat">
+                <span class="skeleton-shape"></span>
+                <span class="skeleton-shape"></span>
+              </span>
+              <span class="skeleton-stat">
+                <span class="skeleton-shape"></span>
+                <span class="skeleton-shape"></span>
+              </span>
+            </span>
+          </div>
           <div class="view-pill">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.8"/></svg>
             <span id="viewCount">1</span>
@@ -482,6 +716,14 @@
         </section>
 
         <nav class="tabs" aria-label="Profil sekmeleri">
+          <div class="profile-skeleton tabs-skeleton" aria-hidden="true">
+            <span class="skeleton-shape"></span>
+            <span class="skeleton-shape"></span>
+            <span class="skeleton-shape"></span>
+            <span class="skeleton-shape"></span>
+            <span class="skeleton-shape"></span>
+            <span class="skeleton-shape"></span>
+          </div>
           <a class="tab active" href="#"><svg viewBox="0 0 24 24" fill="none"><path d="M16 11a4 4 0 1 0-8 0M5 21a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Bilgiler</a>
           <a class="tab" href="#"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Medya</a>
           <a class="tab" href="#"><svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/></svg>Saatler</a>
@@ -492,6 +734,25 @@
 
         <section class="detail-grid">
           <div class="panel">
+            <div class="profile-skeleton panel-skeleton" aria-hidden="true">
+              <div class="panel-skeleton-group">
+                <span class="panel-skeleton-title skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+                <span class="panel-skeleton-row short skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+                <span class="panel-skeleton-row short skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+                <span class="panel-skeleton-row short skeleton-shape"></span>
+              </div>
+              <div class="panel-skeleton-group">
+                <span class="panel-skeleton-title skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+              </div>
+            </div>
             <div class="panel-title">
               <svg viewBox="0 0 24 24" fill="none"><path d="M16 11a4 4 0 1 0-8 0M5 21a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               Kullanıcı Bilgileri
@@ -512,6 +773,23 @@
             </div>
           </div>
           <div class="panel">
+            <div class="profile-skeleton panel-skeleton" aria-hidden="true">
+              <div class="panel-skeleton-group">
+                <span class="panel-skeleton-title skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+                <span class="panel-skeleton-row short skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+                <span class="panel-skeleton-row short skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+              </div>
+              <div class="panel-skeleton-group">
+                <span class="panel-skeleton-title skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+                <span class="panel-skeleton-row skeleton-shape"></span>
+              </div>
+            </div>
             <div class="panel-title">
               <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M8 19v-6M12 19V9M16 19v-9M20 19V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               Instagram İstatistikleri
@@ -717,6 +995,8 @@
             `;
           }).join("");
         }
+
+        document.body.classList.remove("profile-loading");
       }
 
       async function loadProfile() {
