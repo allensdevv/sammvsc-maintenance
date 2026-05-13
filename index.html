@@ -12,12 +12,16 @@
         --bg: #050505;
         --panel: #111111;
         --panel-2: #151515;
-        --line: rgba(59, 130, 246, 0.24);
+        --line: rgba(139, 92, 246, 0.26);
         --soft-line: rgba(255, 255, 255, 0.08);
         --ink: #f7f9ff;
         --muted: #8f98a8;
-        --blue: #2563eb;
-        --blue-2: #58a6ff;
+        --blue: #6d3be7;
+        --blue-2: #a78bfa;
+        --violet: #8b5cf6;
+        --pink: #f472d0;
+        --accent-gradient: linear-gradient(100deg, #7c6dff 0%, #a66cff 48%, #f472d0 100%);
+        --title-gradient: linear-gradient(100deg, #8c7bff 0%, #a771ff 46%, #f47bd7 100%);
         --gold: #facc15;
       }
 
@@ -35,8 +39,8 @@
         overflow-x: hidden;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         background:
-          radial-gradient(circle at 50% 32%, rgba(37, 99, 235, 0.16), transparent 23rem),
-          radial-gradient(circle at 50% 78%, rgba(37, 99, 235, 0.14), transparent 28rem),
+          radial-gradient(circle at 50% 32%, rgba(139, 92, 246, 0.13), transparent 23rem),
+          radial-gradient(circle at 66% 74%, rgba(244, 114, 208, 0.08), transparent 28rem),
           #050505;
         color: var(--ink);
       }
@@ -46,7 +50,11 @@
         position: fixed;
         inset: 0;
         pointer-events: none;
-        background: linear-gradient(180deg, rgba(5, 5, 5, 0.22), rgba(5, 5, 5, 0.92));
+        background:
+          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(180deg, rgba(5, 5, 5, 0.18), rgba(5, 5, 5, 0.92));
+        background-size: 64px 64px, 64px 64px, auto;
       }
 
       a {
@@ -95,13 +103,37 @@
         line-height: 1;
       }
 
+      .brand-word {
+        color: #ffffff;
+        font-weight: 900;
+        letter-spacing: 0;
+      }
+
+      .brand-accent {
+        color: #a99cff;
+      }
+
+      .brand-beta {
+        min-height: 19px;
+        display: inline-grid;
+        place-items: center;
+        padding: 0 7px;
+        border: 1px solid rgba(139, 92, 246, 0.5);
+        border-radius: 5px;
+        background: rgba(104, 71, 220, 0.24);
+        color: #c9c0ff;
+        font-size: 10px;
+        font-weight: 900;
+        line-height: 1;
+      }
+
       .brand-icon,
       .hero-icon,
       .report-icon {
         display: grid;
         place-items: center;
-        border: 1px solid rgba(88, 166, 255, 0.32);
-        background: rgba(37, 99, 235, 0.18);
+        border: 1px solid rgba(167, 139, 250, 0.34);
+        background: rgba(109, 59, 231, 0.18);
         color: var(--blue-2);
       }
 
@@ -109,6 +141,21 @@
         width: 36px;
         height: 36px;
         border-radius: 12px;
+      }
+
+      .nav-brand .brand-icon,
+      .footer-brand .brand-icon {
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        color: inherit;
+      }
+
+      .brand-logo {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 0 12px rgba(167, 139, 250, 0.28));
       }
 
       .brand-icon svg {
@@ -146,7 +193,7 @@
       }
 
       .hero {
-        width: min(560px, 100%);
+        width: min(760px, 100%);
         text-align: center;
       }
 
@@ -162,7 +209,7 @@
         height: 58px;
         flex: 0 0 auto;
         border-radius: 16px;
-        box-shadow: 0 0 44px rgba(37, 99, 235, 0.22);
+        box-shadow: 0 0 44px rgba(139, 92, 246, 0.22);
       }
 
       .hero-icon svg {
@@ -179,7 +226,26 @@
       }
 
       h1 span {
-        color: #a8d2ff;
+        position: relative;
+        display: inline-block;
+        background: var(--title-gradient);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+      }
+
+      h1 span::after {
+        content: "";
+        position: absolute;
+        left: 2px;
+        right: 0;
+        bottom: -8px;
+        height: 5px;
+        border-radius: 999px;
+        background: var(--title-gradient);
+        transform: rotate(-4deg);
+        opacity: 0.86;
       }
 
       .subtitle {
@@ -199,17 +265,17 @@
         gap: 8px;
         margin: 24px auto 0;
         padding: 8px;
-        border: 1px solid rgba(37, 99, 235, 0.52);
+        border: 1px solid rgba(139, 92, 246, 0.5);
         border-radius: 14px;
         background: rgba(17, 17, 17, 0.94);
-        box-shadow: 0 0 18px rgba(37, 99, 235, 0.2);
+        box-shadow: 0 0 22px rgba(139, 92, 246, 0.22);
         transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
       }
 
       .maintenance-search:hover,
       .maintenance-search:focus-within {
-        border-color: rgba(88, 166, 255, 0.76);
-        box-shadow: 0 0 34px rgba(37, 99, 235, 0.5);
+        border-color: rgba(244, 114, 208, 0.68);
+        box-shadow: 0 0 38px rgba(139, 92, 246, 0.42), 0 0 28px rgba(244, 114, 208, 0.2);
         transform: translateY(-1px);
       }
 
@@ -236,9 +302,9 @@
         place-items: center;
         border: 0;
         border-radius: 10px;
-        background: var(--blue);
-        color: #dcecff;
-        box-shadow: 0 0 22px rgba(37, 99, 235, 0.26);
+        background: var(--accent-gradient);
+        color: #f7f3ff;
+        box-shadow: 0 0 24px rgba(139, 92, 246, 0.34);
       }
 
       .maintenance-submit svg {
@@ -249,7 +315,7 @@
       .recent-card {
         width: min(512px, 100%);
         margin: 16px auto 0;
-        border: 1px solid rgba(37, 99, 235, 0.28);
+        border: 1px solid rgba(139, 92, 246, 0.28);
         border-radius: 13px;
         background: rgba(17, 17, 17, 0.88);
         overflow: hidden;
@@ -429,7 +495,7 @@
       }
 
       .footer-bottom b {
-        color: #58a6ff;
+        color: #a78bfa;
       }
 
       .report-button {
@@ -470,7 +536,7 @@
         width: 3px;
         height: 3px;
         border-radius: 50%;
-        background: rgba(88, 166, 255, 0.8);
+        background: rgba(167, 139, 250, 0.9);
         animation: blinkBlue 1.9s ease-in-out infinite;
       }
 
@@ -495,13 +561,13 @@
         0%,
         100% {
           opacity: 0.35;
-          box-shadow: 0 0 8px rgba(88, 166, 255, 0.35);
+          box-shadow: 0 0 8px rgba(167, 139, 250, 0.35);
           transform: scale(0.86);
         }
 
         50% {
           opacity: 1;
-          box-shadow: 0 0 0 6px rgba(88, 166, 255, 0.12), 0 0 26px rgba(88, 166, 255, 0.9);
+          box-shadow: 0 0 0 6px rgba(167, 139, 250, 0.12), 0 0 26px rgba(244, 114, 208, 0.78);
           transform: scale(1.16);
         }
       }
@@ -563,12 +629,10 @@
       <header class="topbar">
         <a class="nav-brand" href="/" aria-label="Instapp ana sayfa">
           <span class="brand-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/>
-              <path d="m16 16 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+            <img class="brand-logo" src="assets/u.png" alt="">
           </span>
-          Instapp
+          <span class="brand-word">Inst<span class="brand-accent">app</span></span>
+          <span class="brand-beta">BETA</span>
         </a>
 
         <nav class="nav-links" aria-label="Bakım menüsü">
@@ -606,7 +670,7 @@
                 <path d="m16 16 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </span>
-            <h1 id="page-title">Inst<span>app</span></h1>
+            <h1 id="page-title">Instagram&apos;&#305; <span>Ke&#351;fet</span></h1>
           </div>
 
           <p class="subtitle">
@@ -654,12 +718,9 @@
           <div>
             <div class="footer-brand">
               <span class="brand-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/>
-                  <path d="m16 16 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
+                <img class="brand-logo" src="assets/u.png" alt="">
               </span>
-              Instapp
+              <span class="brand-word">Inst<span class="brand-accent">app</span></span>
             </div>
             <p class="footer-text">Instagram profil analiz platformu. Yetkili metrikler, güvenli veri akışı ve profesyonel raporlama.</p>
             <a class="footer-social" href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
