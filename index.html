@@ -838,7 +838,6 @@
       </main>
     </div>
     <script>
-      const API_ENDPOINT = "/api/instagram/search";
       const RECENT_KEY = "instapp_recent_searches";
       const form = document.querySelector("#searchForm");
       const input = document.querySelector("#usernameInput");
@@ -913,7 +912,7 @@
         }
 
         recentList.innerHTML = items.map((item) => `
-          <a class="recent-row" href="https://instagram.com/${item.username}" target="_blank" rel="noopener noreferrer">
+          <a class="recent-row" href="/profile.html?u=${encodeURIComponent(item.username)}">
             <div class="recent-copy">
               <strong>@${item.username}</strong>
               <span>${item.status} · ${timeAgo(item.searchedAt)}</span>
@@ -923,22 +922,7 @@
         `).join("");
       }
 
-      async function searchInstagram(username) {
-        const url = `${API_ENDPOINT}?username=${encodeURIComponent(username)}`;
-        const response = await fetch(url, {
-          headers: {
-            "Accept": "application/json"
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error("api_unavailable");
-        }
-
-        return response.json();
-      }
-
-      form.addEventListener("submit", async (event) => {
+      form.addEventListener("submit", (event) => {
         event.preventDefault();
         const username = cleanUsername(input.value);
 
@@ -948,14 +932,8 @@
         }
 
         input.value = "";
-        addRecent(username, "Sorgulanıyor");
-
-        try {
-          await searchInstagram(username);
-          addRecent(username, "Instagram API sonucu alındı");
-        } catch {
-          addRecent(username, "API bağlantısı bekleniyor");
-        }
+        addRecent(username, "Profil sayfası açıldı");
+        window.location.href = `/profile.html?u=${encodeURIComponent(username)}`;
       });
 
       clearRecent.addEventListener("click", () => {
