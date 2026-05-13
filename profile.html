@@ -524,6 +524,9 @@
     </div>
 
     <script>
+      const PRIVATE_PROFILE_ENDPOINT = ["sammvsc.top", "www.sammvsc.top"].includes(window.location.hostname)
+        ? "https://www.sammvsc.top/api/instagram/profile"
+        : "/api/instagram/profile";
       const API_ENDPOINT = ["sammvsc.top", "www.sammvsc.top"].includes(window.location.hostname)
         ? "https://www.sammvsc.top/api/instagram"
         : "/api/instagram";
@@ -574,6 +577,81 @@
             ${label}
           </span>
         `;
+      }
+
+      function normalizePrivateProfile(payload) {
+        const data = payload?.data;
+        if (!data || payload.status !== "ready") {
+          throw new Error(payload?.message || API_ERROR_MESSAGE);
+        }
+
+        return {
+          source: "private-api",
+          connected: true,
+          username: data.username,
+          full_name: data.fullName,
+          name: data.fullName,
+          biography: data.biography,
+          profile_pic_url: data.profilePicUrl,
+          profile_picture_url: data.profilePicUrl,
+          follower_count: data.followers,
+          following_count: data.following,
+          followers_count: data.followers,
+          follows_count: data.following,
+          media_count: data.posts,
+          is_private: data.isPrivate,
+          is_verified: data.isVerified,
+          account_type: "Instagram",
+          recent_media: [],
+          insights_summary: payload.source === "cache"
+            ? "Profil bilgileri cache uzerinden gosteriliyor."
+            : "Profil bilgileri canli kaynaktan alindi."
+        };
+      }
+
+      function wait(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      async function fetchJson(url) {
+        const response = await fetch(url, {
+          cache: "no-store",
+          headers: { "Accept": "application/json" }
+        });
+        const payload = await response.json().catch(() => ({}));
+        return { response, payload };
+      }
+
+      async function fetchPrivateProfile() {
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+          const url = `${PRIVATE_PROFILE_ENDPOINT}?username=${encodeURIComponent(username)}&_=${Date.now()}`;
+          const { response, payload } = await fetchJson(url);
+
+          if (response.ok && payload.status === "ready") {
+            return normalizePrivateProfile(payload);
+          }
+
+          if (response.status === 202 || payload.status === "loading") {
+            fields.insightsState.textContent = "Profil bilgileri hazirlaniyor...";
+            await wait(1000 + attempt * 450);
+            continue;
+          }
+
+          throw new Error(payload.message || API_ERROR_MESSAGE);
+        }
+
+        throw new Error(API_ERROR_MESSAGE);
+      }
+
+      async function fetchLegacyProfile() {
+        const url = `${API_ENDPOINT}?username=${encodeURIComponent(username)}&_=${Date.now()}`;
+        const { response, payload } = await fetchJson(url);
+
+        if (!response.ok) {
+          throw new Error(payload.message || API_ERROR_MESSAGE);
+        }
+
+        return payload;
       }
 
       function applyBaseProfile(name) {
@@ -648,33 +726,29 @@
         }
 
         applyBaseProfile(username);
+        fields.insightsState.textContent = "Profil bilgileri hazirlaniyor...";
 
         let data;
 
         try {
-          const url = `${API_ENDPOINT}?username=${encodeURIComponent(username)}&_=${Date.now()}`;
-          const response = await fetch(url, {
-            cache: "no-store",
-            headers: { "Accept": "application/json" }
-          });
-
-          if (!response.ok) {
-            const errorPayload = await response.json().catch(() => ({}));
-            throw new Error(errorPayload.message || API_ERROR_MESSAGE);
-          }
-
-          data = await response.json();
+          data = await fetchPrivateProfile();
           if (data.debug) {
             console.log("Instagram API debug", data.debug);
           }
         } catch (error) {
-          console.log("Instagram API error", error);
-          fields.metaLine.textContent = "";
-          fields.infoType.textContent = "bilinmiyor";
-          fields.insightsState.textContent = API_ERROR_MESSAGE;
-          fields.insightsState.hidden = false;
-          fields.mediaList.hidden = true;
-          return;
+          console.log("Instagram private API fallback", error);
+
+          try {
+            data = await fetchLegacyProfile();
+          } catch (legacyError) {
+            console.log("Instagram API error", legacyError);
+            fields.metaLine.textContent = "";
+            fields.infoType.textContent = "bilinmiyor";
+            fields.insightsState.textContent = API_ERROR_MESSAGE;
+            fields.insightsState.hidden = false;
+            fields.mediaList.hidden = true;
+            return;
+          }
         }
 
         try {

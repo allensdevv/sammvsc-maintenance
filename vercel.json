@@ -4,6 +4,14 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/api/debug/instagram",
+      "destination": "/api/debug/instagram.js"
+    },
+    {
+      "source": "/api/instagram/profile",
+      "destination": "/api/instagram/profile.js"
+    },
+    {
       "source": "/api/instagram",
       "destination": "/api/instagram.js"
     }

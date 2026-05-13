@@ -1,0 +1,15 @@
+{
+  "name": "sammvsc-maintenance",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "check": "node --check api/instagram.js && node --check api/instagram/profile.js && node --check api/debug/instagram.js && node --check lib/cache.js && node --check lib/instagramPrivateApi.js"
+  },
+  "dependencies": {
+    "instagram-private-api": "^1.46.1"
+  }
+}

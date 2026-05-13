@@ -1,6 +1,6 @@
 # Deployment
 
-This project needs a backend-capable host for `/api/instagram`.
+This project needs a backend-capable host for `/api/instagram` and `/api/instagram/profile`.
 GitHub Pages can serve the static pages, but it cannot run the API endpoint.
 
 ## Recommended host
@@ -10,7 +10,44 @@ Use Vercel and connect this GitHub repository.
 ## Environment variables
 
 Choose one provider and add the matching variables in Vercel Project Settings > Environment Variables.
-The frontend only calls `/api/instagram`; provider keys stay private on the backend.
+The frontend calls `/api/instagram/profile` first, then falls back to `/api/instagram`.
+Provider keys stay private on the backend.
+
+## Fast profile API
+
+The fast path uses `instagram-private-api` from a Vercel Serverless Function.
+It reads Redis/Vercel KV before calling Instagram:
+
+```text
+ig:profile:{username}
+ig:profile:stale:{username}
+ig:session:{login_username}
+ig:lock:{username}
+```
+
+Required production variables:
+
+```env
+IG_PRIVATE_USERNAME=your_instagram_login_username
+IG_PRIVATE_PASSWORD=your_instagram_login_password
+KV_REST_API_URL=your_vercel_kv_or_upstash_rest_url
+KV_REST_API_TOKEN=your_vercel_kv_or_upstash_rest_token
+```
+
+Recommended optional variables:
+
+```env
+INSTAGRAM_PROFILE_TTL_SECONDS=21600
+INSTAGRAM_PROFILE_STALE_TTL_SECONDS=604800
+IG_SESSION_TTL_SECONDS=1209600
+IG_REQUEST_MIN_DELAY_MS=1200
+IG_REQUEST_RANDOM_DELAY_MS=1800
+IG_LOGIN_COOLDOWN_SECONDS=600
+IG_PROXY=
+```
+
+Use a dedicated Instagram account for `IG_PRIVATE_USERNAME`. Do not use a personal main account.
+Vercel serverless instances are temporary, so Redis/KV is required in production for session and cache persistence.
 
 RapidAPI is the easiest cheap trial:
 
@@ -35,6 +72,8 @@ INSTAGRAM_PROVIDER=apify
 APIFY_TOKEN=your_apify_token
 APIFY_ACTOR=apify/instagram-profile-scraper
 ```
+
+Keep Apify configured as the fallback provider. If the private API fails and no stale cache exists, `/api/instagram/profile` can still use Apify.
 
 Bright Data:
 
@@ -62,9 +101,10 @@ Never commit provider keys or tokens to the repository.
 
 ## Local test
 
-Install the Vercel CLI and run:
+Install dependencies, then run Vercel locally:
 
 ```bash
+npm install
 npm i -g vercel
 vercel dev
 ```
@@ -73,7 +113,47 @@ Create a local `.env` file or add the same variables through Vercel. Then test:
 
 ```text
 http://localhost:3000/api/instagram?username=instagram
+http://localhost:3000/api/instagram/profile?username=instagram
+http://localhost:3000/api/debug/instagram?username=instagram
 http://localhost:3000/profile.html?u=instagram
+```
+
+Run a syntax check:
+
+```bash
+npm run check
+```
+
+## Vercel settings
+
+Use these project settings:
+
+```text
+Framework Preset: Other
+Install Command: npm install
+Build Command: empty
+Output Directory: empty
+Node.js Version: 20.x or newer
+```
+
+After changing environment variables, redeploy the latest production deployment.
+
+## Production debug
+
+Open this URL after deployment:
+
+```text
+https://www.sammvsc.top/api/debug/instagram?username=instagram
+```
+
+It does not return passwords, tokens, cookies, or serialized session data. It only reports:
+
+```text
+loginStatus
+session.restoreSuccess
+cache.readSuccess/writeSuccess
+tookMs
+instagramFetch.success or fail reason
 ```
 
 ## Domain
