@@ -360,10 +360,13 @@
         margin-top: 48px;
         border: 1px solid rgba(255, 255, 255, 0.09);
         border-radius: 16px;
-        background:
-          linear-gradient(110deg, rgba(255, 79, 216, 0.06), rgba(37, 99, 235, 0.08), rgba(17, 17, 17, 0.9)),
-          rgba(17, 17, 17, 0.9);
+        background: rgba(17, 17, 17, 0.94);
         overflow: hidden;
+      }
+
+      .featured-section {
+        background:
+          linear-gradient(110deg, rgba(22, 22, 22, 0.98), rgba(19, 27, 43, 0.92), rgba(17, 17, 17, 0.98));
       }
 
       .featured-head,
@@ -373,10 +376,11 @@
         justify-content: center;
         gap: 12px;
         width: 100%;
-        min-height: 86px;
+        min-height: 87px;
         color: #f7e6ff;
         font-size: clamp(22px, 4vw, 28px);
         font-weight: 900;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       }
 
       .featured-head span,
@@ -412,22 +416,22 @@
 
       .featured-user {
         width: 220px;
-        min-height: 154px;
+        min-height: 153px;
         flex: 0 0 auto;
-        padding: 16px 18px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 17px 18px 15px;
+        border: 1px solid rgba(255, 255, 255, 0.09);
         border-radius: 10px;
-        background: rgba(255, 255, 255, 0.045);
+        background: rgba(31, 31, 31, 0.78);
       }
 
       .featured-avatar {
         width: 66px;
         height: 66px;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
         border: 2px solid #e83acc;
         border-radius: 50%;
         background:
-          linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(37, 99, 235, 0.16)),
+          radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.18), transparent 0 26%),
           var(--avatar-bg, #171717);
         box-shadow: 0 0 26px rgba(236, 72, 213, 0.72);
       }
