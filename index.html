@@ -792,6 +792,9 @@
     </div>
     <script>
       const RECENT_KEY = "instapp_recent_searches";
+      const AVATAR_ENDPOINT = ["sammvsc.top", "www.sammvsc.top"].includes(window.location.hostname)
+        ? "https://www.sammvsc.top/api/instagram"
+        : "/api/instagram";
       const form = document.querySelector("#searchForm");
       const input = document.querySelector("#usernameInput");
       const recentList = document.querySelector("#recentList");
@@ -861,10 +864,7 @@
 
         recentList.innerHTML = items.map((item) => {
           const letter = (item.username || "I")[0].toUpperCase();
-          const picUrl = item.profilePicUrl || "";
-          const avatarInner = picUrl
-            ? `<img src="${picUrl}" alt="" referrerpolicy="no-referrer" onerror="this.onerror=null;this.parentElement.textContent='${letter}'">`
-            : letter;
+          const proxySrc = `${AVATAR_ENDPOINT}?username=${encodeURIComponent(item.username)}&avatar=1`;
           const nameLabel = item.fullName
             ? `<strong>${item.fullName}</strong>`
             : `<strong>@${item.username}</strong>`;
@@ -874,7 +874,9 @@
           return `
             <a class="recent-row" href="/profile?u=${encodeURIComponent(item.username)}">
               <div class="recent-left">
-                <div class="recent-avatar">${avatarInner}</div>
+                <div class="recent-avatar" data-letter="${letter}">
+                  <img src="${proxySrc}" alt="" referrerpolicy="no-referrer" onerror="this.onerror=null;this.style.display='none';this.parentElement.textContent=this.parentElement.dataset.letter">
+                </div>
                 <div class="recent-copy">
                   ${nameLabel}
                   <span>${subLabel}</span>
