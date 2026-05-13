@@ -848,11 +848,6 @@
       let recentVisible = true;
 
       function cleanUrl() {
-        if (window.location.hostname === "www.sammvsc.top") {
-          window.location.replace("https://sammvsc.top" + window.location.pathname);
-          return;
-        }
-
         if (window.location.search || window.location.hash) {
           window.history.replaceState({}, document.title, window.location.origin + window.location.pathname);
         }
@@ -912,7 +907,7 @@
         }
 
         recentList.innerHTML = items.map((item) => `
-          <a class="recent-row" href="/profile.html?u=${encodeURIComponent(item.username)}">
+          <a class="recent-row" href="/profile?u=${encodeURIComponent(item.username)}">
             <div class="recent-copy">
               <strong>@${item.username}</strong>
               <span>${item.status} · ${timeAgo(item.searchedAt)}</span>
@@ -933,7 +928,7 @@
 
         input.value = "";
         addRecent(username, "Profil sayfası açıldı");
-        window.location.href = `/profile.html?u=${encodeURIComponent(username)}`;
+        window.location.href = `/profile?u=${encodeURIComponent(username)}`;
       });
 
       clearRecent.addEventListener("click", () => {
