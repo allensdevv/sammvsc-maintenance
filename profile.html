@@ -535,13 +535,19 @@
 
         if (pictureUrl) {
           const image = document.createElement("img");
-          image.src = `${AVATAR_ENDPOINT}?username=${encodeURIComponent(data.username || username)}&avatar=1`;
           image.alt = "";
+          image.loading = "eager";
           image.referrerPolicy = "no-referrer";
+          let triedProxy = false;
           image.onerror = () => {
-            image.onerror = null;
-            image.src = pictureUrl;
+            if (!triedProxy) {
+              triedProxy = true;
+              image.src = `${AVATAR_ENDPOINT}?username=${encodeURIComponent(data.username || username)}&avatar=1`;
+              return;
+            }
+            fields.avatar.textContent = (data.username || username || "I")[0];
           };
+          image.src = pictureUrl;
           fields.avatar.replaceChildren(image);
         }
         fields.displayName.textContent = displayName;
