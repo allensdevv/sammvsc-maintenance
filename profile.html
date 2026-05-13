@@ -311,6 +311,33 @@
         color: #d7deea;
         font-size: 14px;
         font-weight: 700;
+        cursor: default;
+      }
+
+      .view-pill::after {
+        content: "Profili görüntüleyen kişi sayısı";
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        white-space: nowrap;
+        padding: 6px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background: rgba(18, 18, 18, 0.96);
+        color: #c8d0de;
+        font-size: 13px;
+        font-weight: 500;
+        pointer-events: none;
+        opacity: 0;
+        transform: translateY(-4px);
+        transition: opacity 160ms ease, transform 160ms ease;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+
+      .view-pill:hover::after {
+        opacity: 1;
+        transform: translateY(0);
       }
 
       .avatar {
