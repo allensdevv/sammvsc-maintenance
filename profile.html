@@ -371,11 +371,15 @@
         justify-content: center;
         gap: 9px;
         min-height: 42px;
+        padding: 0 12px;
         border: 1px solid transparent;
         border-radius: 8px;
+        background: transparent;
         color: #8f98a8;
+        font: inherit;
         font-weight: 650;
         font-size: 14px;
+        cursor: pointer;
       }
 
       .tab.active {
@@ -389,11 +393,16 @@
         height: 17px;
       }
 
-      .detail-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px;
+      .tab-panels {
         margin-top: 24px;
+      }
+
+      .tab-panel {
+        display: none;
+      }
+
+      .tab-panel.active {
+        display: block;
       }
 
       .panel {
@@ -491,7 +500,7 @@
       .profile-loading .profile-hero .view-pill,
       .profile-loading .profile-hero .profile-layout,
       .profile-loading .tabs .tab,
-      .profile-loading .panel > :not(.profile-skeleton) {
+      .profile-loading .tab-panel.active > :not(.profile-skeleton) {
         visibility: hidden;
       }
 
@@ -675,8 +684,7 @@
 
       @media (max-width: 820px) {
         .topbar,
-        .profile-layout,
-        .detail-grid {
+        .profile-layout {
           grid-template-columns: 1fr;
         }
 
@@ -827,16 +835,18 @@
             <span class="skeleton-shape"></span>
             <span class="skeleton-shape"></span>
           </div>
-          <a class="tab active" href="#"><svg viewBox="0 0 24 24" fill="none"><path d="M16 11a4 4 0 1 0-8 0M5 21a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Bilgiler</a>
-          <a class="tab" href="#"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Medya</a>
-          <a class="tab" href="#"><svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/></svg>Saatler</a>
-          <a class="tab" href="#"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M9 19v-8M14 19V9M19 19V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Insights</a>
-          <a class="tab" href="#"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7v5c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V7l8-4Z" stroke="currentColor" stroke-width="2"/></svg>Gizlilik</a>
-          <a class="tab" href="#"><svg viewBox="0 0 24 24" fill="none"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z" stroke="currentColor" stroke-width="2"/></svg>Yorum</a>
+          <button class="tab active" type="button" data-tab="bilgiler"><svg viewBox="0 0 24 24" fill="none"><path d="M16 11a4 4 0 1 0-8 0M5 21a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Bilgiler</button>
+          <button class="tab" type="button" data-tab="medya"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Medya</button>
+          <button class="tab" type="button" data-tab="saatler"><svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/></svg>Saatler</button>
+          <button class="tab" type="button" data-tab="insights"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M9 19v-8M14 19V9M19 19V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Insights</button>
+          <button class="tab" type="button" data-tab="gizlilik"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7v5c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V7l8-4Z" stroke="currentColor" stroke-width="2"/></svg>Gizlilik</button>
+          <button class="tab" type="button" data-tab="yorum"><svg viewBox="0 0 24 24" fill="none"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z" stroke="currentColor" stroke-width="2"/></svg>Yorum</button>
         </nav>
 
-        <section class="detail-grid">
-          <div class="panel">
+        <section class="tab-panels">
+
+          <!-- Bilgiler -->
+          <div class="panel tab-panel active" id="panel-bilgiler">
             <div class="profile-skeleton panel-skeleton" aria-hidden="true">
               <div class="panel-skeleton-group">
                 <span class="panel-skeleton-title skeleton-shape"></span>
@@ -870,36 +880,61 @@
               <span style="color:#697386">Biyografi</span>
               <div id="bio">API bağlantısı olmadan biyografi gösterilmez.</div>
             </div>
-            <div class="note-box">
-              <span style="color:#697386">Gizlilik Notu</span>
-              <div>Takipçi isim listesi, DM ve gizli profil içerikleri gösterilmez.</div>
-            </div>
           </div>
-          <div class="panel">
-            <div class="profile-skeleton panel-skeleton" aria-hidden="true">
-              <div class="panel-skeleton-group">
-                <span class="panel-skeleton-title skeleton-shape"></span>
-                <span class="panel-skeleton-row skeleton-shape"></span>
-                <span class="panel-skeleton-row short skeleton-shape"></span>
-                <span class="panel-skeleton-row skeleton-shape"></span>
-                <span class="panel-skeleton-row short skeleton-shape"></span>
-                <span class="panel-skeleton-row skeleton-shape"></span>
-              </div>
-              <div class="panel-skeleton-group">
-                <span class="panel-skeleton-title skeleton-shape"></span>
-                <span class="panel-skeleton-row skeleton-shape"></span>
-                <span class="panel-skeleton-row skeleton-shape"></span>
-                <span class="panel-skeleton-row skeleton-shape"></span>
-                <span class="panel-skeleton-row skeleton-shape"></span>
-              </div>
+
+          <!-- Medya -->
+          <div class="panel tab-panel" id="panel-medya">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Medya
             </div>
+            <div class="info-row"><span>Toplam Gönderi</span><strong id="mediaPosts">--</strong></div>
+            <div class="empty-state" id="mediaState">Medya verisi bu hesap için mevcut değil.</div>
+            <div class="media-list" id="mediaList" hidden></div>
+          </div>
+
+          <!-- Saatler -->
+          <div class="panel tab-panel" id="panel-saatler">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/></svg>
+              En İyi Paylaşım Saatleri
+            </div>
+            <div class="empty-state">Hesabın en aktif saatlerini analiz eden sistem yakında aktif olacak.</div>
+          </div>
+
+          <!-- Insights -->
+          <div class="panel tab-panel" id="panel-insights">
             <div class="panel-title">
               <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M8 19v-6M12 19V9M16 19v-9M20 19V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               Instagram İstatistikleri
             </div>
             <div class="empty-state" id="insightsState">API bağlantısı bekleniyor. Yetkili hesap bağlandığında erişim, gösterim, etkileşim ve medya metrikleri burada görünecek.</div>
-            <div class="media-list" id="mediaList" hidden></div>
           </div>
+
+          <!-- Gizlilik -->
+          <div class="panel tab-panel" id="panel-gizlilik">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7v5c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V7l8-4Z" stroke="currentColor" stroke-width="2"/></svg>
+              Gizlilik &amp; Güvenlik
+            </div>
+            <div class="info-row"><span>Gizli Hesap</span><strong id="gizliPrivate">bilinmiyor</strong></div>
+            <div class="info-row"><span>Onaylı Hesap</span><strong id="gizliVerified">bilinmiyor</strong></div>
+            <div class="info-row"><span>Takipçi / Takip Oranı</span><strong id="gizliRatio">bilinmiyor</strong></div>
+            <div class="note-box">
+              <span style="color:#697386">Gizlilik Notu</span>
+              <div>Takipçi isim listesi, DM ve gizli profil içerikleri gösterilmez.</div>
+            </div>
+          </div>
+
+          <!-- Yorum -->
+          <div class="panel tab-panel" id="panel-yorum">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z" stroke="currentColor" stroke-width="2"/></svg>
+              Yorum Analizi
+            </div>
+            <div class="empty-state">Yorum kalıpları ve etkileşim analizi yakında burada görünecek.</div>
+          </div>
+
         </section>
       </main>
     </div>
@@ -940,7 +975,12 @@
         infoLink: document.querySelector("#infoLink"),
         bio: document.querySelector("#bio"),
         insightsState: document.querySelector("#insightsState"),
-        mediaList: document.querySelector("#mediaList")
+        mediaList: document.querySelector("#mediaList"),
+        mediaPosts: document.querySelector("#mediaPosts"),
+        mediaState: document.querySelector("#mediaState"),
+        gizliPrivate: document.querySelector("#gizliPrivate"),
+        gizliVerified: document.querySelector("#gizliVerified"),
+        gizliRatio: document.querySelector("#gizliRatio")
       };
 
       function formatNumber(value) {
@@ -1107,12 +1147,11 @@
         fields.infoPrivate.textContent = data.is_private === true ? "Evet" : data.is_private === false ? "Hayır" : "bilinmiyor";
         fields.infoVerified.textContent = data.is_verified === true ? "Do\u011fruland\u0131" : data.is_verified === false ? "Do\u011frulanmad\u0131" : "bilinmiyor";
         fields.bio.textContent = data.biography || "Biyografi verisi API yanıtında bulunamadı.";
-        if (data.insights_summary) {
-          fields.insightsState.textContent = data.insights_summary;
-        }
 
+        // Medya paneli
+        fields.mediaPosts.textContent = formatNumber(data.media_count);
         if (Array.isArray(data.recent_media) && data.recent_media.length) {
-          fields.insightsState.hidden = true;
+          fields.mediaState.hidden = true;
           fields.mediaList.hidden = false;
           fields.mediaList.innerHTML = data.recent_media.slice(0, 5).map((item) => {
             const caption = item.caption ? item.caption.slice(0, 120) : "Açıklama yok";
@@ -1126,6 +1165,18 @@
             `;
           }).join("");
         }
+
+        // Insights paneli
+        if (data.insights_summary) {
+          fields.insightsState.textContent = data.insights_summary;
+        }
+
+        // Gizlilik paneli
+        const fc = data.follower_count ?? data.followers_count ?? 0;
+        const fg = data.following_count ?? data.follows_count ?? 0;
+        fields.gizliPrivate.textContent = data.is_private === true ? "Evet" : data.is_private === false ? "Hayır" : "bilinmiyor";
+        fields.gizliVerified.textContent = data.is_verified === true ? "Doğrulandı" : "Doğrulanmadı";
+        fields.gizliRatio.textContent = fg > 0 ? (fc / fg).toFixed(2) + "x" : fc > 0 ? "∞" : "--";
 
         document.body.classList.remove("profile-loading");
       }
@@ -1199,6 +1250,16 @@
 
         fields.copyHandle.classList.add("copied");
         setTimeout(() => fields.copyHandle.classList.remove("copied"), 900);
+      });
+
+      document.querySelectorAll(".tab[data-tab]").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+          document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+          tab.classList.add("active");
+          const panel = document.getElementById(`panel-${tab.dataset.tab}`);
+          if (panel) panel.classList.add("active");
+        });
       });
 
       loadProfile();
