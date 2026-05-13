@@ -65,9 +65,9 @@
 
       .topbar {
         min-height: 58px;
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
         align-items: center;
-        justify-content: space-between;
         gap: 20px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.07);
       }
@@ -83,15 +83,12 @@
         cursor: pointer;
       }
 
-      .login-button {
-        display: flex;
-        align-items: center;
-      }
-
       .nav-brand {
         gap: 10px;
+        justify-self: start;
         font-size: 18px;
         font-weight: 850;
+        white-space: nowrap;
       }
 
       .brand-icon,
@@ -116,6 +113,7 @@
       }
 
       .nav-links {
+        justify-self: center;
         gap: clamp(18px, 4vw, 42px);
         color: #b9c0ce;
         font-size: 14px;
@@ -135,24 +133,6 @@
       .nav-link svg {
         width: 16px;
         height: 16px;
-      }
-
-      .login-button {
-        gap: 10px;
-        min-height: 38px;
-        padding: 0 18px;
-        border: 0;
-        border-radius: 999px;
-        background: #5865f2;
-        color: #fff;
-        font-size: 14px;
-        font-weight: 900;
-        box-shadow: 0 12px 28px rgba(88, 101, 242, 0.2);
-      }
-
-      .login-button svg {
-        width: 17px;
-        height: 17px;
       }
 
       main {
@@ -374,103 +354,234 @@
         font-size: 13px;
       }
 
-      .section-title {
+      .featured-section,
+      .api-section {
+        width: min(1024px, 100%);
+        margin-top: 48px;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 16px;
+        background:
+          linear-gradient(110deg, rgba(255, 79, 216, 0.06), rgba(37, 99, 235, 0.08), rgba(17, 17, 17, 0.9)),
+          rgba(17, 17, 17, 0.9);
+        overflow: hidden;
+      }
+
+      .featured-head,
+      .api-head {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 14px;
-        margin-top: 48px;
-        color: #fff6b9;
-        font-size: clamp(23px, 4vw, 28px);
+        gap: 12px;
+        width: 100%;
+        min-height: 86px;
+        color: #f7e6ff;
+        font-size: clamp(22px, 4vw, 28px);
         font-weight: 900;
       }
 
-      .section-title span {
+      .featured-head span,
+      .api-head span {
         width: 46px;
         height: 46px;
         display: grid;
         place-items: center;
-        border: 1px solid rgba(250, 204, 21, 0.35);
+        border: 1px solid rgba(236, 72, 213, 0.38);
         border-radius: 14px;
-        background: rgba(250, 204, 21, 0.14);
-        color: var(--gold);
+        background: rgba(236, 72, 213, 0.16);
+        color: #ff74df;
+        box-shadow: 0 0 28px rgba(236, 72, 213, 0.18);
       }
 
-      .section-title svg {
+      .featured-head svg,
+      .api-head svg {
         width: 24px;
         height: 24px;
       }
 
-      .status-board {
-        width: min(512px, 100%);
-        display: grid;
-        gap: 12px;
-        margin-top: 18px;
+      .featured-track {
+        display: flex;
+        gap: 16px;
+        width: max-content;
+        padding: 0 0 20px;
+        animation: slideUsers 24s linear infinite;
       }
 
-      .status-card {
-        position: relative;
-        min-height: 76px;
+      .featured-section:hover .featured-track {
+        animation-play-state: paused;
+      }
+
+      .featured-user {
+        width: 220px;
+        min-height: 154px;
+        flex: 0 0 auto;
+        padding: 16px 18px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.045);
+      }
+
+      .featured-avatar {
+        width: 66px;
+        height: 66px;
+        margin-bottom: 16px;
+        border: 2px solid #e83acc;
+        border-radius: 50%;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(37, 99, 235, 0.16)),
+          var(--avatar-bg, #171717);
+        box-shadow: 0 0 26px rgba(236, 72, 213, 0.72);
+      }
+
+      .featured-user strong {
+        display: block;
+        color: #f3f4f8;
+        font-size: 16px;
+      }
+
+      .featured-user span {
+        display: block;
+        margin-top: 7px;
+        color: #ff75df;
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .api-section {
+        margin-top: 34px;
+        padding-bottom: 30px;
+        background: rgba(17, 17, 17, 0.9);
+      }
+
+      .api-head {
+        color: #f6f7fb;
+      }
+
+      .api-head span {
+        border-color: rgba(88, 166, 255, 0.34);
+        background: rgba(37, 99, 235, 0.16);
+        color: var(--blue-2);
+        box-shadow: none;
+      }
+
+      .api-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px 24px;
+        padding: 0 32px;
+      }
+
+      .api-card {
+        min-height: 64px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
         gap: 16px;
-        padding: 16px 18px;
-        border: 1px solid var(--soft-line);
-        border-radius: 14px;
-        background: rgba(17, 17, 17, 0.86);
-        overflow: hidden;
+        padding: 12px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.025);
       }
 
-      .status-card::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(90deg, rgba(37, 99, 235, 0.12), transparent 50%);
-        opacity: 0.5;
+      .api-icon {
+        width: 48px;
+        height: 48px;
+        flex: 0 0 auto;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(88, 166, 255, 0.28);
+        border-radius: 10px;
+        background: rgba(37, 99, 235, 0.12);
+        color: var(--blue-2);
       }
 
-      .status-copy,
-      .status-pill {
-        position: relative;
-        z-index: 1;
+      .api-icon svg {
+        width: 23px;
+        height: 23px;
       }
 
-      .status-copy strong {
+      .api-card strong {
         display: block;
         color: #f4f7ff;
         font-size: 15px;
       }
 
-      .status-copy span {
+      .api-card span {
         display: block;
-        margin-top: 5px;
-        color: #6f7886;
+        margin-top: 4px;
+        color: #727b89;
         font-size: 13px;
       }
 
-      .status-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        min-height: 34px;
-        padding: 0 12px;
-        border: 1px solid rgba(88, 166, 255, 0.3);
-        border-radius: 999px;
-        background: rgba(37, 99, 235, 0.14);
-        color: #9acaff;
-        font-size: 12px;
-        font-weight: 900;
-        white-space: nowrap;
+      .site-footer {
+        width: min(1200px, 100%);
+        display: grid;
+        grid-template-columns: 1.35fr 1fr 1fr 1fr;
+        gap: 54px;
+        margin-top: 76px;
+        padding: 48px 0 34px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        color: #6d7788;
       }
 
-      .status-pill::before {
-        content: "";
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--blue-2);
-        animation: blinkBlue 1.1s ease-in-out infinite;
+      .footer-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: #f4f7ff;
+        font-size: 19px;
+        font-weight: 900;
+      }
+
+      .footer-text {
+        max-width: 310px;
+        margin: 22px 0 0;
+        color: #7b8597;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .footer-social {
+        width: 38px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        margin-top: 24px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.06);
+        color: #a9b3c5;
+      }
+
+      .footer-col strong {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: #f4f7ff;
+        font-size: 15px;
+        margin-bottom: 18px;
+      }
+
+      .footer-col a,
+      .footer-col span {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-top: 13px;
+        color: #7b8597;
+        font-size: 14px;
+      }
+
+      .footer-bottom {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-top: 28px;
+        padding-top: 28px;
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+        font-size: 13px;
+      }
+
+      .footer-bottom b {
+        color: #58a6ff;
       }
 
       .report-button {
@@ -547,13 +658,23 @@
         }
       }
 
-      @media (max-width: 760px) {
-        .topbar {
-          justify-content: center;
+      @keyframes slideUsers {
+        from {
+          transform: translateX(0);
         }
 
-        .nav-links,
-        .login-button {
+        to {
+          transform: translateX(-50%);
+        }
+      }
+
+      @media (max-width: 760px) {
+        .topbar {
+          grid-template-columns: 1fr;
+          justify-items: center;
+        }
+
+        .nav-links {
           display: none;
         }
 
@@ -566,7 +687,16 @@
           font-size: 52px;
         }
 
-        .status-card {
+        .api-grid,
+        .site-footer {
+          grid-template-columns: 1fr;
+        }
+
+        .featured-user {
+          width: 190px;
+        }
+
+        .footer-bottom {
           align-items: flex-start;
           flex-direction: column;
         }
@@ -631,14 +761,7 @@
           </span>
         </nav>
 
-        <button class="login-button" type="button">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M8 13.5c-2.4 0-4.5 1.5-4.5 3.4 0 1 .8 1.8 1.8 1.8h1.2l.8 1.3 1.4-1.3H12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M16 13.5c2.4 0 4.5 1.5 4.5 3.4 0 1-.8 1.8-1.8 1.8h-1.2l-.8 1.3-1.4-1.3H12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M8.5 10.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7ZM15.5 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8"/>
-          </svg>
-          Giriş Yap
-        </button>
+        <span aria-hidden="true"></span>
       </header>
 
       <main>
@@ -694,32 +817,150 @@
           </div>
         </section>
 
-        <section class="section-title" aria-label="Bakım kapsamı">
-          <span aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            </svg>
-          </span>
-          Bakım & Geliştirme
+        <section class="featured-section" aria-label="Öne çıkan kullanıcılar">
+          <div class="featured-head">
+            <span aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="m12 3 2.2 5 5.4.6-4 3.7 1.1 5.3-4.7-2.7-4.7 2.7 1.1-5.3-4-3.7 5.4-.6L12 3Z" fill="currentColor"/>
+              </svg>
+            </span>
+            Öne Çıkan Kullanıcılar
+          </div>
+          <div class="featured-track" aria-hidden="true">
+            <div class="featured-user">
+              <div class="featured-avatar" style="--avatar-bg:#1f2937"></div>
+              <strong>Alperen</strong>
+              <span>◆ 6 Ay</span>
+            </div>
+            <div class="featured-user">
+              <div class="featured-avatar" style="--avatar-bg:#291414"></div>
+              <strong>Kenan</strong>
+              <span>◆ 5 Ay</span>
+            </div>
+            <div class="featured-user">
+              <div class="featured-avatar" style="--avatar-bg:#16332f"></div>
+              <strong>Melis</strong>
+              <span>◆ 4 Ay</span>
+            </div>
+            <div class="featured-user">
+              <div class="featured-avatar" style="--avatar-bg:#111827"></div>
+              <strong>Raven</strong>
+              <span>◆ 3 Ay</span>
+            </div>
+            <div class="featured-user">
+              <div class="featured-avatar" style="--avatar-bg:#332414"></div>
+              <strong>Atlas</strong>
+              <span>◆ 3 Ay</span>
+            </div>
+            <div class="featured-user">
+              <div class="featured-avatar" style="--avatar-bg:#1f2937"></div>
+              <strong>Alperen</strong>
+              <span>◆ 6 Ay</span>
+            </div>
+            <div class="featured-user">
+              <div class="featured-avatar" style="--avatar-bg:#291414"></div>
+              <strong>Kenan</strong>
+              <span>◆ 5 Ay</span>
+            </div>
+            <div class="featured-user">
+              <div class="featured-avatar" style="--avatar-bg:#16332f"></div>
+              <strong>Melis</strong>
+              <span>◆ 4 Ay</span>
+            </div>
+            <div class="featured-user">
+              <div class="featured-avatar" style="--avatar-bg:#111827"></div>
+              <strong>Raven</strong>
+              <span>◆ 3 Ay</span>
+            </div>
+            <div class="featured-user">
+              <div class="featured-avatar" style="--avatar-bg:#332414"></div>
+              <strong>Atlas</strong>
+              <span>◆ 3 Ay</span>
+            </div>
+          </div>
         </section>
 
-        <section class="status-board" aria-label="Bakım durumları">
-          <div class="status-card">
-            <div class="status-copy">
-              <strong>Yeni analiz paneli</strong>
-              <span>Profil, gönderi ve etkileşim ekranları yeniden düzenleniyor.</span>
+        <section class="api-section" aria-label="Instagram API ile takip edilebilenler">
+          <div class="api-head">Neler Takip Edebilirsiniz</div>
+          <div class="api-grid">
+            <div class="api-card">
+              <div class="api-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M16 11a4 4 0 1 0-8 0M5 21a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <div><strong>Profil Bilgileri</strong><span>Kullanıcı adı, biyografi, profil fotoğrafı ve hesap türü</span></div>
             </div>
-            <div class="status-pill">Devam ediyor</div>
-          </div>
-
-          <div class="status-card">
-            <div class="status-copy">
-              <strong>Güvenli veri bağlantısı</strong>
-              <span>Backend, token saklama ve izinli sorgu akışı kuruluyor.</span>
+            <div class="api-card">
+              <div class="api-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <div><strong>Medya İçerikleri</strong><span>Gönderi, Reels, açıklama, medya türü ve yayın zamanı</span></div>
             </div>
-            <div class="status-pill">Hazırlanıyor</div>
+            <div class="api-card">
+              <div class="api-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M8 19v-6M12 19V9M16 19v-9M20 19V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <div><strong>Insights Metrikleri</strong><span>Erişim, gösterim, etkileşim, kaydetme ve paylaşım</span></div>
+            </div>
+            <div class="api-card">
+              <div class="api-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+              </div>
+              <div><strong>Yorum Yönetimi</strong><span>Yetkili hesap medyalarındaki yorumları okuma ve yönetme</span></div>
+            </div>
+            <div class="api-card">
+              <div class="api-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <div><strong>Aktif Saatler</strong><span>Profesyonel hesaplarda takipçi aktivite zamanları</span></div>
+            </div>
+            <div class="api-card">
+              <div class="api-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7v5c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V7l8-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+              </div>
+              <div><strong>Gizlilik Sınırı</strong><span>Takipçi isim listesi, DM ve gizli profil içeriği gösterilmez</span></div>
+            </div>
           </div>
         </section>
+
+        <footer class="site-footer">
+          <div>
+            <div class="footer-brand">
+              <span class="brand-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/>
+                  <path d="m16 16 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </span>
+              Instapp
+            </div>
+            <p class="footer-text">Instagram profil analiz platformu. Yetkili metrikler, güvenli veri akışı ve profesyonel raporlama.</p>
+            <a class="footer-social" href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                <rect x="4" y="4" width="16" height="16" rx="5" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="12" cy="12" r="3.3" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+            </a>
+          </div>
+          <div class="footer-col">
+            <strong>Sayfalar</strong>
+            <a href="/">Bakım Modu</a>
+            <a href="/">Kullanıcı Analizi</a>
+            <a href="/">Sistem Durumu</a>
+          </div>
+          <div class="footer-col">
+            <strong>Yasal</strong>
+            <a href="/">Gizlilik Politikası</a>
+            <a href="/">Kullanım Şartları</a>
+          </div>
+          <div class="footer-col">
+            <strong>Topluluk</strong>
+            <a href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer">Instagram Profilimiz</a>
+          </div>
+          <div class="footer-bottom">
+            <span>© 2026 Instapp. Tüm hakları saklıdır.</span>
+            <span>Meta veya Instagram ile bağlantılı değildir. <b>sammvsc.top</b></span>
+          </div>
+        </footer>
       </main>
     </div>
     <script>
