@@ -523,6 +523,7 @@
         fields.avatar.textContent = clean[0] || "I";
         fields.displayName.textContent = clean;
         fields.handle.textContent = `@${clean}`;
+        fields.metaLine.textContent = "Profil bilgileri aliniyor...";
         fields.infoUsername.textContent = `@${clean}`;
         fields.infoLink.innerHTML = `<a href="https://instagram.com/${clean}" target="_blank" rel="noopener noreferrer">aç</a>`;
       }
@@ -552,7 +553,7 @@
         }
         fields.displayName.textContent = displayName;
         fields.handle.textContent = `@${data.username || username}`;
-        fields.metaLine.textContent = data.connected ? "Instagram verisi alındı" : "Canlı Instagram API bağlantısı bekleniyor";
+        fields.metaLine.textContent = data.cache?.hit ? "Instagram verisi cache'den alindi" : data.connected ? "Instagram verisi alindi" : "Canli Instagram API baglantisi bekleniyor";
         fields.posts.textContent = formatNumber(data.media_count);
         fields.followers.textContent = formatNumber(followerCount);
         fields.following.textContent = formatNumber(followingCount);

@@ -2,6 +2,9 @@ const GRAPH_VERSION = process.env.META_GRAPH_VERSION || "v20.0";
 const GRAPH_BASE = `https://graph.instagram.com/${GRAPH_VERSION}`;
 const PUBLIC_PROFILE_URL = "https://i.instagram.com/api/v1/users/web_profile_info/";
 const USER_MESSAGE = "Profil bilgileri \u015fu an al\u0131nam\u0131yor. L\u00fctfen sonra tekrar deneyin.";
+const PROFILE_CACHE_TTL_MS = Number(process.env.INSTAGRAM_CACHE_TTL_MS || 30 * 60 * 1000);
+const profileCache = globalThis.__sammvscProfileCache || new Map();
+globalThis.__sammvscProfileCache = profileCache;
 
 function sanitizeUsername(value = "") {
   return String(value).trim().replace(/^@/, "").replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 30);
@@ -57,6 +60,47 @@ function providerError(status = 502, details = null) {
       details
     }
   };
+}
+
+function cacheKey(provider, username) {
+  return `${provider}:${username.toLowerCase()}`;
+}
+
+function getCachedProfile(provider, username) {
+  const cached = profileCache.get(cacheKey(provider, username));
+  if (!cached) return null;
+  if (Date.now() - cached.createdAt > PROFILE_CACHE_TTL_MS) {
+    profileCache.delete(cacheKey(provider, username));
+    return null;
+  }
+  return {
+    ...cached.profile,
+    cache: {
+      hit: true,
+      ttl_seconds: Math.max(0, Math.round((PROFILE_CACHE_TTL_MS - (Date.now() - cached.createdAt)) / 1000))
+    }
+  };
+}
+
+function setCachedProfile(provider, username, profile) {
+  if (!profile || profile.error) return profile;
+  profileCache.set(cacheKey(provider, username), {
+    createdAt: Date.now(),
+    profile
+  });
+  return {
+    ...profile,
+    cache: {
+      hit: false,
+      ttl_seconds: Math.round(PROFILE_CACHE_TTL_MS / 1000)
+    }
+  };
+}
+
+async function fetchCachedProviderProfile(provider, username, accessToken) {
+  const cached = getCachedProfile(provider, username);
+  if (cached) return cached;
+  return setCachedProfile(provider, username, await fetchByProvider(provider, username, accessToken));
 }
 
 function pick(source, keys) {
@@ -538,7 +582,7 @@ module.exports = async function handler(request, response) {
 
   try {
     if (provider !== "auto") {
-      const profile = await fetchByProvider(provider, username, accessToken);
+      const profile = await fetchCachedProviderProfile(provider, username, accessToken);
       if (request.query?.avatar === "1") {
         return sendAvatar(response, profile.profile_pic_url || profile.profile_picture_url);
       }
@@ -560,28 +604,28 @@ module.exports = async function handler(request, response) {
     }
 
     if (process.env.APIFY_TOKEN) {
-      const profile = await fetchApifyProfile(username);
+      const profile = await fetchCachedProviderProfile("apify", username, accessToken);
       if (request.query?.avatar === "1") {
         return sendAvatar(response, profile.profile_pic_url || profile.profile_picture_url);
       }
       return sendJson(response, 200, profile);
     }
     if (process.env.RAPIDAPI_KEY) {
-      const profile = await fetchRapidApiProfile(username);
+      const profile = await fetchCachedProviderProfile("rapidapi", username, accessToken);
       if (request.query?.avatar === "1") {
         return sendAvatar(response, profile.profile_pic_url || profile.profile_picture_url);
       }
       return sendJson(response, 200, profile);
     }
     if (process.env.BRIGHTDATA_API_KEY) {
-      const profile = await fetchBrightDataProfile(username);
+      const profile = await fetchCachedProviderProfile("brightdata", username, accessToken);
       if (request.query?.avatar === "1") {
         return sendAvatar(response, profile.profile_pic_url || profile.profile_picture_url);
       }
       return sendJson(response, 200, profile);
     }
     if (process.env.SCRAPINGBEE_API_KEY) {
-      const profile = await fetchScrapingBeeProfile(username);
+      const profile = await fetchCachedProviderProfile("scrapingbee", username, accessToken);
       if (request.query?.avatar === "1") {
         return sendAvatar(response, profile.profile_pic_url || profile.profile_picture_url);
       }
@@ -589,7 +633,7 @@ module.exports = async function handler(request, response) {
     }
 
     if (process.env.ALLOW_PUBLIC_WEB_FALLBACK === "true") {
-      const profile = await fetchPublicProfile(username);
+      const profile = await fetchCachedProviderProfile("public", username, accessToken);
       if (request.query?.avatar === "1") {
         return sendAvatar(response, profile.profile_pic_url || profile.profile_picture_url);
       }
