@@ -168,6 +168,13 @@
         font-weight: 950;
         box-shadow: 0 0 44px rgba(37, 99, 235, 0.22);
         text-transform: uppercase;
+        overflow: hidden;
+      }
+
+      .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
       }
 
       h1 {
@@ -315,6 +322,32 @@
         text-align: center;
       }
 
+      .media-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .media-item {
+        padding: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .media-item strong {
+        display: block;
+        color: #f4f7ff;
+        font-size: 14px;
+      }
+
+      .media-item span {
+        display: block;
+        margin-top: 6px;
+        color: #778293;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
       .report-button {
         position: fixed;
         right: 34px;
@@ -439,6 +472,7 @@
               Instagram İstatistikleri
             </div>
             <div class="empty-state" id="insightsState">API bağlantısı bekleniyor. Yetkili hesap bağlandığında erişim, gösterim, etkileşim ve medya metrikleri burada görünecek.</div>
+            <div class="media-list" id="mediaList" hidden></div>
           </div>
         </section>
       </main>
@@ -461,7 +495,8 @@
         infoType: document.querySelector("#infoType"),
         infoLink: document.querySelector("#infoLink"),
         bio: document.querySelector("#bio"),
-        insightsState: document.querySelector("#insightsState")
+        insightsState: document.querySelector("#insightsState"),
+        mediaList: document.querySelector("#mediaList")
       };
 
       function formatNumber(value) {
@@ -481,6 +516,9 @@
       }
 
       function applyApiProfile(data) {
+        if (data.profile_picture_url) {
+          fields.avatar.innerHTML = `<img src="${data.profile_picture_url}" alt="">`;
+        }
         fields.displayName.textContent = data.name || data.username || username;
         fields.handle.textContent = `@${data.username || username}`;
         fields.metaLine.textContent = data.connected ? "Instagram API ile doğrulandı" : "Canlı Instagram API bağlantısı bekleniyor";
@@ -491,6 +529,22 @@
         fields.bio.textContent = data.biography || "Biyografi verisi API yanıtında bulunamadı.";
         if (data.insights_summary) {
           fields.insightsState.textContent = data.insights_summary;
+        }
+
+        if (Array.isArray(data.recent_media) && data.recent_media.length) {
+          fields.insightsState.hidden = true;
+          fields.mediaList.hidden = false;
+          fields.mediaList.innerHTML = data.recent_media.slice(0, 5).map((item) => {
+            const caption = item.caption ? item.caption.slice(0, 120) : "Açıklama yok";
+            const likes = formatNumber(item.like_count);
+            const comments = formatNumber(item.comments_count);
+            return `
+              <a class="media-item" href="${item.permalink || "#"}" target="_blank" rel="noopener noreferrer">
+                <strong>${item.media_type || "Medya"} · ${likes} beğeni · ${comments} yorum</strong>
+                <span>${caption}</span>
+              </a>
+            `;
+          }).join("");
         }
       }
 
