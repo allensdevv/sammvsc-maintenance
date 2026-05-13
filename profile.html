@@ -9,34 +9,26 @@
     <style>
       :root {
         color-scheme: dark;
-        --bg: #050505;
-        --line: rgba(255, 255, 255, 0.09);
         --ink: #f7f9ff;
-        --muted: #8993a3;
         --blue: #a78bfa;
-        --accent-gradient: linear-gradient(100deg, #7c6dff 0%, #a66cff 48%, #f472d0 100%);
+        --accent: linear-gradient(100deg, #7c6dff 0%, #a66cff 48%, #f472d0 100%);
+        --card-bg: #111214;
+        --card-border: rgba(255,255,255,0.08);
       }
 
-      * { box-sizing: border-box; }
-
+      * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
         min-height: 100vh;
-        margin: 0;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.11), transparent 26rem), #050505;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+        background: radial-gradient(circle at 50% 25%, rgba(109,59,231,0.13), transparent 28rem), #0b0b0d;
         color: var(--ink);
       }
-
       a { color: inherit; text-decoration: none; }
       button { font: inherit; cursor: pointer; }
 
-      .page {
-        width: min(1220px, calc(100% - 32px));
-        margin: 0 auto;
-        padding-bottom: 64px;
-      }
-
       /* ── TOPBAR ── */
+      .page { width: min(1220px, calc(100% - 32px)); margin: 0 auto; padding-bottom: 64px; }
+
       .topbar {
         min-height: 70px;
         display: grid;
@@ -45,292 +37,268 @@
         gap: 20px;
         border-bottom: 1px solid rgba(255,255,255,0.07);
       }
-
       .brand { display: inline-flex; align-items: center; gap: 10px; justify-self: start; font-size: 24px; font-weight: 900; white-space: nowrap; line-height: 1; }
       .brand-word { color: #fff; font-weight: 900; }
       .brand-accent { color: #a99cff; }
       .brand-beta { min-height: 19px; display: inline-grid; place-items: center; padding: 0 7px; border: 1px solid rgba(139,92,246,0.5); border-radius: 5px; background: rgba(104,71,220,0.24); color: #c9c0ff; font-size: 10px; font-weight: 900; line-height: 1; }
-      .brand-icon { width: 42px; height: 42px; display: grid; place-items: center; border: 0; background: transparent; }
+      .brand-icon { width: 42px; height: 42px; display: grid; place-items: center; background: transparent; }
       .brand-logo { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 12px rgba(167,139,250,0.28)); }
-
-      .nav { display: flex; align-items: center; justify-self: center; gap: clamp(18px, 4vw, 42px); color: #b9c0ce; font-size: 14px; font-weight: 700; }
+      .nav { display: flex; align-items: center; justify-self: center; gap: 36px; color: #b9c0ce; font-size: 14px; font-weight: 700; }
       .nav-link { display: inline-flex; align-items: center; gap: 8px; }
       .nav-link svg { width: 16px; height: 16px; }
       .nav-link.gold { color: #facc15; }
 
-      /* ── TWO-COLUMN LAYOUT ── */
+      /* ── WRAPPER ── */
       .profile-wrapper {
         display: grid;
-        grid-template-columns: 290px 1fr;
-        gap: 20px;
+        grid-template-columns: 300px 1fr;
+        gap: 22px;
         margin-top: 24px;
         align-items: start;
       }
 
-      /* ── SIDEBAR ── */
-      .profile-sidebar {
+      /* ══════════════════════════════
+         LEFT CARD
+      ══════════════════════════════ */
+      .profile-card {
         border-radius: 16px;
-        border: 1px solid var(--line);
-        background: rgba(13, 13, 13, 0.97);
+        border: 1px solid var(--card-border);
+        background: var(--card-bg);
         overflow: hidden;
         position: sticky;
         top: 20px;
       }
 
-      .sidebar-cover {
-        height: 110px;
-        background: linear-gradient(135deg, #2a1660 0%, #3d1272 45%, #140936 100%);
+      .card-cover {
+        height: 100px;
+        background: linear-gradient(140deg, #2e1266 0%, #4a1782 45%, #1a0842 100%);
       }
 
-      .sidebar-body { padding: 0 18px 22px; }
+      .card-body { padding: 0 20px 20px; }
 
-      .avatar-row {
+      .card-avatar-row {
         display: flex;
         align-items: flex-end;
         justify-content: space-between;
-        margin-top: -46px;
-        margin-bottom: 12px;
+        margin-top: -42px;
+        margin-bottom: 14px;
       }
 
       .avatar {
-        width: 88px;
-        height: 88px;
-        flex-shrink: 0;
+        width: 86px; height: 86px;
         border-radius: 50%;
-        border: 4px solid #0d0d0d;
-        background: linear-gradient(135deg, #151b2a, #263b66);
-        display: grid;
-        place-items: center;
-        color: #fff;
-        font-size: 36px;
-        font-weight: 780;
+        border: 4px solid var(--card-bg);
+        background: linear-gradient(135deg, #1a2540, #2e4a80);
+        display: grid; place-items: center;
+        color: #fff; font-size: 34px; font-weight: 780;
         text-transform: uppercase;
-        overflow: hidden;
+        overflow: hidden; flex-shrink: 0;
       }
       .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
       .view-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 5px 11px;
         border-radius: 8px;
         border: 1px solid rgba(255,255,255,0.1);
         background: rgba(255,255,255,0.05);
-        font-size: 13px;
-        font-weight: 600;
-        color: #d7deea;
-        margin-bottom: 4px;
+        font-size: 13px; font-weight: 600; color: #cdd4e0;
+        margin-bottom: 2px;
       }
       .view-pill svg { width: 14px; height: 14px; color: var(--blue); }
 
-      .sidebar-name-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 4px;
-        flex-wrap: wrap;
+      .card-name-row {
+        display: flex; align-items: center; gap: 8px;
+        margin-bottom: 2px; flex-wrap: wrap;
+      }
+      .card-name { font-size: 20px; font-weight: 800; color: #fff; line-height: 1.2; }
+      .verified-badge svg { width: 20px; height: 20px; vertical-align: middle; display: block; }
+
+      .card-handle-row {
+        display: flex; align-items: center; gap: 8px;
+        margin-bottom: 12px; color: #8a94a4; font-size: 14px;
+      }
+      .copy-btn {
+        width: 24px; height: 24px; display: grid; place-items: center;
+        border: 1px solid rgba(255,255,255,0.1); border-radius: 5px;
+        background: rgba(255,255,255,0.04); color: #8a94a4;
+        transition: background 140ms, color 140ms; padding: 0;
+      }
+      .copy-btn:hover { background: rgba(255,255,255,0.09); color: #cdd4e0; }
+      .copy-btn.copied { color: #7de8a0; border-color: rgba(125,232,160,0.3); }
+      .copy-btn svg { width: 12px; height: 12px; }
+
+      .card-bio {
+        font-size: 13px; color: #9aa3b2; line-height: 1.55;
+        margin-bottom: 16px;
       }
 
-      .sidebar-name {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 800;
-        color: #fff;
-        line-height: 1.2;
-      }
-
-      .verified-badge { display: inline-flex; align-items: center; }
-      .verified-badge svg { width: 20px; height: 20px; }
-
-      .handle-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 14px;
-        color: #8a94a4;
-        font-size: 14px;
-      }
-
-      .copy-handle {
-        width: 26px; height: 26px;
-        display: grid; place-items: center;
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 6px;
-        background: rgba(255,255,255,0.04);
-        color: #8a94a4;
-        transition: background 150ms, color 150ms;
-        padding: 0;
-      }
-      .copy-handle:hover { background: rgba(255,255,255,0.08); color: #cdd4e0; }
-      .copy-handle.copied { color: #7de8a0; border-color: rgba(125,232,160,0.3); }
-      .copy-handle svg { width: 13px; height: 13px; }
-
-      .sidebar-bio {
-        font-size: 13px;
-        color: #9aa3b2;
-        line-height: 1.6;
-        margin: 0 0 16px;
-      }
-
-      .sidebar-stats {
+      /* Stat boxes row */
+      .card-stats {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 8px;
         margin-bottom: 16px;
       }
-
-      .stat-box {
-        padding: 12px 6px;
+      .cstat {
+        padding: 11px 6px;
         border-radius: 10px;
         background: rgba(255,255,255,0.04);
         border: 1px solid rgba(255,255,255,0.07);
         text-align: center;
       }
-      .stat-box strong { display: block; font-size: 16px; font-weight: 800; color: #fff; line-height: 1.2; }
-      .stat-box span { display: block; font-size: 10px; color: #7b8597; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
+      .cstat strong { display: block; font-size: 16px; font-weight: 800; color: #fff; }
+      .cstat span { display: block; font-size: 10px; color: #7b8597; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
 
-      .sidebar-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 14px 0; }
+      .card-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 14px 0; }
 
-      .sidebar-meta { font-size: 13px; color: #8a94a4; min-height: 4px; }
+      /* Activity rows */
+      .card-meta { margin-bottom: 4px; }
+      .meta-row {
+        display: flex; align-items: center; gap: 10px;
+        padding: 5px 0; font-size: 13px; color: #8a94a4;
+      }
+      .meta-row svg { width: 15px; height: 15px; flex-shrink: 0; color: #667080; }
 
-      .ig-open-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        width: 100%;
-        padding: 12px;
-        margin-top: 14px;
-        border-radius: 10px;
-        background: var(--accent-gradient);
-        color: #fff;
-        font-size: 14px;
-        font-weight: 700;
+      .card-ig-btn {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        width: 100%; padding: 12px; margin-top: 14px;
+        border-radius: 10px; background: var(--accent);
+        color: #fff; font-size: 14px; font-weight: 700;
         transition: opacity 150ms;
       }
-      .ig-open-btn:hover { opacity: 0.88; }
-      .ig-open-btn svg { width: 16px; height: 16px; }
+      .card-ig-btn:hover { opacity: 0.88; }
+      .card-ig-btn svg { width: 16px; height: 16px; }
 
-      /* ── MAIN CONTENT ── */
+      /* ══════════════════════════════
+         RIGHT — TABS + PANELS
+      ══════════════════════════════ */
       .profile-main { min-width: 0; }
 
       .tabs {
         display: flex;
         border-bottom: 1px solid rgba(255,255,255,0.1);
         margin-bottom: 20px;
-        overflow-x: auto;
-        scrollbar-width: none;
+        overflow-x: auto; scrollbar-width: none;
       }
       .tabs::-webkit-scrollbar { display: none; }
 
       .tab {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 14px 22px;
-        background: transparent;
-        border: none;
-        border-bottom: 2px solid transparent;
-        margin-bottom: -1px;
-        color: #8a94a4;
-        font-size: 14px;
-        font-weight: 650;
-        white-space: nowrap;
-        transition: color 150ms, border-color 150ms;
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 13px 22px;
+        background: transparent; border: none;
+        border-bottom: 2px solid transparent; margin-bottom: -1px;
+        color: #7a8494; font-size: 14px; font-weight: 650;
+        white-space: nowrap; transition: color 140ms, border-color 140ms;
       }
-      .tab svg { width: 16px; height: 16px; color: var(--blue); flex-shrink: 0; }
+      .tab svg { width: 15px; height: 15px; color: var(--blue); flex-shrink: 0; }
       .tab.active { color: #fff; border-bottom-color: #fff; }
       .tab:hover:not(.active) { color: #cdd4e0; }
+
+      .tab-count {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 20px; padding: 0 5px; height: 20px;
+        border-radius: 6px; background: rgba(255,255,255,0.1);
+        font-size: 11px; font-weight: 700; color: #8a94a4;
+      }
 
       .tab-panel { display: none; }
       .tab-panel.active { display: block; }
 
-      /* ── CARDS ── */
-      .card {
-        padding: 22px 24px;
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 14px;
-        background: rgba(17,17,17,0.94);
+      /* ── PANO STATS ROW ── */
+      .pano-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .pstat {
+        padding: 18px 12px;
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        background: var(--card-bg);
+        text-align: center;
+      }
+      .pstat strong {
+        display: block; font-size: 28px; font-weight: 800;
+        color: #fff; line-height: 1.1; margin-bottom: 6px;
+      }
+      .pstat span {
+        display: block; font-size: 11px; font-weight: 700;
+        color: #6a7485; text-transform: uppercase; letter-spacing: 0.5px;
       }
 
-      .card + .card { margin-top: 16px; }
-
-      .card-title {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 20px;
-        color: #fff;
-        font-size: 16px;
-        font-weight: 760;
-      }
-      .card-title svg { width: 18px; height: 18px; color: var(--blue); }
-
+      /* ── PANO GRID ── */
       .pano-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
+        gap: 12px;
       }
 
-      /* ── INFO ROWS ── */
-      .info-row {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 16px;
-        align-items: center;
-        min-height: 38px;
-        color: #9aa3b1;
-        font-size: 14px;
+      .panel-card {
+        border: 1px solid var(--card-border);
+        border-radius: 13px;
+        background: var(--card-bg);
+        padding: 18px 20px;
+      }
+
+      .panel-card-head {
+        display: flex; align-items: center; gap: 9px;
+        margin-bottom: 14px;
+        font-size: 15px; font-weight: 760; color: #fff;
+      }
+      .panel-card-head svg { width: 17px; height: 17px; color: var(--blue); }
+      .panel-card-head .head-action {
+        margin-left: auto; font-size: 12px; font-weight: 600; color: #4f8aff;
+      }
+
+      /* Info rows inside cards */
+      .irow {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 12px; min-height: 34px;
+        font-size: 13px; color: #8a94a4;
         border-bottom: 1px solid rgba(255,255,255,0.05);
       }
-      .info-row:last-of-type { border-bottom: 0; }
-      .info-row strong { color: #f2f5fb; font-weight: 650; text-align: right; }
+      .irow:last-of-type { border-bottom: 0; }
+      .irow strong { color: #edf0f7; font-weight: 650; text-align: right; }
 
+      /* Empty state inside cards */
+      .card-empty {
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 10px; padding: 32px 16px;
+        color: #50596a; font-size: 13px; text-align: center;
+      }
+      .card-empty svg { width: 36px; height: 36px; opacity: 0.45; }
+
+      /* Note box */
       .note-box {
-        margin-top: 14px;
-        padding: 14px;
+        margin-top: 12px; padding: 12px 14px;
         border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 9px;
-        background: rgba(255,255,255,0.03);
-        font-size: 13px;
-        line-height: 1.6;
-        color: #c8d0de;
+        border-radius: 8px; background: rgba(255,255,255,0.025);
+        font-size: 13px; line-height: 1.6; color: #b8c2d4;
       }
-      .note-label { display: block; color: #697386; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+      .note-label { display: block; font-size: 10px; font-weight: 700; color: #5c6678; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
 
-      /* ── EMPTY STATE ── */
-      .empty-state {
-        display: grid;
-        place-items: center;
-        min-height: 140px;
-        padding: 20px;
-        color: #626d7f;
-        font-size: 14px;
-        font-weight: 430;
-        text-align: center;
-        border: 1px solid rgba(255,255,255,0.06);
-        border-radius: 10px;
-        background: rgba(255,255,255,0.02);
-      }
-
-      /* ── MEDIA ── */
-      .media-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 16px;
-      }
-      .media-header-title { display: flex; align-items: center; gap: 10px; color: #fff; font-size: 16px; font-weight: 760; }
-      .media-header-title svg { width: 18px; height: 18px; color: var(--blue); }
-      .media-count { font-size: 13px; color: #8a94a4; }
-      .media-count strong { color: #fff; }
+      /* Media */
+      .media-count-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+      .media-count-row h3 { font-size: 15px; font-weight: 760; color: #fff; display: flex; align-items: center; gap: 8px; }
+      .media-count-row h3 svg { width: 17px; height: 17px; color: var(--blue); }
+      .media-count-label { font-size: 13px; color: #7a8494; }
+      .media-count-label strong { color: #fff; }
 
       .media-list { display: grid; gap: 10px; }
-      .media-item { display: block; padding: 14px; border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; background: rgba(255,255,255,0.03); transition: background 150ms; }
+      .media-item { display: block; padding: 13px; border: 1px solid rgba(255,255,255,0.07); border-radius: 9px; background: rgba(255,255,255,0.025); transition: background 140ms; }
       .media-item:hover { background: rgba(255,255,255,0.05); }
-      .media-item strong { display: block; color: #f4f7ff; font-size: 14px; }
-      .media-item span { display: block; margin-top: 5px; color: #778293; font-size: 13px; line-height: 1.45; }
+      .media-item strong { display: block; color: #edf0f7; font-size: 14px; }
+      .media-item span { display: block; margin-top: 4px; color: #70808f; font-size: 13px; line-height: 1.45; }
+
+      .empty-panel {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 10px; min-height: 160px; padding: 24px;
+        border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;
+        background: rgba(255,255,255,0.015); color: #50596a; font-size: 13px; text-align: center;
+      }
 
       /* ── REPORT BUTTON ── */
       .report-button {
@@ -349,7 +317,8 @@
         .topbar { grid-template-columns: 1fr; justify-items: center; }
         .nav { display: none; }
         .profile-wrapper { grid-template-columns: 1fr; }
-        .profile-sidebar { position: static; }
+        .profile-card { position: static; }
+        .pano-stats { grid-template-columns: repeat(2, 1fr); }
         .pano-grid { grid-template-columns: 1fr; }
         .report-button { right: 16px; bottom: 16px; min-height: 54px; padding: 0 16px 0 12px; border-radius: 14px; }
       }
@@ -366,19 +335,17 @@
     <div class="page">
       <header class="topbar">
         <a class="brand" href="/" aria-label="IGME ana sayfa">
-          <span class="brand-icon" aria-hidden="true">
-            <img class="brand-logo" src="assets/si.png" alt="">
-          </span>
+          <span class="brand-icon" aria-hidden="true"><img class="brand-logo" src="assets/si.png" alt=""></span>
           <span class="brand-word">IG<span class="brand-accent">ME</span></span>
           <span class="brand-beta">BETA</span>
         </a>
         <nav class="nav" aria-label="Profil menüsü">
           <a class="nav-link gold" href="/">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 7H4a3 3 0 0 0 3 3M17 7h3a3 3 0 0 1-3 3M8 21h8M12 17v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 7H4a3 3 0 0 0 3 3M17 7h3a3 3 0 0 1-3 3M8 21h8M12 17v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
             Bakım
           </a>
           <a class="nav-link" href="/">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
             Yeni Arama
           </a>
         </nav>
@@ -387,52 +354,59 @@
 
       <div class="profile-wrapper">
 
-        <!-- ── SIDEBAR ── -->
-        <aside class="profile-sidebar">
-          <div class="sidebar-cover"></div>
-          <div class="sidebar-body">
+        <!-- ══ LEFT CARD ══ -->
+        <aside class="profile-card">
+          <div class="card-cover"></div>
+          <div class="card-body">
 
-            <div class="avatar-row">
+            <div class="card-avatar-row">
               <div class="avatar" id="avatar">I</div>
               <div class="view-pill">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg>
+                <svg viewBox="0 0 24 24" fill="none"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg>
                 <span id="viewCount">0</span>
               </div>
             </div>
 
-            <div class="sidebar-name-row">
-              <h1 class="sidebar-name" id="displayName">Yükleniyor</h1>
-              <span class="verified-badge" id="verifiedIcon" hidden aria-label="Onaylı hesap">
-                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#4fb3f6"/><path d="m9 12 2 2 4-4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="card-name-row">
+              <span class="card-name" id="displayName">Yükleniyor</span>
+              <span id="verifiedIcon" hidden aria-label="Onaylı hesap">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#4fb3f6"/><path d="m9 12 2 2 4-4" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </span>
             </div>
 
-            <div class="handle-row">
+            <div class="card-handle-row">
               <span id="handle">@username</span>
-              <button class="copy-handle" id="copyHandle" type="button" title="Kullanıcı adını kopyala" aria-label="Kopyala">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="8" y="8" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M6 16H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <button class="copy-btn" id="copyHandle" type="button" aria-label="Kopyala">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="8" y="8" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M6 16H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
               </button>
             </div>
 
-            <p class="sidebar-bio" id="bio">Biyografi yükleniyor...</p>
+            <p class="card-bio" id="bio">Biyografi yükleniyor...</p>
 
-            <div class="sidebar-stats">
-              <div class="stat-box"><strong id="followers">--</strong><span>Takipçi</span></div>
-              <div class="stat-box"><strong id="following">--</strong><span>Takip</span></div>
-              <div class="stat-box"><strong id="posts">--</strong><span>Gönderi</span></div>
+            <div class="card-stats">
+              <div class="cstat"><strong id="followers">--</strong><span>Takipçi</span></div>
+              <div class="cstat"><strong id="following">--</strong><span>Takip</span></div>
+              <div class="cstat"><strong id="posts">--</strong><span>Gönderi</span></div>
             </div>
 
-            <div class="sidebar-divider"></div>
-            <div class="sidebar-meta" id="metaLine"></div>
+            <div class="card-divider"></div>
 
-            <a class="ig-open-btn" id="infoLink" href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.3" stroke="currentColor" stroke-width="1.8"/><circle cx="17" cy="7" r="1" fill="currentColor"/></svg>
+            <div class="card-meta">
+              <div class="meta-row" id="metaLine"></div>
+              <div class="meta-row" id="privateMetaRow" hidden>
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7v5c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V7l8-4Z" stroke="currentColor" stroke-width="1.8"/></svg>
+                <span id="privateMeta">—</span>
+              </div>
+            </div>
+
+            <a class="card-ig-btn" id="infoLink" href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.3" stroke="currentColor" stroke-width="1.8"/><circle cx="17" cy="7" r="1" fill="currentColor"/></svg>
               Instagram'da Aç
             </a>
           </div>
         </aside>
 
-        <!-- ── MAIN ── -->
+        <!-- ══ RIGHT PANEL ══ -->
         <main class="profile-main">
           <nav class="tabs" aria-label="Profil sekmeleri">
             <button class="tab active" type="button" data-tab="pano">
@@ -446,6 +420,7 @@
             <button class="tab" type="button" data-tab="medya">
               <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               Medya
+              <span class="tab-count" id="mediaTabCount">0</span>
             </button>
             <button class="tab" type="button" data-tab="gizlilik">
               <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7v5c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V7l8-4Z" stroke="currentColor" stroke-width="2"/></svg>
@@ -455,75 +430,102 @@
 
           <div class="tab-panels">
 
-            <!-- Pano -->
+            <!-- ── PANO ── -->
             <div class="tab-panel active" id="panel-pano">
+              <!-- 4 big stat cards -->
+              <div class="pano-stats">
+                <div class="pstat"><strong id="statFollowers">--</strong><span>Takipçi</span></div>
+                <div class="pstat"><strong id="statFollowing">--</strong><span>Takip</span></div>
+                <div class="pstat"><strong id="statPosts">--</strong><span>Gönderi</span></div>
+                <div class="pstat"><strong id="statViews">0</strong><span>Görüntülenme</span></div>
+              </div>
+              <!-- 2×2 content grid -->
               <div class="pano-grid">
-                <div class="card">
-                  <div class="card-title">
+                <div class="panel-card">
+                  <div class="panel-card-head">
                     <svg viewBox="0 0 24 24" fill="none"><path d="M16 11a4 4 0 1 0-8 0M5 21a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                     Hesap Özeti
                   </div>
-                  <div class="info-row"><span>Kullanıcı Adı</span><strong id="infoUsername">bilinmiyor</strong></div>
-                  <div class="info-row"><span>Tam Ad</span><strong id="infoFullName">bilinmiyor</strong></div>
-                  <div class="info-row"><span>Hesap Türü</span><strong id="infoType">bilinmiyor</strong></div>
-                  <div class="info-row"><span>Gizli Hesap</span><strong id="infoPrivate">bilinmiyor</strong></div>
-                  <div class="info-row"><span>Onaylı Hesap</span><strong id="infoVerified">bilinmiyor</strong></div>
+                  <div class="irow"><span>Kullanıcı Adı</span><strong id="infoUsername">—</strong></div>
+                  <div class="irow"><span>Tam Ad</span><strong id="infoFullName">—</strong></div>
+                  <div class="irow"><span>Hesap Türü</span><strong id="infoType">—</strong></div>
+                  <div class="irow"><span>Gizli</span><strong id="infoPrivate">—</strong></div>
+                  <div class="irow"><span>Onaylı</span><strong id="infoVerified">—</strong></div>
                 </div>
-                <div class="card">
-                  <div class="card-title">
+                <div class="panel-card">
+                  <div class="panel-card-head">
                     <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M8 19v-6M12 19V9M16 19v-9M20 19V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                     İstatistikler
                   </div>
-                  <div class="empty-state" id="insightsState">API bağlantısı bekleniyor.</div>
+                  <div class="card-empty" id="insightsState">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M8 19v-6M12 19V9M16 19v-9M20 19V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                    API bağlantısı bekleniyor.
+                  </div>
+                </div>
+                <div class="panel-card">
+                  <div class="panel-card-head">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 10h16M4 14h12M4 18h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                    Biyografi
+                  </div>
+                  <p style="font-size:13px;color:#9aa3b2;line-height:1.6;" id="panoBio">—</p>
+                </div>
+                <div class="panel-card">
+                  <div class="panel-card-head">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7v5c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V7l8-4Z" stroke="currentColor" stroke-width="2"/></svg>
+                    Gizlilik
+                  </div>
+                  <div class="irow"><span>Gizli Hesap</span><strong id="panoPrivate">—</strong></div>
+                  <div class="irow"><span>Onaylı</span><strong id="panoVerified">—</strong></div>
+                  <div class="irow"><span>Takipçi/Takip Oranı</span><strong id="panoRatio">—</strong></div>
                 </div>
               </div>
             </div>
 
-            <!-- Bilgiler -->
+            <!-- ── BİLGİLER ── -->
             <div class="tab-panel" id="panel-bilgiler">
-              <div class="card">
-                <div class="card-title">
+              <div class="panel-card">
+                <div class="panel-card-head">
                   <svg viewBox="0 0 24 24" fill="none"><path d="M16 11a4 4 0 1 0-8 0M5 21a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                   Kullanıcı Bilgileri
                 </div>
-                <div class="info-row"><span>Kullanıcı Adı</span><strong id="bilgilerUsername">bilinmiyor</strong></div>
-                <div class="info-row"><span>Tam Ad</span><strong id="bilgilerFullName">bilinmiyor</strong></div>
-                <div class="info-row"><span>Hesap Türü</span><strong id="bilgilerType">bilinmiyor</strong></div>
-                <div class="info-row"><span>Gizli Hesap</span><strong id="bilgilerPrivate">bilinmiyor</strong></div>
-                <div class="info-row"><span>Onaylı Hesap</span><strong id="bilgilerVerified">bilinmiyor</strong></div>
-                <div class="note-box">
+                <div class="irow"><span>Kullanıcı Adı</span><strong id="bilgilerUsername">—</strong></div>
+                <div class="irow"><span>Tam Ad</span><strong id="bilgilerFullName">—</strong></div>
+                <div class="irow"><span>Hesap Türü</span><strong id="bilgilerType">—</strong></div>
+                <div class="irow"><span>Gizli Hesap</span><strong id="bilgilerPrivate">—</strong></div>
+                <div class="irow"><span>Onaylı Hesap</span><strong id="bilgilerVerified">—</strong></div>
+                <div class="note-box" style="margin-top:14px;">
                   <span class="note-label">Biyografi</span>
-                  <div id="bilgilerBio">Yükleniyor...</div>
+                  <div id="bilgilerBio">—</div>
                 </div>
               </div>
             </div>
 
-            <!-- Medya -->
+            <!-- ── MEDYA ── -->
             <div class="tab-panel" id="panel-medya">
-              <div class="card">
-                <div class="media-header">
-                  <div class="media-header-title">
+              <div class="panel-card">
+                <div class="media-count-row">
+                  <h3>
                     <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                     Medya
-                  </div>
-                  <span class="media-count">Toplam: <strong id="mediaPosts">--</strong></span>
+                  </h3>
+                  <span class="media-count-label">Toplam: <strong id="mediaPosts">--</strong></span>
                 </div>
-                <div class="empty-state" id="mediaState">Medya verisi bu hesap için mevcut değil.</div>
+                <div class="empty-panel" id="mediaState">Medya verisi bu hesap için mevcut değil.</div>
                 <div class="media-list" id="mediaList" hidden></div>
               </div>
             </div>
 
-            <!-- Gizlilik -->
+            <!-- ── GİZLİLİK ── -->
             <div class="tab-panel" id="panel-gizlilik">
-              <div class="card">
-                <div class="card-title">
+              <div class="panel-card">
+                <div class="panel-card-head">
                   <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7v5c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V7l8-4Z" stroke="currentColor" stroke-width="2"/></svg>
                   Gizlilik &amp; Güvenlik
                 </div>
-                <div class="info-row"><span>Gizli Hesap</span><strong id="gizliPrivate">bilinmiyor</strong></div>
-                <div class="info-row"><span>Onaylı Hesap</span><strong id="gizliVerified">bilinmiyor</strong></div>
-                <div class="info-row"><span>Takipçi / Takip Oranı</span><strong id="gizliRatio">bilinmiyor</strong></div>
-                <div class="note-box">
+                <div class="irow"><span>Gizli Hesap</span><strong id="gizliPrivate">—</strong></div>
+                <div class="irow"><span>Onaylı Hesap</span><strong id="gizliVerified">—</strong></div>
+                <div class="irow"><span>Takipçi / Takip Oranı</span><strong id="gizliRatio">—</strong></div>
+                <div class="note-box" style="margin-top:14px;">
                   <span class="note-label">Gizlilik Notu</span>
                   <div>Takipçi isim listesi, DM ve gizli profil içerikleri gösterilmez.</div>
                 </div>
@@ -537,70 +539,54 @@
 
     <script>
       const PRIVATE_PROFILE_ENDPOINT = ["sammvsc.top", "www.sammvsc.top"].includes(window.location.hostname)
-        ? "https://www.sammvsc.top/api/instagram/profile"
-        : "/api/instagram/profile";
+        ? "https://www.sammvsc.top/api/instagram/profile" : "/api/instagram/profile";
       const VIEWS_ENDPOINT = ["sammvsc.top", "www.sammvsc.top"].includes(window.location.hostname)
-        ? "https://www.sammvsc.top/api/instagram/views"
-        : "/api/instagram/views";
+        ? "https://www.sammvsc.top/api/instagram/views" : "/api/instagram/views";
       const API_ENDPOINT = ["sammvsc.top", "www.sammvsc.top"].includes(window.location.hostname)
-        ? "https://www.sammvsc.top/api/instagram"
-        : "/api/instagram";
+        ? "https://www.sammvsc.top/api/instagram" : "/api/instagram";
       const AVATAR_ENDPOINT = ["sammvsc.top", "www.sammvsc.top"].includes(window.location.hostname)
-        ? "https://www.sammvsc.top/api/instagram"
-        : "/api/instagram";
+        ? "https://www.sammvsc.top/api/instagram" : "/api/instagram";
       const API_ERROR_MESSAGE = "Profil bilgileri şu an alınamıyor. Lütfen sonra tekrar deneyin.";
+
       const params = new URLSearchParams(window.location.search);
       const username = (params.get("u") || "").trim().replace(/^@/, "").replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 30);
 
+      const $ = (id) => document.getElementById(id);
       const fields = {
-        avatar: document.querySelector("#avatar"),
-        displayName: document.querySelector("#displayName"),
-        verifiedIcon: document.querySelector("#verifiedIcon"),
-        handle: document.querySelector("#handle"),
-        copyHandle: document.querySelector("#copyHandle"),
-        metaLine: document.querySelector("#metaLine"),
-        viewCount: document.querySelector("#viewCount"),
-        posts: document.querySelector("#posts"),
-        followers: document.querySelector("#followers"),
-        following: document.querySelector("#following"),
-        bio: document.querySelector("#bio"),
-        infoLink: document.querySelector("#infoLink"),
-        infoUsername: document.querySelector("#infoUsername"),
-        infoFullName: document.querySelector("#infoFullName"),
-        infoType: document.querySelector("#infoType"),
-        infoPrivate: document.querySelector("#infoPrivate"),
-        infoVerified: document.querySelector("#infoVerified"),
-        insightsState: document.querySelector("#insightsState"),
-        bilgilerUsername: document.querySelector("#bilgilerUsername"),
-        bilgilerFullName: document.querySelector("#bilgilerFullName"),
-        bilgilerType: document.querySelector("#bilgilerType"),
-        bilgilerPrivate: document.querySelector("#bilgilerPrivate"),
-        bilgilerVerified: document.querySelector("#bilgilerVerified"),
-        bilgilerBio: document.querySelector("#bilgilerBio"),
-        mediaPosts: document.querySelector("#mediaPosts"),
-        mediaState: document.querySelector("#mediaState"),
-        mediaList: document.querySelector("#mediaList"),
-        gizliPrivate: document.querySelector("#gizliPrivate"),
-        gizliVerified: document.querySelector("#gizliVerified"),
-        gizliRatio: document.querySelector("#gizliRatio")
+        avatar: $("avatar"), displayName: $("displayName"), verifiedIcon: $("verifiedIcon"),
+        handle: $("handle"), copyHandle: $("copyHandle"), metaLine: $("metaLine"),
+        viewCount: $("viewCount"), statViews: $("statViews"),
+        posts: $("posts"), followers: $("followers"), following: $("following"),
+        bio: $("bio"), infoLink: $("infoLink"),
+        // Pano
+        statFollowers: $("statFollowers"), statFollowing: $("statFollowing"), statPosts: $("statPosts"),
+        infoUsername: $("infoUsername"), infoFullName: $("infoFullName"),
+        infoType: $("infoType"), infoPrivate: $("infoPrivate"), infoVerified: $("infoVerified"),
+        insightsState: $("insightsState"), panoBio: $("panoBio"),
+        panoPrivate: $("panoPrivate"), panoVerified: $("panoVerified"), panoRatio: $("panoRatio"),
+        // Bilgiler
+        bilgilerUsername: $("bilgilerUsername"), bilgilerFullName: $("bilgilerFullName"),
+        bilgilerType: $("bilgilerType"), bilgilerPrivate: $("bilgilerPrivate"),
+        bilgilerVerified: $("bilgilerVerified"), bilgilerBio: $("bilgilerBio"),
+        // Medya
+        mediaPosts: $("mediaPosts"), mediaState: $("mediaState"), mediaList: $("mediaList"),
+        mediaTabCount: $("mediaTabCount"),
+        // Gizlilik
+        gizliPrivate: $("gizliPrivate"), gizliVerified: $("gizliVerified"), gizliRatio: $("gizliRatio"),
+        // Meta
+        privateMetaRow: $("privateMetaRow"), privateMeta: $("privateMeta")
       };
 
-      function formatNumber(value) {
-        if (value === undefined || value === null || value === "") return "--";
-        return new Intl.NumberFormat("tr-TR").format(value);
-      }
-
-      function renderVerificationBadge(isVerified) {
-        fields.verifiedIcon.hidden = isVerified !== true;
-        fields.metaLine.textContent = "";
+      function fmt(v) {
+        if (v === undefined || v === null || v === "") return "--";
+        return new Intl.NumberFormat("tr-TR").format(v);
       }
 
       function shouldTrackView(name) {
         try {
           const key = `instapp_profile_viewed:${name.toLowerCase()}`;
-          const lastSeenAt = Number(window.localStorage.getItem(key) || 0);
-          const sixHours = 6 * 60 * 60 * 1000;
-          if (lastSeenAt && Date.now() - lastSeenAt < sixHours) return false;
+          const last = Number(window.localStorage.getItem(key) || 0);
+          if (last && Date.now() - last < 6 * 3600000) return false;
           window.localStorage.setItem(key, String(Date.now()));
           return true;
         } catch { return true; }
@@ -612,59 +598,45 @@
           const url = `${VIEWS_ENDPOINT}?username=${encodeURIComponent(username)}&track=${track}&_=${Date.now()}`;
           const { response, payload } = await fetchJson(url);
           if (response.ok && payload.status === "ready") {
-            fields.viewCount.textContent = formatNumber(payload.count);
+            const n = fmt(payload.count);
+            fields.viewCount.textContent = n;
+            fields.statViews.textContent = n;
           }
-        } catch (error) {
-          console.log("Profile view counter error", error);
-        }
+        } catch {}
       }
 
       function normalizePrivateProfile(payload) {
         const data = payload?.data;
-        if (!data || payload.status !== "ready") {
-          throw new Error(payload?.message || API_ERROR_MESSAGE);
-        }
+        if (!data || payload.status !== "ready") throw new Error(payload?.message || API_ERROR_MESSAGE);
         return {
-          source: "private-api",
-          connected: true,
-          username: data.username,
-          full_name: data.fullName,
-          name: data.fullName,
-          biography: data.biography,
-          profile_pic_url: data.profilePicUrl,
+          username: data.username, full_name: data.fullName, name: data.fullName,
+          biography: data.biography, profile_pic_url: data.profilePicUrl,
           profile_picture_url: data.profilePicUrl,
-          follower_count: data.followers,
-          following_count: data.following,
-          followers_count: data.followers,
-          follows_count: data.following,
-          media_count: data.posts,
-          is_private: data.isPrivate,
-          is_verified: data.isVerified,
-          account_type: "Instagram",
-          recent_media: [],
+          follower_count: data.followers, following_count: data.following,
+          followers_count: data.followers, follows_count: data.following,
+          media_count: data.posts, is_private: data.isPrivate, is_verified: data.isVerified,
+          account_type: "Instagram", recent_media: [],
           insights_summary: payload.source === "cache"
-            ? "Profil bilgileri önbellekten gösteriliyor."
-            : "Profil bilgileri canlı kaynaktan alındı."
+            ? "Profil bilgileri önbellekten gösteriliyor." : "Profil bilgileri canlı kaynaktan alındı."
         };
       }
 
-      function wait(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
       async function fetchJson(url) {
-        const response = await fetch(url, { cache: "no-store", headers: { "Accept": "application/json" } });
+        const response = await fetch(url, { cache: "no-store", headers: { Accept: "application/json" } });
         const payload = await response.json().catch(() => ({}));
         return { response, payload };
       }
 
       async function fetchPrivateProfile() {
-        for (let attempt = 0; attempt < 5; attempt += 1) {
+        for (let i = 0; i < 5; i++) {
           const url = `${PRIVATE_PROFILE_ENDPOINT}?username=${encodeURIComponent(username)}&_=${Date.now()}`;
           const { response, payload } = await fetchJson(url);
           if (response.ok && payload.status === "ready") return normalizePrivateProfile(payload);
           if (response.status === 202 || payload.status === "loading") {
             fields.insightsState.textContent = "Profil bilgileri hazırlanıyor...";
-            await wait(1000 + attempt * 450);
-            continue;
+            await wait(1000 + i * 450); continue;
           }
           throw new Error(payload.message || API_ERROR_MESSAGE);
         }
@@ -685,91 +657,97 @@
         fields.handle.textContent = `@${clean}`;
         fields.verifiedIcon.hidden = true;
         fields.metaLine.textContent = "";
-        fields.viewCount.textContent = "0";
+        fields.infoLink.href = `https://instagram.com/${clean}`;
         fields.infoUsername.textContent = `@${clean}`;
         fields.bilgilerUsername.textContent = `@${clean}`;
-        fields.infoLink.href = `https://instagram.com/${clean}`;
       }
 
       function applyApiProfile(data) {
-        const pictureUrl = data.profile_pic_url || data.profile_picture_url;
-        const displayName = data.full_name || data.name || data.username || username;
-        const followerCount = data.follower_count ?? data.followers_count ?? 0;
-        const followingCount = data.following_count ?? data.follows_count ?? 0;
-        const privacyText = data.is_private === true ? "Evet" : data.is_private === false ? "Hayır" : "bilinmiyor";
-        const verifiedText = data.is_verified === true ? "Doğrulandı" : data.is_verified === false ? "Doğrulanmadı" : "bilinmiyor";
+        const pic = data.profile_pic_url || data.profile_picture_url;
+        const name = data.full_name || data.name || data.username || username;
+        const fc = data.follower_count ?? data.followers_count ?? 0;
+        const fw = data.following_count ?? data.follows_count ?? 0;
+        const priv = data.is_private === true ? "Evet" : data.is_private === false ? "Hayır" : "bilinmiyor";
+        const ver = data.is_verified === true ? "Doğrulandı" : data.is_verified === false ? "Doğrulanmadı" : "bilinmiyor";
+        const ratio = fw > 0 ? (fc / fw).toFixed(2) + "x" : fc > 0 ? "∞" : "--";
+        const bio = data.biography || "Biyografi bilgisi mevcut değil.";
 
-        if (pictureUrl) {
-          const image = document.createElement("img");
-          image.alt = "";
-          image.loading = "eager";
-          image.referrerPolicy = "no-referrer";
-          let triedProxy = false;
-          image.onerror = () => {
-            if (!triedProxy) {
-              triedProxy = true;
-              image.src = `${AVATAR_ENDPOINT}?username=${encodeURIComponent(data.username || username)}&avatar=1`;
-              return;
-            }
+        // Avatar
+        if (pic) {
+          const img = document.createElement("img");
+          img.alt = ""; img.loading = "eager"; img.referrerPolicy = "no-referrer";
+          let tried = false;
+          img.onerror = () => {
+            if (!tried) { tried = true; img.src = `${AVATAR_ENDPOINT}?username=${encodeURIComponent(data.username || username)}&avatar=1`; return; }
             fields.avatar.textContent = (data.username || username || "I")[0];
           };
-          image.src = pictureUrl;
-          fields.avatar.replaceChildren(image);
+          img.src = pic; fields.avatar.replaceChildren(img);
         }
 
-        // Sidebar
-        fields.displayName.textContent = displayName;
+        // Left card
+        fields.displayName.textContent = name;
         fields.handle.textContent = `@${data.username || username}`;
-        fields.bio.textContent = data.biography || "Biyografi bilgisi mevcut değil.";
-        fields.posts.textContent = formatNumber(data.media_count);
-        fields.followers.textContent = formatNumber(followerCount);
-        fields.following.textContent = formatNumber(followingCount);
+        fields.verifiedIcon.hidden = data.is_verified !== true;
+        fields.metaLine.textContent = "";
+        fields.bio.textContent = bio;
+        fields.followers.textContent = fmt(fc);
+        fields.following.textContent = fmt(fw);
+        fields.posts.textContent = fmt(data.media_count);
         fields.infoLink.href = `https://instagram.com/${data.username || username}`;
-        renderVerificationBadge(data.is_verified);
+        // Privacy meta row in sidebar
+        fields.privateMetaRow.hidden = data.is_private === undefined;
+        fields.privateMeta.textContent = data.is_private === true ? "Gizli hesap" : data.is_private === false ? "Herkese açık hesap" : "";
 
-        // Pano
+        // Pano stats
+        fields.statFollowers.textContent = fmt(fc);
+        fields.statFollowing.textContent = fmt(fw);
+        fields.statPosts.textContent = fmt(data.media_count);
+
+        // Pano cards
         fields.infoUsername.textContent = `@${data.username || username}`;
-        fields.infoFullName.textContent = displayName || "bilinmiyor";
+        fields.infoFullName.textContent = name;
         fields.infoType.textContent = data.account_type || "Instagram";
-        fields.infoPrivate.textContent = privacyText;
-        fields.infoVerified.textContent = verifiedText;
+        fields.infoPrivate.textContent = priv;
+        fields.infoVerified.textContent = ver;
+        fields.panoBio.textContent = bio;
+        fields.panoPrivate.textContent = priv;
+        fields.panoVerified.textContent = ver;
+        fields.panoRatio.textContent = ratio;
         if (data.insights_summary) fields.insightsState.textContent = data.insights_summary;
 
         // Bilgiler
         fields.bilgilerUsername.textContent = `@${data.username || username}`;
-        fields.bilgilerFullName.textContent = displayName || "bilinmiyor";
+        fields.bilgilerFullName.textContent = name;
         fields.bilgilerType.textContent = data.account_type || "Instagram";
-        fields.bilgilerPrivate.textContent = privacyText;
-        fields.bilgilerVerified.textContent = verifiedText;
-        fields.bilgilerBio.textContent = data.biography || "Biyografi bilgisi mevcut değil.";
+        fields.bilgilerPrivate.textContent = priv;
+        fields.bilgilerVerified.textContent = ver;
+        fields.bilgilerBio.textContent = bio;
 
         // Medya
-        fields.mediaPosts.textContent = formatNumber(data.media_count);
+        fields.mediaPosts.textContent = fmt(data.media_count);
+        fields.mediaTabCount.textContent = fmt(data.media_count);
         if (Array.isArray(data.recent_media) && data.recent_media.length) {
           fields.mediaState.hidden = true;
           fields.mediaList.hidden = false;
           fields.mediaList.innerHTML = data.recent_media.slice(0, 5).map((item) => {
-            const caption = item.caption ? item.caption.slice(0, 120) : "Açıklama yok";
-            const likes = formatNumber(item.like_count);
-            const comments = formatNumber(item.comments_count);
+            const cap = item.caption ? item.caption.slice(0, 120) : "Açıklama yok";
             return `<a class="media-item" href="${item.permalink || "#"}" target="_blank" rel="noopener noreferrer">
-              <strong>${item.media_type || "Medya"} · ${likes} beğeni · ${comments} yorum</strong>
-              <span>${caption}</span>
-            </a>`;
+              <strong>${item.media_type || "Medya"} · ${fmt(item.like_count)} beğeni · ${fmt(item.comments_count)} yorum</strong>
+              <span>${cap}</span></a>`;
           }).join("");
         }
 
         // Gizlilik
-        fields.gizliPrivate.textContent = privacyText;
-        fields.gizliVerified.textContent = data.is_verified === true ? "Doğrulandı" : "Doğrulanmadı";
-        fields.gizliRatio.textContent = followingCount > 0 ? (followerCount / followingCount).toFixed(2) + "x" : followerCount > 0 ? "∞" : "--";
+        fields.gizliPrivate.textContent = priv;
+        fields.gizliVerified.textContent = ver;
+        fields.gizliRatio.textContent = ratio;
       }
 
       function updateRecentCache(data) {
         try {
           const key = "instapp_recent_searches";
           const items = JSON.parse(window.localStorage.getItem(key) || "[]");
-          const idx = items.findIndex((item) => item.username.toLowerCase() === username.toLowerCase());
+          const idx = items.findIndex((i) => i.username.toLowerCase() === username.toLowerCase());
           if (idx !== -1) {
             items[idx].profilePicUrl = data.profile_pic_url || data.profile_picture_url || "";
             items[idx].fullName = data.full_name || data.name || data.username || "";
@@ -780,45 +758,29 @@
 
       async function loadProfile() {
         if (!username) { window.location.href = "/"; return; }
-
         applyBaseProfile(username);
-        fields.insightsState.textContent = "Profil bilgileri hazırlanıyor...";
         loadViewCount();
 
         let data;
         try {
           data = await fetchPrivateProfile();
-        } catch (error) {
-          console.log("Instagram private API fallback", error);
-          try {
-            data = await fetchLegacyProfile();
-          } catch (legacyError) {
-            console.log("Instagram API error", legacyError);
-            fields.metaLine.textContent = "";
+        } catch (e) {
+          try { data = await fetchLegacyProfile(); }
+          catch (e2) {
             fields.insightsState.textContent = API_ERROR_MESSAGE;
             return;
           }
         }
-
-        try {
-          applyApiProfile(data);
-          updateRecentCache(data);
-        } catch (error) {
-          console.log("Instagram render error", error, data);
-        }
+        try { applyApiProfile(data); updateRecentCache(data); }
+        catch (e) { console.log("render error", e, data); }
       }
 
       fields.copyHandle.addEventListener("click", async () => {
-        const value = fields.handle.textContent.trim();
-        try {
-          await navigator.clipboard.writeText(value);
-        } catch {
-          const input = document.createElement("input");
-          input.value = value;
-          document.body.appendChild(input);
-          input.select();
-          document.execCommand("copy");
-          input.remove();
+        const val = fields.handle.textContent.trim();
+        try { await navigator.clipboard.writeText(val); }
+        catch {
+          const inp = document.createElement("input"); inp.value = val;
+          document.body.appendChild(inp); inp.select(); document.execCommand("copy"); inp.remove();
         }
         fields.copyHandle.classList.add("copied");
         setTimeout(() => fields.copyHandle.classList.remove("copied"), 900);
@@ -844,28 +806,24 @@
         const cx = cv.getContext("2d");
         let W = cv.width = innerWidth, H = cv.height = innerHeight;
         window.addEventListener("resize", () => { W = cv.width = innerWidth; H = cv.height = innerHeight; });
-        const streaks = [];
-        const trail = [];
+        const streaks = [], trail = [];
         let running = false;
         function draw() {
-          if (streaks.length === 0) { cx.clearRect(0, 0, W, H); running = false; return; }
+          if (!streaks.length) { cx.clearRect(0, 0, W, H); running = false; return; }
           cx.clearRect(0, 0, W, H);
           for (let i = streaks.length - 1; i >= 0; i--) {
-            const s = streaks[i];
-            s.life -= s.decay;
+            const s = streaks[i]; s.life -= s.decay;
             if (s.life <= 0) { streaks.splice(i, 1); continue; }
             const { x1, y1, x2, y2, life, w } = s;
             cx.save();
-            cx.lineCap = "round";
-            cx.shadowColor = "#ff2200"; cx.shadowBlur = 28;
-            cx.strokeStyle = `rgba(255,30,0,${life * 0.18})`; cx.lineWidth = w * 9;
-            cx.beginPath(); cx.moveTo(x1, y1); cx.lineTo(x2, y2); cx.stroke();
-            cx.shadowBlur = 12;
-            cx.strokeStyle = `rgba(255,80,40,${life * 0.45})`; cx.lineWidth = w * 3;
-            cx.beginPath(); cx.moveTo(x1, y1); cx.lineTo(x2, y2); cx.stroke();
+            cx.lineCap = "round"; cx.shadowColor = "#ff2200"; cx.shadowBlur = 28;
+            cx.strokeStyle = `rgba(255,30,0,${life*0.18})`; cx.lineWidth = w*9;
+            cx.beginPath(); cx.moveTo(x1,y1); cx.lineTo(x2,y2); cx.stroke();
+            cx.shadowBlur = 12; cx.strokeStyle = `rgba(255,80,40,${life*0.45})`; cx.lineWidth = w*3;
+            cx.beginPath(); cx.moveTo(x1,y1); cx.lineTo(x2,y2); cx.stroke();
             cx.shadowColor = "#fff"; cx.shadowBlur = 4;
-            cx.strokeStyle = `rgba(255,210,200,${life * 0.95})`; cx.lineWidth = w * 0.45;
-            cx.beginPath(); cx.moveTo(x1, y1); cx.lineTo(x2, y2); cx.stroke();
+            cx.strokeStyle = `rgba(255,210,200,${life*0.95})`; cx.lineWidth = w*0.45;
+            cx.beginPath(); cx.moveTo(x1,y1); cx.lineTo(x2,y2); cx.stroke();
             cx.restore();
           }
           requestAnimationFrame(draw);
@@ -875,7 +833,7 @@
           if (trail.length > 10) trail.shift();
           if (Math.random() < 0.03 && trail.length > 3) {
             const back = trail[Math.max(0, trail.length - 2 - Math.floor(Math.random() * 2))];
-            streaks.push({ x1: back.x, y1: back.y, x2: e.clientX, y2: e.clientY, life: 1, decay: 0.1 + Math.random() * 0.08, w: 1 + Math.random() * 1.2 });
+            streaks.push({ x1: back.x, y1: back.y, x2: e.clientX, y2: e.clientY, life: 1, decay: 0.1 + Math.random()*0.08, w: 1 + Math.random()*1.2 });
             if (!running) { running = true; requestAnimationFrame(draw); }
           }
         });
