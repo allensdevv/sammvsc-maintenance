@@ -50,11 +50,7 @@
         position: fixed;
         inset: 0;
         pointer-events: none;
-        background:
-          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-          linear-gradient(180deg, rgba(5, 5, 5, 0.18), rgba(5, 5, 5, 0.92));
-        background-size: 64px 64px, 64px 64px, auto;
+        background: linear-gradient(180deg, rgba(5, 5, 5, 0.12), rgba(5, 5, 5, 0.92));
       }
 
       a {
@@ -97,8 +93,8 @@
         gap: 10px;
         justify-self: start;
         flex-direction: row;
-        font-size: 18px;
-        font-weight: 850;
+        font-size: 24px;
+        font-weight: 900;
         white-space: nowrap;
         line-height: 1;
       }
@@ -149,6 +145,11 @@
         border-radius: 0;
         background: transparent;
         color: inherit;
+      }
+
+      .nav-brand .brand-icon {
+        width: 44px;
+        height: 44px;
       }
 
       .brand-logo {
@@ -251,10 +252,15 @@
       .subtitle {
         max-width: 640px;
         margin: 22px auto 0;
-        color: #9aa3b1;
+        color: #a7b0c0;
         font-size: clamp(18px, 2.2vw, 21px);
-        font-weight: 650;
+        font-weight: 450;
         line-height: 1.55;
+      }
+
+      .subtitle strong {
+        color: #ffffff;
+        font-weight: 850;
       }
 
       .maintenance-search {
