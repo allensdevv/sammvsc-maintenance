@@ -1,6 +1,7 @@
 const GRAPH_VERSION = process.env.META_GRAPH_VERSION || "v20.0";
 const GRAPH_BASE = `https://graph.instagram.com/${GRAPH_VERSION}`;
 const PUBLIC_PROFILE_URL = "https://i.instagram.com/api/v1/users/web_profile_info/";
+const USER_MESSAGE = "Profil bilgileri \u015fu an al\u0131nam\u0131yor. L\u00fctfen sonra tekrar deneyin.";
 
 function sanitizeUsername(value = "") {
   return String(value).trim().replace(/^@/, "").replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 30);
@@ -16,15 +17,78 @@ function sendJson(response, status, payload) {
   response.end(JSON.stringify(payload));
 }
 
-function publicError(status = 502, details = null) {
+function providerError(status = 502, details = null) {
   return {
     status,
     payload: {
-      error: "instagram_blocked",
-      message: "Profil bulunamadı veya Instagram veriyi engelledi.",
+      error: "instagram_provider_failed",
+      message: USER_MESSAGE,
       details
     }
   };
+}
+
+function pick(source, keys) {
+  for (const key of keys) {
+    const value = key.split(".").reduce((obj, part) => obj?.[part], source);
+    if (value !== undefined && value !== null && value !== "") {
+      return value;
+    }
+  }
+  return null;
+}
+
+function toNumber(value) {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value === "number") return value;
+  const parsed = Number(String(value).replace(/[^\d.-]/g, ""));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function toBoolean(value) {
+  if (typeof value === "boolean") return value;
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value === "string") {
+    const normalized = value.toLowerCase();
+    if (normalized === "true") return true;
+    if (normalized === "false") return false;
+  }
+  return Boolean(value);
+}
+
+function normalizeProfile(raw, username, source) {
+  const candidate = Array.isArray(raw) ? raw[0] : raw;
+  const data = candidate?.data?.user || candidate?.data || candidate?.user || candidate?.result || candidate?.profile || candidate;
+  if (!data || typeof data !== "object") {
+    return null;
+  }
+
+  const normalized = {
+    source,
+    connected: true,
+    username: pick(data, ["username", "user_name", "account", "handle"]) || username,
+    full_name: pick(data, ["full_name", "fullName", "name", "display_name"]) || "",
+    name: pick(data, ["full_name", "fullName", "name", "display_name", "username"]) || username,
+    profile_pic_url: pick(data, ["profile_pic_url_hd", "profile_pic_url", "profilePicUrlHD", "profilePicUrl", "profilePictureUrl", "profile_pic", "avatar", "image"]) || "",
+    profile_picture_url: pick(data, ["profile_pic_url_hd", "profile_pic_url", "profilePicUrlHD", "profilePicUrl", "profilePictureUrl", "profile_pic", "avatar", "image"]) || "",
+    follower_count: toNumber(pick(data, ["follower_count", "followers_count", "followersCount", "followers", "edge_followed_by.count"])),
+    following_count: toNumber(pick(data, ["following_count", "follows_count", "followingCount", "followsCount", "following", "edge_follow.count"])),
+    followers_count: toNumber(pick(data, ["follower_count", "followers_count", "followersCount", "followers", "edge_followed_by.count"])),
+    follows_count: toNumber(pick(data, ["following_count", "follows_count", "followingCount", "followsCount", "following", "edge_follow.count"])),
+    media_count: toNumber(pick(data, ["media_count", "posts_count", "mediaCount", "postsCount", "posts", "edge_owner_to_timeline_media.count"])),
+    biography: pick(data, ["biography", "bio", "description"]) || "",
+    is_private: toBoolean(pick(data, ["is_private", "isPrivate", "private"])),
+    is_verified: toBoolean(pick(data, ["is_verified", "isVerified", "verified"])),
+    account_type: pick(data, ["account_type", "category_name", "category"]) || "Instagram",
+    recent_media: [],
+    insights_summary: "Profil bilgileri ucuncu parti saglayici uzerinden alindi."
+  };
+
+  if (!normalized.username) {
+    return null;
+  }
+
+  return normalized;
 }
 
 function normalizeOfficialProfile(profile) {
@@ -46,36 +110,12 @@ function normalizeOfficialProfile(profile) {
     is_verified: false,
     account_type: profile.account_type || "Instagram",
     recent_media: [],
-    insights_summary: "Resmi Instagram API ile bağlı hesap verileri alındı."
+    insights_summary: "Resmi Instagram API ile bagli hesap verileri alindi."
   };
 }
 
-function normalizePublicProfile(payload) {
-  const user = payload?.data?.user;
-  if (!user) {
-    return null;
-  }
-
-  return {
-    source: "public_web",
-    connected: true,
-    username: user.username || "",
-    full_name: user.full_name || user.username || "",
-    name: user.full_name || user.username || "",
-    profile_pic_url: user.profile_pic_url_hd || user.profile_pic_url || "",
-    profile_picture_url: user.profile_pic_url_hd || user.profile_pic_url || "",
-    follower_count: user.edge_followed_by?.count ?? null,
-    following_count: user.edge_follow?.count ?? null,
-    followers_count: user.edge_followed_by?.count ?? null,
-    follows_count: user.edge_follow?.count ?? null,
-    media_count: user.edge_owner_to_timeline_media?.count ?? null,
-    biography: user.biography || "",
-    is_private: Boolean(user.is_private),
-    is_verified: Boolean(user.is_verified),
-    account_type: user.is_business_account ? "Business" : "Public",
-    recent_media: [],
-    insights_summary: "Herkese açık web profilinden temel bilgiler alındı. Yorumlar, DM ve gizli içerikler gösterilmez."
-  };
+function normalizePublicProfile(payload, username) {
+  return normalizeProfile(payload, username, "public_web");
 }
 
 async function fetchOfficialSelf(accessToken) {
@@ -102,6 +142,140 @@ async function fetchOfficialSelf(accessToken) {
   return normalizeOfficialProfile(payload);
 }
 
+async function fetchRapidApiProfile(username) {
+  const key = process.env.RAPIDAPI_KEY;
+  const host = process.env.RAPIDAPI_HOST || "instagram-scraper-api2.p.rapidapi.com";
+  const template = process.env.RAPIDAPI_URL_TEMPLATE || `https://${host}/v1/info?username_or_id_or_url={username}`;
+
+  if (!key) {
+    throw providerError(500, "missing_RAPIDAPI_KEY");
+  }
+
+  const url = template.replaceAll("{username}", encodeURIComponent(username));
+  const response = await fetch(url, {
+    headers: {
+      "Accept": "application/json",
+      "X-RapidAPI-Key": key,
+      "X-RapidAPI-Host": host
+    }
+  });
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw providerError(response.status, payload);
+  }
+
+  const profile = normalizeProfile(payload, username, "rapidapi");
+  if (!profile) {
+    throw providerError(502, "rapidapi_parse_error");
+  }
+  return profile;
+}
+
+async function fetchApifyProfile(username) {
+  const token = process.env.APIFY_TOKEN;
+  const actor = process.env.APIFY_ACTOR || "apify/instagram-profile-scraper";
+
+  if (!token) {
+    throw providerError(500, "missing_APIFY_TOKEN");
+  }
+
+  const actorId = actor.replace("/", "~");
+  const url = `https://api.apify.com/v2/acts/${actorId}/run-sync-get-dataset-items?token=${encodeURIComponent(token)}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify({
+      usernames: [username],
+      resultsLimit: 1
+    })
+  });
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw providerError(response.status, payload);
+  }
+
+  const first = Array.isArray(payload) ? payload[0] : payload;
+  const profile = normalizeProfile(first, username, "apify");
+  if (!profile) {
+    throw providerError(502, "apify_parse_error");
+  }
+  return profile;
+}
+
+async function fetchBrightDataProfile(username) {
+  const token = process.env.BRIGHTDATA_API_KEY;
+  const datasetId = process.env.BRIGHTDATA_DATASET_ID || "gd_l1vikfch901nx3by4";
+
+  if (!token) {
+    throw providerError(500, "missing_BRIGHTDATA_API_KEY");
+  }
+
+  const url = `https://api.brightdata.com/datasets/v3/scrape?dataset_id=${encodeURIComponent(datasetId)}&format=json`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify([{ url: `https://www.instagram.com/${username}/` }])
+  });
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw providerError(response.status, payload);
+  }
+
+  const first = Array.isArray(payload) ? payload[0] : payload;
+  const profile = normalizeProfile(first, username, "brightdata");
+  if (!profile) {
+    throw providerError(502, "brightdata_parse_error");
+  }
+  return profile;
+}
+
+async function fetchScrapingBeeProfile(username) {
+  const key = process.env.SCRAPINGBEE_API_KEY;
+
+  if (!key) {
+    throw providerError(500, "missing_SCRAPINGBEE_API_KEY");
+  }
+
+  const target = new URL(PUBLIC_PROFILE_URL);
+  target.searchParams.set("username", username);
+
+  const url = new URL("https://app.scrapingbee.com/api/v1/");
+  url.searchParams.set("api_key", key);
+  url.searchParams.set("url", target.toString());
+  url.searchParams.set("render_js", "false");
+  url.searchParams.set("premium_proxy", "true");
+
+  const response = await fetch(url, {
+    headers: {
+      "Accept": "application/json",
+      "X-IG-App-ID": "936619743392459"
+    }
+  });
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw providerError(response.status, payload);
+  }
+
+  const profile = normalizePublicProfile(payload, username);
+  if (!profile) {
+    throw providerError(502, "scrapingbee_parse_error");
+  }
+  profile.source = "scrapingbee";
+  profile.insights_summary = "Profil bilgileri ScrapingBee proxy uzerinden alindi.";
+  return profile;
+}
+
 async function fetchPublicProfile(username) {
   const url = new URL(PUBLIC_PROFILE_URL);
   url.searchParams.set("username", username);
@@ -120,30 +294,63 @@ async function fetchPublicProfile(username) {
   const text = await response.text();
 
   if (response.status === 404) {
-    throw publicError(404, "not_found");
+    throw providerError(404, "not_found");
   }
 
   if (response.status === 401 || response.status === 403 || response.status === 429) {
-    throw publicError(response.status, "login_required_or_rate_limited");
+    throw providerError(response.status, "login_required_or_rate_limited");
   }
 
   let payload;
   try {
     payload = JSON.parse(text);
   } catch {
-    throw publicError(502, "parse_error");
+    throw providerError(502, "parse_error");
   }
 
   if (!response.ok || payload.status === "fail") {
-    throw publicError(response.status || 502, payload.message || payload);
+    throw providerError(response.status || 502, payload.message || payload);
   }
 
-  const profile = normalizePublicProfile(payload);
+  const profile = normalizePublicProfile(payload, username);
   if (!profile) {
-    throw publicError(404, "empty_profile");
+    throw providerError(404, "empty_profile");
   }
 
   return profile;
+}
+
+function getConfiguredProvider() {
+  const provider = (process.env.INSTAGRAM_PROVIDER || "auto").toLowerCase();
+  const configured = ["rapidapi", "apify", "brightdata", "scrapingbee", "official", "public", "auto"];
+  return configured.includes(provider) ? provider : "auto";
+}
+
+function hasConfiguredScraperProvider() {
+  return Boolean(
+    process.env.RAPIDAPI_KEY ||
+    process.env.APIFY_TOKEN ||
+    process.env.BRIGHTDATA_API_KEY ||
+    process.env.SCRAPINGBEE_API_KEY
+  );
+}
+
+async function fetchByProvider(provider, username, accessToken) {
+  if (provider === "official") {
+    if (!accessToken) {
+      throw providerError(500, "missing_IG_ACCESS_TOKEN");
+    }
+    const profile = await fetchOfficialSelf(accessToken);
+    if (profile.username.toLowerCase() !== username.toLowerCase()) {
+      throw providerError(404, "official_token_only_matches_connected_account");
+    }
+    return profile;
+  }
+  if (provider === "rapidapi") return fetchRapidApiProfile(username);
+  if (provider === "apify") return fetchApifyProfile(username);
+  if (provider === "brightdata") return fetchBrightDataProfile(username);
+  if (provider === "scrapingbee") return fetchScrapingBeeProfile(username);
+  return fetchPublicProfile(username);
 }
 
 module.exports = async function handler(request, response) {
@@ -156,6 +363,7 @@ module.exports = async function handler(request, response) {
   }
 
   const username = sanitizeUsername(request.query?.username);
+  const provider = getConfiguredProvider();
   const accessToken = process.env.IG_ACCESS_TOKEN;
 
   if (!username) {
@@ -165,20 +373,37 @@ module.exports = async function handler(request, response) {
     });
   }
 
-  if (accessToken) {
-    try {
-      const officialProfile = await fetchOfficialSelf(accessToken);
-      if (officialProfile.username.toLowerCase() === username.toLowerCase()) {
-        return sendJson(response, 200, officialProfile);
-      }
-    } catch {
-      // Continue with public lookup. Official token errors should not break username search.
-    }
-  }
-
   try {
-    const publicProfile = await fetchPublicProfile(username);
-    return sendJson(response, 200, publicProfile);
+    if (provider !== "auto") {
+      const profile = await fetchByProvider(provider, username, accessToken);
+      return sendJson(response, 200, profile);
+    }
+
+    if (accessToken) {
+      try {
+        const officialProfile = await fetchOfficialSelf(accessToken);
+        if (officialProfile.username.toLowerCase() === username.toLowerCase()) {
+          return sendJson(response, 200, officialProfile);
+        }
+      } catch {
+        // Continue to configured scraper provider.
+      }
+    }
+
+    if (process.env.RAPIDAPI_KEY) return sendJson(response, 200, await fetchRapidApiProfile(username));
+    if (process.env.APIFY_TOKEN) return sendJson(response, 200, await fetchApifyProfile(username));
+    if (process.env.BRIGHTDATA_API_KEY) return sendJson(response, 200, await fetchBrightDataProfile(username));
+    if (process.env.SCRAPINGBEE_API_KEY) return sendJson(response, 200, await fetchScrapingBeeProfile(username));
+
+    if (process.env.ALLOW_PUBLIC_WEB_FALLBACK === "true") {
+      return sendJson(response, 200, await fetchPublicProfile(username));
+    }
+
+    if (!hasConfiguredScraperProvider()) {
+      throw providerError(500, "provider_not_configured");
+    }
+
+    throw providerError(502, "provider_failed");
   } catch (error) {
     if (error?.payload) {
       return sendJson(response, error.status, error.payload);
@@ -186,7 +411,7 @@ module.exports = async function handler(request, response) {
 
     return sendJson(response, 502, {
       error: "instagram_request_failed",
-      message: "Profil bulunamadı veya Instagram veriyi engelledi.",
+      message: USER_MESSAGE,
       details: error?.message || error
     });
   }

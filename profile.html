@@ -483,6 +483,7 @@
 
     <script>
       const API_ENDPOINT = "/api/instagram";
+      const API_ERROR_MESSAGE = "Profil bilgileri \u015fu an al\u0131nam\u0131yor. L\u00fctfen sonra tekrar deneyin.";
       const params = new URLSearchParams(window.location.search);
       const username = (params.get("u") || "").trim().replace(/^@/, "").replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 30);
 
@@ -577,15 +578,15 @@
 
           if (!response.ok) {
             const errorPayload = await response.json().catch(() => ({}));
-            throw new Error(errorPayload.message || "Profil bulunamadı veya Instagram veriyi engelledi.");
+            throw new Error(errorPayload.message || API_ERROR_MESSAGE);
           }
 
           const data = await response.json();
           applyApiProfile(data);
         } catch {
-          fields.metaLine.textContent = "Profil bulunamadı veya Instagram veriyi engelledi.";
+          fields.metaLine.textContent = API_ERROR_MESSAGE;
           fields.infoType.textContent = "bilinmiyor";
-          fields.insightsState.textContent = "Profil bulunamadı veya Instagram veriyi engelledi.";
+          fields.insightsState.textContent = API_ERROR_MESSAGE;
           fields.insightsState.hidden = false;
           fields.mediaList.hidden = true;
         }
