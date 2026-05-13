@@ -1,34 +1,3 @@
 {
-  "version": 2,
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "rewrites": [
-    {
-      "source": "/api/debug/instagram",
-      "destination": "/api/debug/instagram.js"
-    },
-    {
-      "source": "/api/instagram/profile",
-      "destination": "/api/instagram/profile.js"
-    },
-    {
-      "source": "/api/instagram/views",
-      "destination": "/api/instagram/views.js"
-    },
-    {
-      "source": "/api/instagram",
-      "destination": "/api/instagram.js"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
-      ]
-    }
-  ]
+  "version": 2
 }
