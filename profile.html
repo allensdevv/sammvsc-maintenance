@@ -161,12 +161,30 @@
 
       .profile-hero {
         position: relative;
-        min-height: 300px;
-        padding: 52px 28px 24px;
         border: 1px solid var(--line);
         border-radius: 13px;
         background: rgba(17, 17, 17, 0.92);
         overflow: hidden;
+      }
+
+      .hero-banner {
+        height: 130px;
+        position: relative;
+      }
+
+      .hero-body {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 54px 28px 26px;
+      }
+
+      .hero-info {
+        flex: 1 1 auto;
+        min-width: 0;
       }
 
       .hero-bg {
@@ -185,7 +203,7 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        z-index: 3;
+        z-index: 4;
         display: inline-flex;
         align-items: center;
         gap: 8px;
@@ -295,29 +313,24 @@
         font-weight: 700;
       }
 
-      .profile-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 220px;
-        gap: 30px;
-        align-items: end;
-        position: relative;
-        z-index: 2;
-      }
-
       .avatar {
-        width: 118px;
-        height: 118px;
+        width: 92px;
+        height: 92px;
         display: grid;
         place-items: center;
-        margin-bottom: 24px;
-        border: 1px solid rgba(167, 139, 250, 0.3);
+        position: absolute;
+        left: 28px;
+        top: -46px;
+        z-index: 3;
+        border: 3px solid #111111;
         border-radius: 50%;
         background: linear-gradient(135deg, #151b2a, #263b66);
         color: #fff;
-        font-size: 48px;
+        font-size: 38px;
         font-weight: 780;
         text-transform: uppercase;
         overflow: hidden;
+        flex-shrink: 0;
       }
 
       .avatar img {
@@ -444,21 +457,23 @@
       }
 
       .hero-stats {
-        display: grid;
-        gap: 24px;
-        justify-items: end;
-        color: #fff;
+        display: flex;
+        gap: 28px;
+        flex-shrink: 0;
+        align-items: flex-end;
       }
 
       .stat strong {
         display: block;
-        text-align: right;
+        text-align: center;
         font-size: 28px;
         font-weight: 760;
+        color: #fff;
       }
 
       .stat span {
         display: block;
+        text-align: center;
         color: #8a94a4;
         font-size: 13px;
         font-weight: 450;
@@ -609,7 +624,10 @@
       }
 
       .profile-loading .profile-hero .view-pill,
-      .profile-loading .profile-hero .profile-layout,
+      .profile-loading .profile-hero .hero-view-btn,
+      .profile-loading .profile-hero .avatar,
+      .profile-loading .profile-hero .hero-info,
+      .profile-loading .profile-hero .hero-stats,
       .profile-loading .tabs .tab,
       .profile-loading .tab-panel.active > :not(.profile-skeleton) {
         visibility: hidden;
@@ -631,8 +649,10 @@
 
       .skeleton-cover {
         position: absolute;
-        inset: 24px 0 auto;
-        height: 156px;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 130px;
         border-radius: 0;
         background: rgba(255, 255, 255, 0.04);
       }
@@ -640,64 +660,50 @@
       .skeleton-avatar {
         position: absolute;
         left: 28px;
-        bottom: 28px;
-        width: 114px;
-        height: 114px;
+        top: 84px;
+        width: 92px;
+        height: 92px;
         border-radius: 50%;
         background: rgba(255, 255, 255, 0.045);
       }
 
       .skeleton-name {
         position: absolute;
-        left: 160px;
-        bottom: 82px;
-        width: 192px;
-        height: 32px;
+        left: 28px;
+        bottom: 72px;
+        width: 160px;
+        height: 28px;
       }
 
       .skeleton-handle {
         position: absolute;
-        left: 160px;
-        bottom: 54px;
-        width: 128px;
-        height: 18px;
-      }
-
-      .skeleton-pills {
-        position: absolute;
-        left: 160px;
-        bottom: 24px;
-        display: flex;
-        gap: 10px;
-      }
-
-      .skeleton-pills .skeleton-shape {
-        width: 28px;
-        height: 24px;
+        left: 28px;
+        bottom: 44px;
+        width: 110px;
+        height: 16px;
       }
 
       .skeleton-stats {
         position: absolute;
         right: 24px;
         bottom: 26px;
-        display: grid;
-        grid-template-columns: repeat(3, 72px);
-        gap: 16px;
+        display: flex;
+        gap: 24px;
       }
 
       .skeleton-stat {
         display: grid;
-        justify-items: end;
+        justify-items: center;
         gap: 8px;
       }
 
       .skeleton-stat .skeleton-shape:first-child {
-        width: 48px;
+        width: 40px;
         height: 28px;
       }
 
       .skeleton-stat .skeleton-shape:last-child {
-        width: 64px;
+        width: 52px;
         height: 14px;
       }
 
@@ -794,8 +800,7 @@
       }
 
       @media (max-width: 820px) {
-        .topbar,
-        .profile-layout {
+        .topbar {
           grid-template-columns: 1fr;
         }
 
@@ -803,9 +808,13 @@
           display: none;
         }
 
-        .profile-layout,
+        .hero-body {
+          flex-wrap: wrap;
+        }
+
         .hero-stats {
-          justify-items: start;
+          width: 100%;
+          justify-content: flex-start;
         }
 
         .tabs {
@@ -814,28 +823,6 @@
 
         .profile-loading .tabs-skeleton {
           grid-template-columns: repeat(2, 1fr);
-        }
-
-        .skeleton-name,
-        .skeleton-handle,
-        .skeleton-pills {
-          left: 28px;
-        }
-
-        .skeleton-avatar {
-          bottom: 112px;
-        }
-
-        .skeleton-name {
-          bottom: 76px;
-        }
-
-        .skeleton-handle {
-          bottom: 48px;
-        }
-
-        .skeleton-pills {
-          bottom: 18px;
         }
 
         .skeleton-stats {
@@ -881,42 +868,45 @@
       <main>
         <section class="profile-hero">
           <div class="hero-bg" id="heroBg" hidden></div>
-          <button class="hero-view-btn" id="heroViewBtn" type="button" hidden>
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.8"/></svg>
-            Görüntülemek için tıkla
-          </button>
-          <div class="profile-skeleton hero-skeleton" aria-hidden="true">
-            <span class="skeleton-cover skeleton-shape"></span>
-            <span class="skeleton-avatar skeleton-shape"></span>
-            <span class="skeleton-name skeleton-shape"></span>
-            <span class="skeleton-handle skeleton-shape"></span>
-            <span class="skeleton-pills">
-              <span class="skeleton-shape"></span>
-              <span class="skeleton-shape"></span>
-              <span class="skeleton-shape"></span>
-            </span>
-            <span class="skeleton-stats">
-              <span class="skeleton-stat">
-                <span class="skeleton-shape"></span>
-                <span class="skeleton-shape"></span>
-              </span>
-              <span class="skeleton-stat">
-                <span class="skeleton-shape"></span>
-                <span class="skeleton-shape"></span>
-              </span>
-              <span class="skeleton-stat">
-                <span class="skeleton-shape"></span>
-                <span class="skeleton-shape"></span>
-              </span>
-            </span>
+
+          <!-- Banner zone -->
+          <div class="hero-banner">
+            <div class="view-pill">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.8"/></svg>
+              <span id="viewCount">0</span>
+            </div>
+            <button class="hero-view-btn" id="heroViewBtn" type="button" hidden>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.8"/></svg>
+              Görüntülemek için tıkla
+            </button>
           </div>
-          <div class="view-pill">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.8"/></svg>
-            <span id="viewCount">0</span>
-          </div>
-          <div class="profile-layout">
-            <div>
-              <div class="avatar" id="avatar">I</div>
+
+          <!-- Body zone -->
+          <div class="hero-body">
+            <div class="profile-skeleton hero-skeleton" aria-hidden="true">
+              <span class="skeleton-cover skeleton-shape"></span>
+              <span class="skeleton-avatar skeleton-shape"></span>
+              <span class="skeleton-name skeleton-shape"></span>
+              <span class="skeleton-handle skeleton-shape"></span>
+              <span class="skeleton-stats">
+                <span class="skeleton-stat">
+                  <span class="skeleton-shape"></span>
+                  <span class="skeleton-shape"></span>
+                </span>
+                <span class="skeleton-stat">
+                  <span class="skeleton-shape"></span>
+                  <span class="skeleton-shape"></span>
+                </span>
+                <span class="skeleton-stat">
+                  <span class="skeleton-shape"></span>
+                  <span class="skeleton-shape"></span>
+                </span>
+              </span>
+            </div>
+
+            <div class="avatar" id="avatar">I</div>
+
+            <div class="hero-info">
               <h1>
                 <span id="displayName">Instagram Profili</span>
                 <span class="verified-profile-icon" id="verifiedIcon" title="Doğrulanmış hesap" aria-label="Doğrulanmış hesap" hidden>
@@ -934,10 +924,11 @@
               </div>
               <div class="meta" id="metaLine" aria-live="polite"></div>
             </div>
+
             <div class="hero-stats">
-              <div class="stat"><strong id="posts">--</strong><span>Gönderi</span></div>
               <div class="stat"><strong id="followers">--</strong><span>Takipçi</span></div>
-              <div class="stat"><strong id="following">--</strong><span>Takip Edilen</span></div>
+              <div class="stat"><strong id="following">--</strong><span>Takip</span></div>
+              <div class="stat"><strong id="posts">--</strong><span>Gönderi</span></div>
             </div>
           </div>
         </section>
