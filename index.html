@@ -334,6 +334,38 @@
         align-items: center;
       }
 
+      .recent-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        flex: 1;
+      }
+
+      .recent-avatar {
+        width: 40px;
+        height: 40px;
+        flex: 0 0 40px;
+        border-radius: 50%;
+        background: rgba(139, 92, 246, 0.18);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #a78bfa;
+        font-size: 17px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .recent-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
       .recent-head {
         justify-content: space-between;
         min-height: 52px;
@@ -827,15 +859,31 @@
           return;
         }
 
-        recentList.innerHTML = items.map((item) => `
-          <a class="recent-row" href="/profile?u=${encodeURIComponent(item.username)}">
-            <div class="recent-copy">
-              <strong>@${item.username}</strong>
-              <span>${item.status} · ${timeAgo(item.searchedAt)}</span>
-            </div>
-            <span class="chev">›</span>
-          </a>
-        `).join("");
+        recentList.innerHTML = items.map((item) => {
+          const letter = (item.username || "I")[0].toUpperCase();
+          const picUrl = item.profilePicUrl || "";
+          const avatarInner = picUrl
+            ? `<img src="${picUrl}" alt="" referrerpolicy="no-referrer" onerror="this.onerror=null;this.parentElement.textContent='${letter}'">`
+            : letter;
+          const nameLabel = item.fullName
+            ? `<strong>${item.fullName}</strong>`
+            : `<strong>@${item.username}</strong>`;
+          const subLabel = item.fullName
+            ? `@${item.username} · ${timeAgo(item.searchedAt)}`
+            : `${item.status} · ${timeAgo(item.searchedAt)}`;
+          return `
+            <a class="recent-row" href="/profile?u=${encodeURIComponent(item.username)}">
+              <div class="recent-left">
+                <div class="recent-avatar">${avatarInner}</div>
+                <div class="recent-copy">
+                  ${nameLabel}
+                  <span>${subLabel}</span>
+                </div>
+              </div>
+              <span class="chev">›</span>
+            </a>
+          `;
+        }).join("");
       }
 
       form.addEventListener("submit", (event) => {
