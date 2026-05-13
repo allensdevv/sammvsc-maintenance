@@ -86,9 +86,11 @@
       .nav-brand {
         gap: 10px;
         justify-self: start;
+        flex-direction: row;
         font-size: 18px;
         font-weight: 850;
         white-space: nowrap;
+        line-height: 1;
       }
 
       .brand-icon,
@@ -354,7 +356,6 @@
         font-size: 13px;
       }
 
-      .featured-section,
       .api-section {
         width: min(1024px, 100%);
         margin-top: 48px;
@@ -364,12 +365,6 @@
         overflow: hidden;
       }
 
-      .featured-section {
-        background:
-          linear-gradient(110deg, rgba(22, 22, 22, 0.98), rgba(19, 27, 43, 0.92), rgba(17, 17, 17, 0.98));
-      }
-
-      .featured-head,
       .api-head {
         display: inline-flex;
         align-items: center;
@@ -383,7 +378,6 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       }
 
-      .featured-head span,
       .api-head span {
         width: 46px;
         height: 46px;
@@ -396,58 +390,9 @@
         box-shadow: 0 0 28px rgba(236, 72, 213, 0.18);
       }
 
-      .featured-head svg,
       .api-head svg {
         width: 24px;
         height: 24px;
-      }
-
-      .featured-track {
-        display: flex;
-        gap: 16px;
-        width: max-content;
-        padding: 0 0 20px;
-        animation: slideUsers 24s linear infinite;
-      }
-
-      .featured-section:hover .featured-track {
-        animation-play-state: paused;
-      }
-
-      .featured-user {
-        width: 220px;
-        min-height: 153px;
-        flex: 0 0 auto;
-        padding: 17px 18px 15px;
-        border: 1px solid rgba(255, 255, 255, 0.09);
-        border-radius: 10px;
-        background: rgba(31, 31, 31, 0.78);
-      }
-
-      .featured-avatar {
-        width: 66px;
-        height: 66px;
-        margin-bottom: 14px;
-        border: 2px solid #e83acc;
-        border-radius: 50%;
-        background:
-          radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.18), transparent 0 26%),
-          var(--avatar-bg, #171717);
-        box-shadow: 0 0 26px rgba(236, 72, 213, 0.72);
-      }
-
-      .featured-user strong {
-        display: block;
-        color: #f3f4f8;
-        font-size: 16px;
-      }
-
-      .featured-user span {
-        display: block;
-        margin-top: 7px;
-        color: #ff75df;
-        font-size: 13px;
-        font-weight: 900;
       }
 
       .api-section {
@@ -662,16 +607,6 @@
         }
       }
 
-      @keyframes slideUsers {
-        from {
-          transform: translateX(0);
-        }
-
-        to {
-          transform: translateX(-50%);
-        }
-      }
-
       @media (max-width: 760px) {
         .topbar {
           grid-template-columns: 1fr;
@@ -694,10 +629,6 @@
         .api-grid,
         .site-footer {
           grid-template-columns: 1fr;
-        }
-
-        .featured-user {
-          width: 190px;
         }
 
         .footer-bottom {
@@ -818,69 +749,6 @@
               </span>
             </div>
             <div id="recentList"></div>
-          </div>
-        </section>
-
-        <section class="featured-section" aria-label="Öne çıkan kullanıcılar">
-          <div class="featured-head">
-            <span aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="m12 3 2.2 5 5.4.6-4 3.7 1.1 5.3-4.7-2.7-4.7 2.7 1.1-5.3-4-3.7 5.4-.6L12 3Z" fill="currentColor"/>
-              </svg>
-            </span>
-            Öne Çıkan Kullanıcılar
-          </div>
-          <div class="featured-track" aria-hidden="true">
-            <div class="featured-user">
-              <div class="featured-avatar" style="--avatar-bg:#1f2937"></div>
-              <strong>Alperen</strong>
-              <span>◆ 6 Ay</span>
-            </div>
-            <div class="featured-user">
-              <div class="featured-avatar" style="--avatar-bg:#291414"></div>
-              <strong>Kenan</strong>
-              <span>◆ 5 Ay</span>
-            </div>
-            <div class="featured-user">
-              <div class="featured-avatar" style="--avatar-bg:#16332f"></div>
-              <strong>Melis</strong>
-              <span>◆ 4 Ay</span>
-            </div>
-            <div class="featured-user">
-              <div class="featured-avatar" style="--avatar-bg:#111827"></div>
-              <strong>Raven</strong>
-              <span>◆ 3 Ay</span>
-            </div>
-            <div class="featured-user">
-              <div class="featured-avatar" style="--avatar-bg:#332414"></div>
-              <strong>Atlas</strong>
-              <span>◆ 3 Ay</span>
-            </div>
-            <div class="featured-user">
-              <div class="featured-avatar" style="--avatar-bg:#1f2937"></div>
-              <strong>Alperen</strong>
-              <span>◆ 6 Ay</span>
-            </div>
-            <div class="featured-user">
-              <div class="featured-avatar" style="--avatar-bg:#291414"></div>
-              <strong>Kenan</strong>
-              <span>◆ 5 Ay</span>
-            </div>
-            <div class="featured-user">
-              <div class="featured-avatar" style="--avatar-bg:#16332f"></div>
-              <strong>Melis</strong>
-              <span>◆ 4 Ay</span>
-            </div>
-            <div class="featured-user">
-              <div class="featured-avatar" style="--avatar-bg:#111827"></div>
-              <strong>Raven</strong>
-              <span>◆ 3 Ay</span>
-            </div>
-            <div class="featured-user">
-              <div class="featured-avatar" style="--avatar-bg:#332414"></div>
-              <strong>Atlas</strong>
-              <span>◆ 3 Ay</span>
-            </div>
           </div>
         </section>
 
