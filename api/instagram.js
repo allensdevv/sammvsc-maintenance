@@ -559,15 +559,15 @@ module.exports = async function handler(request, response) {
       }
     }
 
-    if (process.env.RAPIDAPI_KEY) {
-      const profile = await fetchRapidApiProfile(username);
+    if (process.env.APIFY_TOKEN) {
+      const profile = await fetchApifyProfile(username);
       if (request.query?.avatar === "1") {
         return sendAvatar(response, profile.profile_pic_url || profile.profile_picture_url);
       }
       return sendJson(response, 200, profile);
     }
-    if (process.env.APIFY_TOKEN) {
-      const profile = await fetchApifyProfile(username);
+    if (process.env.RAPIDAPI_KEY) {
+      const profile = await fetchRapidApiProfile(username);
       if (request.query?.avatar === "1") {
         return sendAvatar(response, profile.profile_pic_url || profile.profile_picture_url);
       }
