@@ -1,3 +1,4 @@
+const { getJson } = require("../lib/cache");
 const GRAPH_VERSION = process.env.META_GRAPH_VERSION || "v20.0";
 const GRAPH_BASE = `https://graph.instagram.com/${GRAPH_VERSION}`;
 const PUBLIC_PROFILE_URL = "https://i.instagram.com/api/v1/users/web_profile_info/";
@@ -581,6 +582,15 @@ module.exports = async function handler(request, response) {
   }
 
   try {
+    if (request.query?.avatar === "1") {
+      const lc = username.toLowerCase();
+      const privateCache = await getJson(`ig:profile:${lc}`) || await getJson(`ig:profile:stale:${lc}`);
+      const cachedPicUrl = privateCache?.data?.profilePicUrl || privateCache?.profilePicUrl;
+      if (cachedPicUrl) {
+        return sendAvatar(response, cachedPicUrl);
+      }
+    }
+
     if (provider !== "auto") {
       const profile = await fetchCachedProviderProfile(provider, username, accessToken);
       if (request.query?.avatar === "1") {
