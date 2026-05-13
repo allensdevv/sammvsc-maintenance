@@ -18,6 +18,36 @@ function sendJson(response, status, payload) {
   response.end(JSON.stringify(payload));
 }
 
+async function sendAvatar(response, url) {
+  if (!url || !/^https:\/\/[^ ]+/i.test(url)) {
+    return sendJson(response, 404, {
+      error: "avatar_not_found",
+      message: USER_MESSAGE
+    });
+  }
+
+  const avatarResponse = await fetch(url, {
+    headers: {
+      "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+    }
+  });
+
+  if (!avatarResponse.ok) {
+    return sendJson(response, avatarResponse.status, {
+      error: "avatar_fetch_failed",
+      message: USER_MESSAGE
+    });
+  }
+
+  const buffer = Buffer.from(await avatarResponse.arrayBuffer());
+  response.statusCode = 200;
+  response.setHeader("Content-Type", avatarResponse.headers.get("content-type") || "image/jpeg");
+  response.setHeader("Cache-Control", "public, max-age=1800");
+  response.setHeader("X-Sammvsc-Api", "instagram-avatar");
+  response.end(buffer);
+}
+
 function providerError(status = 502, details = null) {
   return {
     status,
@@ -509,6 +539,9 @@ module.exports = async function handler(request, response) {
   try {
     if (provider !== "auto") {
       const profile = await fetchByProvider(provider, username, accessToken);
+      if (request.query?.avatar === "1") {
+        return sendAvatar(response, profile.profile_pic_url || profile.profile_picture_url);
+      }
       return sendJson(response, 200, profile);
     }
 
@@ -516,6 +549,9 @@ module.exports = async function handler(request, response) {
       try {
         const officialProfile = await fetchOfficialSelf(accessToken);
         if (officialProfile.username.toLowerCase() === username.toLowerCase()) {
+          if (request.query?.avatar === "1") {
+            return sendAvatar(response, officialProfile.profile_pic_url || officialProfile.profile_picture_url);
+          }
           return sendJson(response, 200, officialProfile);
         }
       } catch {
@@ -523,13 +559,41 @@ module.exports = async function handler(request, response) {
       }
     }
 
-    if (process.env.RAPIDAPI_KEY) return sendJson(response, 200, await fetchRapidApiProfile(username));
-    if (process.env.APIFY_TOKEN) return sendJson(response, 200, await fetchApifyProfile(username));
-    if (process.env.BRIGHTDATA_API_KEY) return sendJson(response, 200, await fetchBrightDataProfile(username));
-    if (process.env.SCRAPINGBEE_API_KEY) return sendJson(response, 200, await fetchScrapingBeeProfile(username));
+    if (process.env.RAPIDAPI_KEY) {
+      const profile = await fetchRapidApiProfile(username);
+      if (request.query?.avatar === "1") {
+        return sendAvatar(response, profile.profile_pic_url || profile.profile_picture_url);
+      }
+      return sendJson(response, 200, profile);
+    }
+    if (process.env.APIFY_TOKEN) {
+      const profile = await fetchApifyProfile(username);
+      if (request.query?.avatar === "1") {
+        return sendAvatar(response, profile.profile_pic_url || profile.profile_picture_url);
+      }
+      return sendJson(response, 200, profile);
+    }
+    if (process.env.BRIGHTDATA_API_KEY) {
+      const profile = await fetchBrightDataProfile(username);
+      if (request.query?.avatar === "1") {
+        return sendAvatar(response, profile.profile_pic_url || profile.profile_picture_url);
+      }
+      return sendJson(response, 200, profile);
+    }
+    if (process.env.SCRAPINGBEE_API_KEY) {
+      const profile = await fetchScrapingBeeProfile(username);
+      if (request.query?.avatar === "1") {
+        return sendAvatar(response, profile.profile_pic_url || profile.profile_picture_url);
+      }
+      return sendJson(response, 200, profile);
+    }
 
     if (process.env.ALLOW_PUBLIC_WEB_FALLBACK === "true") {
-      return sendJson(response, 200, await fetchPublicProfile(username));
+      const profile = await fetchPublicProfile(username);
+      if (request.query?.avatar === "1") {
+        return sendAvatar(response, profile.profile_pic_url || profile.profile_picture_url);
+      }
+      return sendJson(response, 200, profile);
     }
 
     if (!hasConfiguredScraperProvider()) {
