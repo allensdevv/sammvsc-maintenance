@@ -21,6 +21,13 @@ RAPIDAPI_HOST=instagram-scraper-api2.p.rapidapi.com
 RAPIDAPI_URL_TEMPLATE=https://instagram-scraper-api2.p.rapidapi.com/v1/info?username_or_id_or_url={username}
 ```
 
+If your RapidAPI endpoint uses POST/form data, also add:
+
+```env
+RAPIDAPI_METHOD=POST
+RAPIDAPI_BODY_TEMPLATE=username_or_url=https://www.instagram.com/{username}/
+```
+
 Apify is usually more stable for scraping jobs:
 
 ```env

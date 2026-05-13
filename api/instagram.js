@@ -146,19 +146,33 @@ async function fetchRapidApiProfile(username) {
   const key = process.env.RAPIDAPI_KEY;
   const host = process.env.RAPIDAPI_HOST || "instagram-scraper-api2.p.rapidapi.com";
   const template = process.env.RAPIDAPI_URL_TEMPLATE || `https://${host}/v1/info?username_or_id_or_url={username}`;
+  const method = (process.env.RAPIDAPI_METHOD || "GET").toUpperCase();
+  const bodyTemplate = process.env.RAPIDAPI_BODY_TEMPLATE || "";
 
   if (!key) {
     throw providerError(500, "missing_RAPIDAPI_KEY");
   }
 
   const url = template.replaceAll("{username}", encodeURIComponent(username));
-  const response = await fetch(url, {
-    headers: {
-      "Accept": "application/json",
-      "X-RapidAPI-Key": key,
-      "X-RapidAPI-Host": host
+  const headers = {
+    "Accept": "application/json",
+    "X-RapidAPI-Key": key,
+    "X-RapidAPI-Host": host
+  };
+  const options = { method, headers };
+
+  if (method !== "GET" && bodyTemplate) {
+    const body = bodyTemplate.replaceAll("{username}", username).replaceAll("{encodedUsername}", encodeURIComponent(username));
+    if (body.trim().startsWith("{") || body.trim().startsWith("[")) {
+      headers["Content-Type"] = "application/json";
+      options.body = body;
+    } else {
+      headers["Content-Type"] = "application/x-www-form-urlencoded";
+      options.body = body;
     }
-  });
+  }
+
+  const response = await fetch(url, options);
   const payload = await response.json().catch(() => null);
 
   if (!response.ok) {
