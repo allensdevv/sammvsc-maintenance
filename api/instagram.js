@@ -14,6 +14,7 @@ function sendJson(response, status, payload) {
   response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
   response.setHeader("Content-Type", "application/json; charset=utf-8");
   response.setHeader("Cache-Control", "no-store");
+  response.setHeader("X-Sammvsc-Api", "instagram");
   response.end(JSON.stringify(payload));
 }
 

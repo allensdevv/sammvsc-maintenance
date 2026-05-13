@@ -2,6 +2,12 @@
   "version": 2,
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/api/instagram",
+      "destination": "/api/instagram.js"
+    }
+  ],
   "headers": [
     {
       "source": "/api/(.*)",
