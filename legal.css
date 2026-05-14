@@ -138,6 +138,10 @@ a {
   text-align: center;
 }
 
+.kvkk-hero {
+  padding: 34px 0 48px;
+}
+
 .legal-badge {
   display: inline-flex;
   align-items: center;
@@ -150,6 +154,44 @@ a {
   color: #9ea5ff;
   font-size: 14px;
   font-weight: 700;
+}
+
+.legal-badge svg {
+  width: 16px;
+  height: 16px;
+}
+
+.kvkk-hero .legal-badge {
+  min-height: 40px;
+  padding: 0 18px;
+  border-color: rgba(120, 115, 255, 0.34);
+  background: rgba(23, 23, 55, 0.72);
+  color: #8c98ff;
+  font-size: 15px;
+  font-weight: 650;
+  box-shadow: 0 0 0 1px rgba(120, 115, 255, 0.08) inset;
+}
+
+.kvkk-hero h1 {
+  margin-top: 26px;
+  font-size: clamp(44px, 7vw, 64px);
+  line-height: 0.98;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.kvkk-hero .legal-subtitle {
+  margin-top: 16px;
+  color: #b7c6db;
+  font-size: clamp(16px, 2.2vw, 18px);
+  font-weight: 450;
+}
+
+.kvkk-hero .updated {
+  margin-top: 12px;
+  color: #7f8ba2;
+  font-size: 14px;
+  font-weight: 450;
 }
 
 h1 {
