@@ -17,8 +17,8 @@ function cacheKey(id) {
   return `discord:profile:${id}`;
 }
 
-async function fetchFindcord(query) {
-  const res = await fetch(`https://app.findcord.com/api/user/${encodeURIComponent(query)}`, {
+async function fetchFindcordById(id) {
+  const res = await fetch(`https://app.findcord.com/api/user/${encodeURIComponent(id)}`, {
     headers: {
       "Authorization": FINDCORD_KEY,
       "Accept": "application/json"
@@ -26,30 +26,23 @@ async function fetchFindcord(query) {
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Findcord ${res.status}: ${body.slice(0, 120)}`);
+    throw new Error(`Findcord /user ${res.status}: ${body.slice(0, 120)}`);
   }
   return res.json();
 }
 
-// Findcord username search endpoint
-async function searchFindcordByUsername(username) {
-  const res = await fetch(`https://app.findcord.com/api/search?q=${encodeURIComponent(username)}&type=user`, {
+async function fetchFindcordByQuery(query) {
+  const res = await fetch(`https://app.findcord.com/api/sorgu/${encodeURIComponent(query)}`, {
     headers: {
       "Authorization": FINDCORD_KEY,
       "Accept": "application/json"
     }
   });
-  if (!res.ok) return null;
-  const data = await res.json();
-  // Search returns array or { results: [...] }
-  const results = Array.isArray(data) ? data : (data.results || data.users || []);
-  if (!results.length) return null;
-  // Return the first matching result
-  const match = results.find(u =>
-    (u.username || "").toLowerCase() === username.toLowerCase() ||
-    (u.global_name || "").toLowerCase() === username.toLowerCase()
-  ) || results[0];
-  return match;
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Findcord /sorgu ${res.status}: ${body.slice(0, 120)}`);
+  }
+  return res.json();
 }
 
 async function fetchDcsv(userId) {
@@ -149,29 +142,20 @@ module.exports = async (req, res) => {
     let fc;
 
     if (isId) {
-      // Numeric ID → fetch directly
-      fc = await fetchFindcord(query);
+      // Numeric ID → /api/user/{id}
+      fc = await fetchFindcordById(query);
     } else {
-      // Username → try direct endpoint first, then search
-      let directError = null;
+      // Username → try /api/sorgu/{username}, fallback to /api/user/{username}
+      let lastError = null;
       try {
-        fc = await fetchFindcord(query);
+        fc = await fetchFindcordByQuery(query);
       } catch (err) {
-        directError = err.message;
-        // Try search endpoint
-        const searchResult = await searchFindcordByUsername(query);
-        if (!searchResult) {
-          return sendJson(res, 404, { status: "error", message: `"${query}" kullanıcı adı bulunamadı. API hatası: ${directError}` });
-        }
-        // If search returns a full profile, use it; otherwise fetch by ID
-        if (searchResult.username && searchResult.id) {
-          fc = searchResult;
-          // If we only got basic info, fetch full profile by ID
-          if (!searchResult.mutual_guilds && !searchResult.punishments) {
-            try { fc = await fetchFindcord(searchResult.id); } catch { fc = searchResult; }
-          }
-        } else {
-          return sendJson(res, 404, { status: "error", message: `"${query}" kullanıcı adı bulunamadı. API hatası: ${directError}` });
+        lastError = err.message;
+        try {
+          fc = await fetchFindcordById(query);
+        } catch (err2) {
+          lastError += ` | ${err2.message}`;
+          return sendJson(res, 404, { status: "error", message: `"${query}" kullanıcı adı bulunamadı. (${lastError})` });
         }
       }
     }
