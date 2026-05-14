@@ -453,7 +453,7 @@
 
       /* Panel layout (grid of cards) */
       .panel-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
-      .panel-grid-2 { grid-template-columns: 1fr 1fr; }
+      .panel-grid-2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
 
       /* Card */
       .card {
@@ -463,13 +463,15 @@
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
       }
       .card-header {
         padding: 16px 24px 0;
       }
       .card-title {
         display: flex; align-items: center; gap: 8px;
-        font-size: 15px; font-weight: 600; color: #fff;
+        font-size: 18px; font-weight: 700; color: #fff;
         margin: 0 0 12px;
       }
       .card-title svg { width: 16px; height: 16px; color: #5865f2; flex-shrink: 0; }
@@ -481,15 +483,14 @@
       /* Info rows */
       .info-row {
         display: flex; align-items: center; justify-content: space-between;
-        gap: 12px; padding: 8px 0;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-        font-size: 13px;
+        gap: 14px; padding: 7px 0;
+        border-bottom: 0;
       }
       .info-row:last-of-type { border-bottom: none; }
-      .info-row .lbl { color: #9ca3af; }
-      .info-row .val { color: #fff; font-weight: 500; text-align: right; }
+      .info-row .lbl { color: #9ca3af; font-size: 14px; }
+      .info-row .val { color: #fff; font-weight: 700; font-size: 16px; text-align: right; }
       .info-overview {
-        display: grid;
+        display: none;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
         margin-bottom: 14px;
@@ -522,24 +523,24 @@
 
       /* Bio / note box */
       .note-box {
-        padding: 12px 14px; margin-top: 8px;
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 10px; background: rgba(255,255,255,0.03);
+        padding: 12px 14px; margin-top: 10px;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px; background: rgba(255,255,255,0.05);
       }
       .note-box-label {
         display: flex; align-items: center; gap: 6px;
-        color: #6b7280; font-size: 11px; margin-bottom: 6px;
+        color: #6b7280; font-size: 14px; margin-bottom: 6px;
       }
-      .note-box-label svg { width: 12px; height: 12px; }
-      .note-box-text { color: #d1d5db; font-size: 13px; line-height: 1.5; }
+      .note-box-label svg { width: 14px; height: 14px; }
+      .note-box-text { color: #d1d5db; font-size: 16px; line-height: 1.5; }
 
       /* Tag pills (other names) */
       .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
       .tag {
         padding: 3px 10px; border-radius: 999px;
         background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-        color: #d1d5db; font-size: 12px;
-        max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        color: #d1d5db; font-size: 14px;
+        max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         transition: border-color 140ms;
       }
       .tag:hover { border-color: rgba(88,101,242,0.3); }
@@ -681,7 +682,7 @@
         color: #818cf8; font-size: 11px; font-weight: 700;
       }
       .info-server-list {
-        max-height: 198px;
+        max-height: 230px;
         overflow-y: auto;
         padding-right: 4px;
         display: flex;
@@ -818,6 +819,8 @@
         gap: 8px;
         align-items: end;
         min-height: 180px;
+        overflow-x: auto;
+        padding-top: 10px;
       }
       .hour-cell {
         display: flex;
@@ -828,8 +831,8 @@
       }
       .hour-bar {
         width: 100%;
-        min-height: 10px;
-        border-radius: 999px 999px 4px 4px;
+        min-height: 12px;
+        border-radius: 999px 999px 3px 3px;
         background: linear-gradient(180deg, #8b5cf6, #2f7dff);
         box-shadow: 0 0 18px rgba(88,101,242,0.22);
         opacity: 0.92;
@@ -2253,10 +2256,15 @@
         // Son Mesaj
         const msgBox = el("lastMsgContent");
         const voiceBox = el("lastVoiceContent");
-        const msgHistory = data.message_history || (data.activity && data.activity.last_message ? [data.activity.last_message] : []);
-        const voiceHistory = data.voice_history || (data.activity && data.activity.last_voice ? [data.activity.last_voice] : []);
+        const msgHistory = Array.isArray(data.message_history) && data.message_history.length
+          ? data.message_history
+          : (data.activity && data.activity.last_message ? [data.activity.last_message] : []);
+        const voiceHistory = Array.isArray(data.voice_history) && data.voice_history.length
+          ? data.voice_history
+          : (data.activity && data.activity.last_voice ? [data.activity.last_voice] : []);
 
         if (msgHistory.length === 0) {
+          el("lastMsgCount").textContent = "0 kayıt";
           msgBox.innerHTML = `<div class="empty-state" style="min-height:100px"><div class="empty-inner"><div class="empty-text">Son mesaj verisi bulunamadı.</div></div></div>`;
         } else {
           el("lastMsgCount").textContent = `${msgHistory.length} kayıt`;
@@ -2280,6 +2288,7 @@
         }
 
         if (voiceHistory.length === 0) {
+          el("lastVoiceCount").textContent = "0 kayıt";
           voiceBox.innerHTML = `<div class="empty-state" style="min-height:100px"><div class="empty-inner"><div class="empty-text">Son ses verisi bulunamadı.</div></div></div>`;
         } else {
           el("lastVoiceCount").textContent = `${voiceHistory.length} kayıt`;
@@ -2337,7 +2346,7 @@
         }).join("");
       }
 
-      function renderActiveHours(activeHours, servers) {
+      function renderActiveHours(activeHours, servers, profileData = {}) {
         const box = el("saatlerState");
         const hours = Array.from({ length: 24 }, (_, hour) => ({ hour, score: 0, messages: 0, voice_seconds: 0 }));
 
@@ -2350,8 +2359,8 @@
             return;
           }
           if (!payload || typeof payload !== "object") return;
-          const messages = Number(payload.messages || payload.message || payload.count || 0);
-          const voice = Number(payload.voice_seconds || payload.voiceTime || payload.voice_time || 0);
+          const messages = Number(payload.messages || payload.message || payload.count || payload.Message || 0);
+          const voice = Number(payload.voice_seconds || payload.voiceTime || payload.voice_time || payload.Voice || payload.voice || 0);
           item.messages += messages;
           item.voice_seconds += voice;
           item.score += Number(payload.score || payload.value || messages + Math.max(1, Math.round(voice / 60)) || 0);
@@ -2370,6 +2379,22 @@
           });
         }
 
+        if (!hours.some(h => h.score > 0)) {
+          (profileData.message_history || []).forEach(item => {
+            const d = item?.timestamp ? new Date(item.timestamp) : null;
+            if (d && !Number.isNaN(d.getTime())) addHour(d.getHours(), { messages: 1, score: 1 });
+          });
+          (profileData.voice_history || []).forEach(item => {
+            const d = (item?.timestamp || item?.last_seen) ? new Date(item.timestamp || item.last_seen) : null;
+            const voice = Number(item?.duration || item?.voice_seconds || 0);
+            if (d && !Number.isNaN(d.getTime())) addHour(d.getHours(), { voice_seconds: voice, score: Math.max(1, Math.round(voice / 60)) });
+          });
+        }
+        if (!hours.some(h => h.score > 0)) {
+          hours.forEach(h => { h.score = 1; });
+          activeHours = { ...(activeHours || {}), summary: activeHours?.summary || "Aktif saat bulunamadı" };
+        }
+
         const max = Math.max(...hours.map(h => h.score), 0);
         if (!max) {
           el("saatlerSummary").textContent = activeHours?.summary || "Aktif saat verisi yok";
@@ -2382,7 +2407,7 @@
         box.innerHTML = `
           <div class="hours-grid">
             ${hours.map(h => {
-              const height = Math.max(10, Math.round((h.score / max) * 150));
+              const height = Math.max(14, Math.round((h.score / max) * 150));
               const title = `${String(h.hour).padStart(2, "0")}:00 · ${h.messages} mesaj · ${fmtVoiceTime(h.voice_seconds)}`;
               return `<div class="hour-cell" title="${title}">
                 <div class="hour-bar" style="height:${height}px"></div>
@@ -2394,10 +2419,81 @@
         `;
       }
 
+      function deriveVoiceFriendsFromProfile(data) {
+        const byUser = new Map();
+        (data.voice_history || []).forEach(item => {
+          const users = Array.isArray(item.users) ? item.users : [];
+          users.forEach(user => {
+            const id = String(user.id || user.user_id || user.userId || user.UserID || "");
+            const username = user.username || user.name || user.UserName || "";
+            if (!id && !username) return;
+            const key = id || username.toLowerCase();
+            const current = byUser.get(key) || {
+              id,
+              user_id: id,
+              username,
+              global_name: user.global_name || user.displayName || user.displayname || username,
+              avatar_url: user.avatar_url || user.avatarURL || user.AvatarURL || "",
+              total_voice: 0,
+              voice_time: 0,
+              duration: 0,
+              meetings: 0,
+              sessions: 0,
+              channels: 0,
+              channel_count: 0,
+              top_channel: item.channel_name || item.channel || "",
+              last_seen: item.timestamp || item.last_seen || "",
+              status: user.status || "offline"
+            };
+            const seconds = Number(user.duration || user.voice_time || user.voice_seconds || item.duration || 0) || 0;
+            current.total_voice += seconds;
+            current.voice_time += seconds;
+            current.duration += seconds;
+            current.meetings += 1;
+            current.sessions += 1;
+            current.channels = Math.max(current.channels, item.channel_name || item.channel ? 1 : 0);
+            current.channel_count = Math.max(current.channel_count, current.channels);
+            const ts = item.timestamp || item.last_seen || "";
+            if (ts && (!current.last_seen || new Date(ts) > new Date(current.last_seen))) current.last_seen = ts;
+            byUser.set(key, current);
+          });
+        });
+        return Array.from(byUser.values()).sort((a, b) => (b.total_voice || 0) - (a.total_voice || 0));
+      }
+
+      function deriveMessageFriendsFromProfile(data) {
+        const byUser = new Map();
+        (data.message_history || []).forEach(item => {
+          const id = String(item.author_id || item.user_id || item.userId || item.UserID || "");
+          const username = item.author_name || item.username || item.UserName || "";
+          if (!id && !username) return;
+          const key = id || username.toLowerCase();
+          const current = byUser.get(key) || {
+            id,
+            user_id: id,
+            username,
+            global_name: username,
+            avatar_url: item.author_avatar_url || item.avatar_url || "",
+            messages: 0,
+            message_count: 0,
+            first_interaction: item.timestamp || "",
+            last_interaction: item.timestamp || ""
+          };
+          current.messages += 1;
+          current.message_count += 1;
+          const ts = item.timestamp || "";
+          if (ts && (!current.first_interaction || new Date(ts) < new Date(current.first_interaction))) current.first_interaction = ts;
+          if (ts && (!current.last_interaction || new Date(ts) > new Date(current.last_interaction))) current.last_interaction = ts;
+          byUser.set(key, current);
+        });
+        return Array.from(byUser.values()).sort((a, b) => (b.messages || 0) - (a.messages || 0));
+      }
+
       // Render voice friends table
       function renderVoiceFriends(friends) {
         const box = el("sesContent");
         if (!friends || friends.length === 0) {
+          el("voiceCount").textContent = "0 arkadaş";
           box.innerHTML = `<div class="empty-state" style="min-height:120px"><div class="empty-inner"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg></div><div class="empty-text">Ses arkadaşı bulunamadı</div></div></div>`;
           return;
         }
@@ -2462,6 +2558,7 @@
       function renderMessageFriends(friends) {
         const grid = el("friendGrid");
         if (!friends || friends.length === 0) {
+          el("msgFriendCount").textContent = "0 arkadaş";
           grid.innerHTML = `<div class="empty-state" style="min-height:120px;grid-column:1/-1"><div class="empty-inner"><div class="empty-text">Mesaj arkadaşı bulunamadı</div></div></div>`;
           return;
         }
@@ -2576,11 +2673,15 @@
         setHeroStat("statPunishItem", "statPunish", punishCount);
 
         // Bilgiler panel
+        ["infoGlobalName", "infoId", "infoCreated", "infoDevice", "infoPronouns"].forEach(id => {
+          const row = el(id)?.closest(".info-row");
+          if (row) row.hidden = true;
+        });
         setText("miniCreated", data.created_at ? fmtRelative(data.created_at) : "Bilinmiyor");
         setText("miniStatus", presenceText);
         setText("miniDevice", deviceText);
         setText("miniBadges", String(badgeCount));
-        setText("infoUsername", data.username || "—");
+        setText("infoUsername", data.global_name || data.username || "—");
         setText("infoGlobalName", data.global_name || "—");
         setText("infoId", data.id || "—");
         setText("infoCreated", createdText);
@@ -2597,6 +2698,9 @@
           el("otherNames").innerHTML = data.other_names.map(n =>
             `<span class="tag" title="${n}">• ${n}</span>`
           ).join("");
+        } else {
+          el("otherNamesCount").textContent = "0 Kayıt";
+          el("otherNames").innerHTML = `<span style="color:#6b7280;font-size:12px">Kayıt bulunamadı</span>`;
         }
 
         // Server stats (Bilgiler right panel)
@@ -2614,7 +2718,7 @@
         renderActivity(data);
 
         // Saatler tab
-        renderActiveHours(data.active_hours, serverStatsData);
+        renderActiveHours(data.active_hours, serverStatsData, data);
 
         // Siciller
         renderPunishments(data.punishments);
@@ -2625,11 +2729,15 @@
         renderServerList(adminServers, "adminServerList", "Bu kullanıcının yetkili olduğu sunucu bulunmuyor.");
 
         // Ses arkadaşları
-        const voiceFriends = data.voice_friends || data.voice_history || [];
+        const voiceFriends = Array.isArray(data.voice_friends) && data.voice_friends.length
+          ? data.voice_friends
+          : deriveVoiceFriendsFromProfile(data);
         renderVoiceFriends(voiceFriends);
 
         // Mesaj arkadaşları
-        const msgFriends = data.message_friends || [];
+        const msgFriends = Array.isArray(data.message_friends) && data.message_friends.length
+          ? data.message_friends
+          : deriveMessageFriendsFromProfile(data);
         renderMessageFriends(msgFriends);
       }
 

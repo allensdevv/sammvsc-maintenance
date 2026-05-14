@@ -15,7 +15,7 @@ const CACHE_TTL = 60 * 30;
 const PARTIAL_CACHE_TTL = 60;
 const STALE_CACHE_TTL = 60 * 60 * 12;
 const EXTERNAL_TIMEOUT_MS = 9000;
-const CACHE_VERSION = "v10";
+const CACHE_VERSION = "v11";
 const TRANSIENT_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 
 function sendJson(res, status, payload) {
@@ -60,6 +60,27 @@ function firstArray(...values) {
     if (Array.isArray(value) && value.length > 0) return value;
   }
   return [];
+}
+
+function listFrom(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (isPlainObject(value)) return Object.values(value).filter(Boolean);
+  return [];
+}
+
+function firstList(...values) {
+  for (const value of values) {
+    const list = listFrom(value);
+    if (list.length > 0) return list;
+  }
+  return [];
+}
+
+function firstObject(...values) {
+  for (const value of values) {
+    if (isPlainObject(value)) return value;
+  }
+  return {};
 }
 
 function clientStatusArray(...values) {
@@ -156,6 +177,24 @@ function mergeServerArrays(...arrays) {
 }
 
 function toSeconds(value) {
+  if (typeof value === "string") {
+    const clean = value.trim().toLowerCase();
+    let total = 0;
+    let matched = false;
+    const units = [
+      [/(\d+(?:[.,]\d+)?)\s*(?:saat|hour|hours|h)\b/g, 3600],
+      [/(\d+(?:[.,]\d+)?)\s*(?:dakika|minute|minutes|min|m)\b/g, 60],
+      [/(\d+(?:[.,]\d+)?)\s*(?:saniye|second|seconds|sec|sn|s)\b/g, 1]
+    ];
+    for (const [regex, multiplier] of units) {
+      let match;
+      while ((match = regex.exec(clean))) {
+        matched = true;
+        total += Number(match[1].replace(",", ".")) * multiplier;
+      }
+    }
+    if (matched) return Math.round(total);
+  }
   const n = Number(value || 0);
   if (!Number.isFinite(n) || n <= 0) return 0;
   return n > 100000 ? Math.round(n / 1000) : Math.round(n);
@@ -403,13 +442,15 @@ function normalizeDcsv(d) {
 }
 
 function normalizeFindcord(fc) {
-  const user = fc.UserInfo || fc.user || fc.data?.UserInfo || fc;
+  if (isPlainObject(fc?.data)) fc = { ...fc.data, ...fc };
+  const user = fc.UserInfo || fc.user || fc.User || fc.data?.UserInfo || fc;
   const uid = String(firstValue(user.UserID, fc.id, fc.user_id, "") || "");
-  const findcordHasGuilds = (Array.isArray(fc.Guilds) && fc.Guilds.length > 0)
-    || (Array.isArray(fc.GuildStats) && fc.GuildStats.length > 0);
-  const guildStatsById = new Map((fc.GuildStats || []).map(g => [String(g.GuildID || g.guild_id || g.id), g]));
+  const guilds = firstList(fc.Guilds, fc.guilds, fc.Servers, fc.servers, fc.MutualGuilds, fc.mutual_guilds, user.Guilds);
+  const guildStats = firstList(fc.GuildStats, fc.guildStats, fc.guild_stats, fc.ServerStats, fc.serverStats, fc.server_stats, user.GuildStats);
+  const findcordHasGuilds = guilds.length > 0 || guildStats.length > 0;
+  const guildStatsById = new Map(guildStats.map(g => [String(firstValue(g.GuildID, g.GuildId, g.guild_id, g.id, "")), g]));
 
-  const servers = (fc.Guilds || []).map(g => {
+  const servers = guilds.map(g => {
     const gid = String(firstValue(g.GuildId, g.GuildID, g.guild_id, g.id, "") || "");
     const stat = guildStatsById.get(gid) || {};
     const userStats = g.UserStats || {};
@@ -418,36 +459,37 @@ function normalizeFindcord(fc) {
       guild_id: gid,
       name: firstValue(g.GuildName, stat.GuildName, g.name, "Sunucu"),
       guild_name: firstValue(g.GuildName, stat.GuildName, g.name, "Sunucu"),
-      icon_url: firstValue(g.GuildIcon, stat.GuildIcon),
-      banner_url: firstValue(g.GuildBanner, stat.GuildBanner),
+      icon_url: firstValue(g.GuildIcon, stat.GuildIcon, g.icon_url, g.icon, stat.icon_url, stat.icon),
+      banner_url: firstValue(g.GuildBanner, stat.GuildBanner, g.banner_url, g.banner, stat.banner_url, stat.banner),
       nick: firstValue(g.displayName, g.nick, g.nickname),
       joined_at: toIso(firstValue(g.JoinTime, g.joined_at)),
       booster: Boolean(g.Booster),
-      roles: Array.isArray(g.Roles) ? g.Roles : [],
-      messages: firstValue(userStats.total?.messages, stat.MessageStat, g.messages, 0) || 0,
-      message_count: firstValue(userStats.total?.messages, stat.MessageStat, g.message_count, 0) || 0,
-      voice_time: toSeconds(firstValue(userStats.total?.voiceTime, stat.VoiceStat, g.voice_time, 0)),
-      voice_seconds: toSeconds(firstValue(userStats.total?.voiceTime, stat.VoiceStat, g.voice_seconds, 0)),
-      peak_hours: userStats.peakHours || null,
-      active_hours: userStats.activeHours || null,
-      top_channels: userStats.topChannels || null,
-      daily_activity: userStats.dailyActivity || []
+      roles: firstList(g.Roles, g.roles, stat.Roles, stat.roles),
+      messages: firstValue(userStats.total?.messages, stat.MessageStat, stat.messages, g.messages, 0) || 0,
+      message_count: firstValue(userStats.total?.messages, stat.MessageStat, stat.message_count, g.message_count, 0) || 0,
+      voice_time: toSeconds(firstValue(userStats.total?.voiceTime, stat.VoiceStat, stat.voice_time, g.voice_time, 0)),
+      voice_seconds: toSeconds(firstValue(userStats.total?.voiceTime, stat.VoiceStat, stat.voice_seconds, g.voice_seconds, 0)),
+      peak_hours: firstValue(userStats.peakHours, userStats.peak_hours, g.peakHours, g.peak_hours),
+      active_hours: firstValue(userStats.activeHours, userStats.active_hours, g.activeHours, g.active_hours, stat.activeHours, stat.active_hours),
+      top_channels: firstValue(userStats.topChannels, userStats.top_channels, g.topChannels, g.top_channels),
+      daily_activity: firstList(userStats.dailyActivity, userStats.daily_activity, g.dailyActivity, g.daily_activity)
     };
   });
 
-  const statOnlyServers = (fc.GuildStats || [])
-    .filter(g => !servers.some(s => String(s.guild_id) === String(g.GuildID)))
+  const statOnlyServers = guildStats
+    .filter(g => !servers.some(s => String(s.guild_id) === String(firstValue(g.GuildID, g.GuildId, g.guild_id, g.id, ""))))
     .map(g => ({
-      id: String(g.GuildID || ""),
-      guild_id: String(g.GuildID || ""),
-      name: g.GuildName || "Sunucu",
-      guild_name: g.GuildName || "Sunucu",
-      icon_url: g.GuildIcon || null,
-      banner_url: g.GuildBanner || null,
-      messages: g.MessageStat || 0,
-      message_count: g.MessageStat || 0,
-      voice_time: toSeconds(g.VoiceStat),
-      voice_seconds: toSeconds(g.VoiceStat)
+      id: String(firstValue(g.GuildID, g.GuildId, g.guild_id, g.id, "")),
+      guild_id: String(firstValue(g.GuildID, g.GuildId, g.guild_id, g.id, "")),
+      name: firstValue(g.GuildName, g.guild_name, g.name, "Sunucu"),
+      guild_name: firstValue(g.GuildName, g.guild_name, g.name, "Sunucu"),
+      icon_url: firstValue(g.GuildIcon, g.icon_url, g.icon),
+      banner_url: firstValue(g.GuildBanner, g.banner_url, g.banner),
+      roles: firstList(g.Roles, g.roles),
+      messages: firstValue(g.MessageStat, g.messages, g.message_count, 0) || 0,
+      message_count: firstValue(g.MessageStat, g.messages, g.message_count, 0) || 0,
+      voice_time: toSeconds(firstValue(g.VoiceStat, g.voice_time, g.voice_seconds)),
+      voice_seconds: toSeconds(firstValue(g.VoiceStat, g.voice_time, g.voice_seconds))
     }));
 
   const allServers = mergeServerArrays(servers, statOnlyServers);
@@ -469,7 +511,7 @@ function normalizeFindcord(fc) {
     }
   }
 
-  const badges = (user.UserBadge || user.badges || []).map(b => ({
+  const badges = firstList(user.UserBadge, user.Badges, user.badges, fc.UserBadge, fc.Badges, fc.badges).map(b => ({
     id: firstValue(b.id, b.name, b.description, b.hash, b.icon, ""),
     hash: firstValue(b.icon, b.hash, b.BadgeIcon, b.BadgeHash),
     icon: firstValue(b.icon, b.hash, b.BadgeIcon, b.BadgeHash),
@@ -483,30 +525,92 @@ function normalizeFindcord(fc) {
     since: toIso(firstValue(b.since, b.started_at, b.startDate, b.boost_since, b.premium_since))
   }));
 
-  const lastSeen = fc.LastSeen || {};
-  const messageHistory = (lastSeen.Message || []).map(m => ({
-    guild_id: m.GuildID || m.guild_id,
-    guild_name: m.GuildName || m.guild_name,
-    guild_icon_url: m.GuildIcon || null,
-    channel_name: m.ChannelName || m.channel_name,
-    content: m.Message || m.content || "",
-    timestamp: toIso(m.TimeString || m.timestamp)
+  const lastSeen = firstObject(fc.LastSeen, fc.lastSeen, fc.last_seen, user.LastSeen, user.lastSeen);
+  const messageHistory = firstList(
+    lastSeen.Message,
+    lastSeen.Messages,
+    lastSeen.message,
+    lastSeen.messages,
+    lastSeen.LastMessage,
+    lastSeen.lastMessage,
+    fc.MessageHistory,
+    fc.messageHistory,
+    fc.message_history,
+    fc.LastMessages,
+    fc.lastMessages
+  ).map(m => ({
+    guild_id: firstValue(m.GuildID, m.GuildId, m.guild_id, m.server_id, m.id),
+    guild_name: firstValue(m.GuildName, m.guild_name, m.ServerName, m.server_name, m.name),
+    guild_icon_url: firstValue(m.GuildIcon, m.guild_icon_url, m.server_icon_url, m.icon_url),
+    channel_name: firstValue(m.ChannelName, m.channel_name, m.channel, m.Channel),
+    content: firstValue(m.Message, m.message, m.content, m.Content, ""),
+    timestamp: toIso(firstValue(m.TimeString, m.timestamp, m.created_at, m.CreatedAt, m.date, m.Date)),
+    author_id: firstValue(m.UserID, m.UserId, m.userId, m.user_id, m.author_id, m.AuthorID),
+    author_name: firstValue(m.UserName, m.username, m.displayName, m.displayname, m.author_name, m.AuthorName),
+    author_avatar_url: firstValue(m.AvatarURL, m.avatarURL, m.avatar_url, m.author_avatar_url)
   }));
-  const voiceHistory = (lastSeen.Voice || []).map(v => ({
-    guild_id: v.GuildID || v.guild_id,
-    guild_name: v.GuildName || v.guild_name,
-    guild_icon_url: v.GuildIcon || null,
-    channel_name: v.ChannelName || v.channel_name,
-    duration: toSeconds(v.Stat || v.duration),
-    duration_label: typeof v.Stat === "string" ? v.Stat : null,
-    timestamp: toIso(v.TimeString || v.timestamp),
-    users: v.Users || []
+  const voiceHistory = firstList(
+    lastSeen.Voice,
+    lastSeen.Voices,
+    lastSeen.voice,
+    lastSeen.voices,
+    lastSeen.LastVoice,
+    lastSeen.lastVoice,
+    fc.VoiceHistory,
+    fc.voiceHistory,
+    fc.voice_history,
+    fc.LastVoices,
+    fc.lastVoices
+  ).map(v => ({
+    guild_id: firstValue(v.GuildID, v.GuildId, v.guild_id, v.server_id, v.id),
+    guild_name: firstValue(v.GuildName, v.guild_name, v.ServerName, v.server_name, v.name),
+    guild_icon_url: firstValue(v.GuildIcon, v.guild_icon_url, v.server_icon_url, v.icon_url),
+    channel_name: firstValue(v.ChannelName, v.channel_name, v.channel, v.Channel),
+    duration: toSeconds(firstValue(v.Stat, v.duration, v.Duration, v.voice_time, v.voice_seconds)),
+    duration_label: typeof v.Stat === "string" ? v.Stat : firstValue(v.formattedDuration, v.duration_label),
+    timestamp: toIso(firstValue(v.TimeString, v.timestamp, v.created_at, v.CreatedAt, v.last_seen, v.Date)),
+    users: firstList(v.Users, v.users, v.Members, v.members, v.Friends, v.friends),
+    member_count: firstValue(v.member_count, v.MemberCount, listFrom(v.Users).length, listFrom(v.users).length)
   }));
 
-  const activeHours = fc.ActiveHours || {};
-  const detailedHours = Array.isArray(activeHours.detailedHours) && activeHours.detailedHours.length
-    ? activeHours.detailedHours
-    : hourBuckets;
+  const addHourBucket = (hour, payload = {}) => {
+    const idx = Number(hour);
+    if (!Number.isInteger(idx) || idx < 0 || idx > 23) return;
+    const bucket = hourBuckets[idx];
+    if (typeof payload === "number") {
+      bucket.messages += payload;
+      bucket.score += payload;
+      return;
+    }
+    const messages = Number(firstValue(payload.messages, payload.message, payload.count, payload.Message, 0)) || 0;
+    const voice = toSeconds(firstValue(payload.voice_seconds, payload.voiceTime, payload.voice_time, payload.Voice, payload.voice, 0));
+    const score = Number(firstValue(payload.score, payload.value, payload.Score, payload.Value, messages + Math.max(0, Math.round(voice / 60)))) || 0;
+    bucket.messages += messages;
+    bucket.voice_seconds += voice;
+    bucket.score += score;
+  };
+
+  const activeHours = firstObject(fc.ActiveHours, fc.activeHours, fc.active_hours, user.ActiveHours, user.activeHours);
+  firstList(activeHours.detailedHours, activeHours.DetailedHours, activeHours.hours, activeHours.Hours, activeHours.detailed, fc.ActiveHourStats, fc.active_hour_stats)
+    .forEach((item, index) => {
+      if (isPlainObject(item)) addHourBucket(firstValue(item.hour, item.Hour, item.key, index), item);
+      else addHourBucket(index, Number(item) || 0);
+    });
+  for (const [hour, count] of Object.entries(firstObject(activeHours.messages, activeHours.Message, fc.active_messages))) {
+    addHourBucket(hour, { messages: count });
+  }
+  for (const [hour, value] of Object.entries(firstObject(activeHours.voice, activeHours.Voice, fc.active_voice))) {
+    addHourBucket(hour, { voice_seconds: value });
+  }
+  for (const msg of messageHistory) {
+    const date = msg.timestamp ? new Date(msg.timestamp) : null;
+    if (date && !Number.isNaN(date.getTime())) addHourBucket(date.getHours(), { messages: 1, score: 1 });
+  }
+  for (const voice of voiceHistory) {
+    const date = voice.timestamp ? new Date(voice.timestamp) : null;
+    if (date && !Number.isNaN(date.getTime())) addHourBucket(date.getHours(), { voice_seconds: voice.duration || 0, score: Math.max(1, Math.round((voice.duration || 0) / 60)) });
+  }
+  const detailedHours = hourBuckets;
   const topHours = hourBuckets
     .filter(h => h.score > 0)
     .sort((a, b) => b.score - a.score)
@@ -518,6 +622,124 @@ function normalizeFindcord(fc) {
   const activeSummary = rawActiveSummary && !/bulunamadı|yok|none/i.test(rawActiveSummary)
     ? rawActiveSummary
     : (topHours ? `En aktif saatler: ${topHours}` : rawActiveSummary);
+  const punishmentItems = firstList(fc.Punishments, fc.punishments, fc.PunishmentHistory, fc.punishment_history);
+  const adminServerItems = firstList(fc.GuildStaff, fc.guildStaff, fc.guild_staff, fc.admin_guilds, fc.AdminGuilds);
+  const voiceFriendItems = firstList(
+    fc.VoiceFrends,
+    fc.VoiceFriends,
+    fc.voiceFriends,
+    fc.voice_friends,
+    fc.VoiceFriendsData,
+    fc.Friends?.Voice,
+    fc.friends?.voice
+  );
+  const messageFriendItems = firstList(
+    fc.MessageFriends,
+    fc.MessageFrends,
+    fc.messageFriends,
+    fc.message_friends,
+    fc.Friends?.Message,
+    fc.friends?.message
+  );
+  const voiceFriendsFromHistory = (() => {
+    const byUser = new Map();
+    for (const item of voiceHistory) {
+      for (const userItem of firstList(item.users)) {
+        const id = String(firstValue(userItem.UserID, userItem.UserId, userItem.userId, userItem.user_id, userItem.id, "") || "");
+        const username = firstValue(userItem.UserName, userItem.username, userItem.name, userItem.displayName, userItem.displayname, "");
+        if (!id && !username) continue;
+        const key = id || String(username).toLowerCase();
+        const prev = byUser.get(key) || {
+          id,
+          user_id: id,
+          username,
+          global_name: firstValue(userItem.GlobalName, userItem.global_name, userItem.displayName, userItem.displayname, username, ""),
+          avatar_url: firstValue(userItem.AvatarURL, userItem.avatarURL, userItem.avatar_url),
+          total_voice: 0,
+          voice_time: 0,
+          duration: 0,
+          meetings: 0,
+          sessions: 0,
+          channels: 0,
+          channel_count: 0,
+          top_channel: item.channel_name || "",
+          last_seen: item.timestamp,
+          status: firstValue(userItem.status, userItem.Status, "offline")
+        };
+        const seconds = toSeconds(firstValue(userItem.Duration, userItem.duration, userItem.voice_time, userItem.voice_seconds, item.duration));
+        prev.total_voice += seconds;
+        prev.voice_time += seconds;
+        prev.duration += seconds;
+        prev.meetings += 1;
+        prev.sessions += 1;
+        prev.channels = Math.max(prev.channels, item.channel_name ? 1 : 0);
+        prev.channel_count = Math.max(prev.channel_count, prev.channels);
+        if (item.timestamp && (!prev.last_seen || new Date(item.timestamp) > new Date(prev.last_seen))) prev.last_seen = item.timestamp;
+        byUser.set(key, prev);
+      }
+    }
+    return Array.from(byUser.values()).sort((a, b) => (b.total_voice || 0) - (a.total_voice || 0));
+  })();
+  const messageFriendsFromHistory = (() => {
+    const byUser = new Map();
+    for (const item of messageHistory) {
+      const id = String(firstValue(item.author_id, "") || "");
+      const username = firstValue(item.author_name, "");
+      if (!id && !username) continue;
+      const key = id || String(username).toLowerCase();
+      const prev = byUser.get(key) || {
+        id,
+        user_id: id,
+        username,
+        global_name: username,
+        avatar_url: item.author_avatar_url,
+        messages: 0,
+        message_count: 0,
+        first_interaction: item.timestamp,
+        last_interaction: item.timestamp
+      };
+      prev.messages += 1;
+      prev.message_count += 1;
+      if (item.timestamp && (!prev.first_interaction || new Date(item.timestamp) < new Date(prev.first_interaction))) prev.first_interaction = item.timestamp;
+      if (item.timestamp && (!prev.last_interaction || new Date(item.timestamp) > new Date(prev.last_interaction))) prev.last_interaction = item.timestamp;
+      byUser.set(key, prev);
+    }
+    return Array.from(byUser.values()).sort((a, b) => (b.messages || 0) - (a.messages || 0));
+  })();
+  const voiceFriends = voiceFriendItems.length ? voiceFriendItems.map(f => ({
+    id: String(firstValue(f.userId, f.UserID, f.UserId, f.id, f.user_id, "")),
+    user_id: String(firstValue(f.userId, f.UserID, f.UserId, f.id, f.user_id, "")),
+    username: firstValue(f.username, f.UserName, f.name, ""),
+    global_name: firstValue(f.displayname, f.displayName, f.global_name, f.GlobalName, f.username, f.UserName, ""),
+    avatar_url: firstValue(f.avatarURL, f.AvatarURL, f.avatar_url, f.avatar),
+    total_voice: toSeconds(firstValue(f.totalDuration, f.total_voice, f.voice_time, f.duration, 0)),
+    voice_time: toSeconds(firstValue(f.totalDuration, f.total_voice, f.voice_time, f.duration, 0)),
+    duration: toSeconds(firstValue(f.totalDuration, f.total_voice, f.voice_time, f.duration, 0)),
+    duration_label: firstValue(f.formattedDuration, f.duration_label),
+    meetings: firstValue(f.meetingCount, f.meetings, f.sessions, 0) || 0,
+    sessions: firstValue(f.meetingCount, f.meetings, f.sessions, 0) || 0,
+    channels: firstValue(f.channelsCount, f.channels, f.channel_count, 0) || 0,
+    channel_count: firstValue(f.channelsCount, f.channels, f.channel_count, 0) || 0,
+    average_duration: toSeconds(firstValue(f.averageDurationPerMeeting, f.average_duration, 0)),
+    average_duration_label: firstValue(f.formattedAverageDuration, f.average_duration_label),
+    top_channel: firstValue(f.topChannels?.[0]?.channelName, f.top_channel, f.channel_name, f.lastChannelInfo?.channelName, ""),
+    last_seen: toIso(firstValue(f.lastSeen, f.last_seen, f.formattedLastSeen)),
+    first_seen: toIso(firstValue(f.firstSeen, f.first_seen, f.formattedFirstSeen)),
+    status: f.isRecentlyActive ? "online" : firstValue(f.status, "offline")
+  })) : voiceFriendsFromHistory;
+  const messageFriends = messageFriendItems.length ? messageFriendItems.map(f => ({
+    id: String(firstValue(f.userId, f.UserID, f.UserId, f.id, f.user_id, "")),
+    user_id: String(firstValue(f.userId, f.UserID, f.UserId, f.id, f.user_id, "")),
+    username: firstValue(f.username, f.UserName, f.name, ""),
+    global_name: firstValue(f.displayName, f.displayname, f.global_name, f.GlobalName, f.username, f.UserName, ""),
+    avatar_url: firstValue(f.avatarURL, f.AvatarURL, f.avatar_url, f.avatar),
+    messages: firstValue(f.Message, f.messages, f.message_count, f.count, 0) || 0,
+    message_count: firstValue(f.Message, f.messages, f.message_count, f.count, 0) || 0,
+    first_interaction: toIso(firstValue(f.firstInteraction, f.first_interaction, f.first_seen)),
+    last_interaction: toIso(firstValue(f.lastInteraction, f.last_interaction, f.last_seen)),
+    interaction_score: f.interactionScore || f.interaction_score || 0,
+    bot: Boolean(f.bot)
+  })) : messageFriendsFromHistory;
   const views = fc.LastViewing?.views;
   const rawStatus = firstValue(
     user.Presence?.Status,
@@ -583,9 +805,9 @@ function normalizeFindcord(fc) {
     other_names: firstArray(fc.displayNames, user.previous_usernames, fc.previous_usernames)
       .map(n => (typeof n === "string" ? n : firstValue(n.name, n.displayName, n.UserName, n.toString?.())))
       .filter(Boolean),
-    server_count: allServers.length || fc.GuildStats?.length || null,
-    voice_friend_count: fc.VoiceFrends?.length ?? fc.voice_friends?.length ?? null,
-    punishment_count: fc.Punishments?.length ?? fc.punishments?.length ?? null,
+    server_count: allServers.length || guildStats.length || null,
+    voice_friend_count: voiceFriends.length || null,
+    punishment_count: punishmentItems.length || null,
     servers: allServers,
     active_hours: {
       total: toSeconds((activeHours.totalActiveHours || 0) * 60 * 60) || totalVoiceSeconds,
@@ -595,56 +817,24 @@ function normalizeFindcord(fc) {
     },
     view_count: views?.allTime?.total || views?.total || fc.LastViewing?.uniqueVisitors || null,
     activity: { last_message: messageHistory[0] || null, last_voice: voiceHistory[0] || null },
-    punishments: (fc.Punishments || []).map(p => ({
+    punishments: punishmentItems.map(p => ({
       guild_name: p.GuildName || p.guild_name,
       guild_icon_url: p.GuildIcon || null,
       type: p.Type || p.type,
       reason: p.Reason || p.reason,
       date: toIso(p.Date || p.date)
     })),
-    admin_servers: (fc.GuildStaff || fc.admin_guilds || []).map(g => ({
+    admin_servers: adminServerItems.map(g => ({
       id: String(firstValue(g.GuildID, g.GuildId, g.id, "")),
       guild_id: String(firstValue(g.GuildID, g.GuildId, g.id, "")),
       name: firstValue(g.GuildName, g.name, "Sunucu"),
       guild_name: firstValue(g.GuildName, g.name, "Sunucu"),
       icon_url: firstValue(g.GuildIcon, g.icon_url)
     })),
-    voice_friends: (fc.VoiceFrends || []).map(f => ({
-      id: String(firstValue(f.userId, f.id, f.user_id, "")),
-      user_id: String(firstValue(f.userId, f.id, f.user_id, "")),
-      username: f.username || "",
-      global_name: firstValue(f.displayname, f.displayName, f.username, ""),
-      avatar_url: f.avatarURL || null,
-      total_voice: toSeconds(f.totalDuration),
-      voice_time: toSeconds(f.totalDuration),
-      duration: toSeconds(f.totalDuration),
-      duration_label: f.formattedDuration || null,
-      meetings: f.meetingCount || 0,
-      sessions: f.meetingCount || 0,
-      channels: f.channelsCount || 0,
-      channel_count: f.channelsCount || 0,
-      average_duration: toSeconds(f.averageDurationPerMeeting),
-      average_duration_label: f.formattedAverageDuration || null,
-      top_channel: f.topChannels?.[0]?.channelName || f.lastChannelInfo?.channelName || "",
-      last_seen: toIso(f.lastSeen || f.formattedLastSeen),
-      first_seen: toIso(f.firstSeen || f.formattedFirstSeen),
-      status: f.isRecentlyActive ? "online" : "offline"
-    })),
+    voice_friends: voiceFriends,
     voice_history: voiceHistory,
     message_history: messageHistory,
-    message_friends: (fc.MessageFriends || []).map(f => ({
-      id: String(firstValue(f.userId, f.id, f.user_id, "")),
-      user_id: String(firstValue(f.userId, f.id, f.user_id, "")),
-      username: f.username || "",
-      global_name: firstValue(f.displayName, f.displayname, f.username, ""),
-      avatar_url: f.avatarURL || null,
-      messages: f.Message || f.messages || f.message_count || 0,
-      message_count: f.Message || f.messages || f.message_count || 0,
-      first_interaction: f.firstInteraction || f.first_seen || "",
-      last_interaction: f.lastInteraction || f.last_seen || "",
-      interaction_score: f.interactionScore || 0,
-      bot: Boolean(f.bot)
-    }))
+    message_friends: messageFriends
   };
 }
 
