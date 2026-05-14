@@ -930,7 +930,7 @@ body.kvkk-page::before {
 }
 
 .side-ad {
-  position: fixed;
+  position: absolute;
   top: 208px;
   z-index: 2;
   width: 160px;
