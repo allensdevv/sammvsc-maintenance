@@ -1,4 +1,4 @@
-const { getJson, setJson } = require("../../lib/cache");
+const { getJson, setJson, sleep } = require("../../lib/cache");
 const { getSession } = require("../../lib/session");
 
 const FALLBACK_FINDCORD_KEY = "331b483f722e9077c40365f97fd5b5f28ea25456f7af610a1826dd4eadc96b4d";
@@ -12,7 +12,11 @@ const DCSV_KEY = process.env.DCSV_API_KEY || "dcsv_ca6ca829a717d342d2a5e2a48fed0
 const DCSV_API_BASE = "https://dcsv.me/api/v1/user";
 const DCSV_PUBLIC_BASE = "https://dcsv.me/users";
 const CACHE_TTL = 60 * 30;
-const CACHE_VERSION = "v6";
+const PARTIAL_CACHE_TTL = 60;
+const STALE_CACHE_TTL = 60 * 60 * 12;
+const EXTERNAL_TIMEOUT_MS = 9000;
+const CACHE_VERSION = "v7";
+const TRANSIENT_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 
 function sendJson(res, status, payload) {
   res.statusCode = status;
@@ -26,6 +30,25 @@ function sendJson(res, status, payload) {
 
 function cacheKey(id) {
   return `discord:profile:${CACHE_VERSION}:${String(id).toLowerCase()}`;
+}
+
+function staleCacheKey(id) {
+  return `discord:profile:${CACHE_VERSION}:stale:${String(id).toLowerCase()}`;
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = EXTERNAL_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (err?.name === "AbortError") {
+      throw new Error(`timeout ${timeoutMs}ms`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function isPlainObject(value) {
@@ -82,7 +105,7 @@ function imageUrl(gid, hashOrUrl, kind = "icons", size = 128) {
 
 async function fetchDcsvUser(query) {
   const token = DCSV_KEY.startsWith("Bearer ") ? DCSV_KEY : `Bearer ${DCSV_KEY}`;
-  const res = await fetch(`${DCSV_API_BASE}/${encodeURIComponent(query)}`, {
+  const res = await fetchWithTimeout(`${DCSV_API_BASE}/${encodeURIComponent(query)}`, {
     headers: {
       "Authorization": token,
       "Accept": "application/json",
@@ -127,7 +150,7 @@ function metaContent(html, name) {
 }
 
 async function fetchDcsvPublicProfile(query) {
-  const res = await fetch(`${DCSV_PUBLIC_BASE}/${encodeURIComponent(query)}`, {
+  const res = await fetchWithTimeout(`${DCSV_PUBLIC_BASE}/${encodeURIComponent(query)}`, {
     headers: {
       "Accept": "text/html",
       "User-Agent": "Mozilla/5.0 IGME/1.0 (+https://sammvsc.top)"
@@ -167,17 +190,39 @@ async function fetchDcsvPublicProfile(query) {
 async function fetchFindcordById(id) {
   const errors = [];
   for (const key of FINDCORD_KEYS) {
-    const res = await fetch(`https://app.findcord.com/api/user/${encodeURIComponent(id)}`, {
-      headers: {
-        "Authorization": key,
-        "Accept": "application/json",
-        "User-Agent": "IGME/1.0 (+https://sammvsc.top)"
+    for (let attempt = 0; attempt < 2; attempt++) {
+      let res = null;
+      try {
+        res = await fetchWithTimeout(`https://app.findcord.com/api/user/${encodeURIComponent(id)}`, {
+          headers: {
+            "Authorization": key,
+            "Accept": "application/json",
+            "User-Agent": "IGME/1.0 (+https://sammvsc.top)"
+          }
+        });
+      } catch (err) {
+        errors.push(`timeout/network: ${err.message}`);
+        if (attempt === 0) {
+          await sleep(350);
+          continue;
+        }
+        break;
       }
-    });
-    if (res.ok) return res.json();
-    const body = await res.text().catch(() => "");
-    errors.push(`${res.status}: ${body.slice(0, 120)}`);
-    if (![401, 403].includes(res.status)) break;
+
+      if (res.ok) return res.json();
+
+      const body = await res.text().catch(() => "");
+      errors.push(`${res.status}: ${body.slice(0, 120)}`);
+
+      if ([401, 403].includes(res.status)) break;
+      if (TRANSIENT_STATUS.has(res.status) && attempt === 0) {
+        await sleep(450);
+        continue;
+      }
+      if (!TRANSIENT_STATUS.has(res.status)) {
+        throw new Error(`Findcord ${errors.join(" | ")}`);
+      }
+    }
   }
   throw new Error(`Findcord ${errors.join(" | ")}`);
 }
@@ -233,13 +278,16 @@ function normalizeDcsv(d) {
     voice_friends: d.voice_friends || [],
     voice_history: d.voice_history || [],
     message_history: d.message_history || [],
-    message_friends: d.message_friends || d.friends || []
+    message_friends: d.message_friends || d.friends || [],
+    findcord_loaded: false,
+    findcord_has_guilds: false
   };
 }
 
 function normalizeFindcord(fc) {
   const user = fc.UserInfo || fc.user || fc.data?.UserInfo || fc;
   const uid = String(firstValue(user.UserID, fc.id, fc.user_id, "") || "");
+  const findcordHasGuilds = Array.isArray(fc.Guilds) || Array.isArray(fc.GuildStats);
   const guildStatsById = new Map((fc.GuildStats || []).map(g => [String(g.GuildID || g.guild_id || g.id), g]));
 
   const servers = (fc.Guilds || []).map(g => {
@@ -348,6 +396,8 @@ function normalizeFindcord(fc) {
 
   return {
     id: uid,
+    findcord_loaded: true,
+    findcord_has_guilds: findcordHasGuilds,
     username: firstValue(user.UserName, user.username, ""),
     global_name: firstValue(user.UserGlobalName, user.display_name, user.UserName, ""),
     legacy_username: user.LegacyUserName || null,
@@ -469,8 +519,48 @@ function mergeProfiles(dcsv, findcord) {
     message_history: hasItems(findcord.message_history) ? findcord.message_history : dcsv.message_history,
     message_friends: hasItems(findcord.message_friends) ? findcord.message_friends : dcsv.message_friends,
     view_count: firstValue(findcord.view_count, dcsv.view_count),
+    findcord_loaded: Boolean(findcord.findcord_loaded || dcsv.findcord_loaded),
+    findcord_has_guilds: Boolean(findcord.findcord_has_guilds || dcsv.findcord_has_guilds),
     source: "dcsv+findcord"
   };
+}
+
+function hasMeaningfulActiveHours(profile) {
+  const hours = profile?.active_hours;
+  if (!isPlainObject(hours)) return false;
+  if (Number(hours.total || 0) > 0) return true;
+  if (Array.isArray(hours.detailed) && hours.detailed.some(h => Number(h?.score || h?.messages || h?.voice_seconds || 0) > 0)) return true;
+  return Boolean(hours.summary && !/bulunamadı|bulunamadÄ±|yok|none/i.test(String(hours.summary)));
+}
+
+function isCompleteProfile(profile) {
+  if (!profile?.id || !profile?.username) return false;
+  if (profile.findcord_loaded && profile.findcord_has_guilds) return true;
+  if (hasItems(profile.servers) || hasItems(profile.voice_friends) || hasItems(profile.message_friends)) return true;
+  if (hasItems(profile.punishments) || hasMeaningfulActiveHours(profile)) return true;
+  return false;
+}
+
+function markProfile(profile, source) {
+  if (!profile) return profile;
+  return {
+    ...profile,
+    source: source || profile.source || null,
+    partial: !isCompleteProfile(profile),
+    cached_at: new Date().toISOString()
+  };
+}
+
+async function cacheProfileAliases(query, profile) {
+  if (!profile) return;
+  const complete = isCompleteProfile(profile);
+  const ttl = complete ? CACHE_TTL : PARTIAL_CACHE_TTL;
+  await setJson(cacheKey(query), profile, ttl).catch(() => {});
+  if (profile.id && profile.id !== query) await setJson(cacheKey(profile.id), profile, ttl).catch(() => {});
+  if (complete) {
+    await setJson(staleCacheKey(query), profile, STALE_CACHE_TTL).catch(() => {});
+    if (profile.id && profile.id !== query) await setJson(staleCacheKey(profile.id), profile, STALE_CACHE_TTL).catch(() => {});
+  }
 }
 
 async function fetchDcsvProfile(query, isId) {
@@ -510,9 +600,10 @@ module.exports = async (req, res) => {
     return sendJson(res, 400, { status: "error", message: "Discord ID veya kullanıcı adı gerekli." });
   }
 
-  const cached = await getJson(cacheKey(query)).catch(() => null);
-  if (cached) {
-    return sendJson(res, 200, { status: "ready", source: "cache", data: cached });
+  let cachedProfile = await getJson(cacheKey(query)).catch(() => null);
+  let staleProfile = await getJson(staleCacheKey(query)).catch(() => null);
+  if (cachedProfile && isCompleteProfile(cachedProfile)) {
+    return sendJson(res, 200, { status: "ready", source: "cache", data: cachedProfile });
   }
 
   const isId = /^\d{15,20}$/.test(query);
@@ -524,6 +615,13 @@ module.exports = async (req, res) => {
   try {
     dcsvProfile = await fetchDcsvProfile(query, isId);
     resolvedId = dcsvProfile.id || resolvedId;
+    if (resolvedId && resolvedId !== query) {
+      cachedProfile = cachedProfile || await getJson(cacheKey(resolvedId)).catch(() => null);
+      staleProfile = staleProfile || await getJson(staleCacheKey(resolvedId)).catch(() => null);
+      if (cachedProfile && isCompleteProfile(cachedProfile)) {
+        return sendJson(res, 200, { status: "ready", source: "cache", data: cachedProfile });
+      }
+    }
   } catch (err) {
     errors.push(`DCSV: ${err.message}`);
   }
@@ -536,11 +634,16 @@ module.exports = async (req, res) => {
     }
   }
 
-  const profile = mergeProfiles(dcsvProfile, findcordProfile);
+  const liveProfile = mergeProfiles(dcsvProfile, findcordProfile);
+  const cachedBase = isCompleteProfile(cachedProfile) ? cachedProfile : staleProfile;
+  const profile = mergeProfiles(cachedBase, liveProfile) || cachedProfile || liveProfile;
   if (profile) {
-    await setJson(cacheKey(query), profile, CACHE_TTL).catch(() => {});
-    if (profile.id && profile.id !== query) await setJson(cacheKey(profile.id), profile, CACHE_TTL).catch(() => {});
-    return sendJson(res, 200, { status: "ready", source: profile.source || (findcordProfile ? "findcord" : "dcsv"), data: profile });
+    const source = isCompleteProfile(liveProfile)
+      ? (liveProfile.source || (findcordProfile ? "findcord" : "dcsv"))
+      : (cachedBase ? "stale+live" : (liveProfile?.source || "partial"));
+    const marked = markProfile(profile, source);
+    await cacheProfileAliases(query, marked);
+    return sendJson(res, 200, { status: "ready", source, partial: marked.partial, data: marked });
   }
 
   return sendJson(res, 502, { status: "error", message: `Profil alınamadı. ${errors.join(" | ")}` });

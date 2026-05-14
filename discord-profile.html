@@ -1485,6 +1485,32 @@
       const loginUrl = () => `/login?reason=discord&next=${encodeURIComponent(location.pathname + location.search)}`;
       const setLoading = state => document.body.classList.toggle("discord-loading", Boolean(state));
 
+      async function fetchProfileJson(apiParam) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 26000);
+        try {
+          const res = await fetch(`${DISCORD_API}?${apiParam}`, {
+            cache: "no-store",
+            headers: { Accept: "application/json" },
+            signal: controller.signal
+          });
+          return await res.json();
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+
+      function schedulePartialRefresh(apiParam) {
+        window.setTimeout(async () => {
+          try {
+            const json = await fetchProfileJson(apiParam);
+            if (json.status === "ready" && json.data && !json.partial && !json.data.partial) {
+              applyProfile(json.data);
+            }
+          } catch {}
+        }, 2400);
+      }
+
       // Lightbox
       el("lbClose").onclick = el("lbBackdrop").onclick = () => { el("lightbox").hidden = true; el("lbImg").src = ""; };
       document.addEventListener("keydown", e => { if (e.key === "Escape") el("lightbox").hidden = true; });
@@ -2201,14 +2227,12 @@
 
         try {
           const apiParam = rawId ? `id=${encodeURIComponent(rawId)}` : `u=${encodeURIComponent(rawUsername)}`;
-          const res = await fetch(`${DISCORD_API}?${apiParam}`, {
-            cache: "no-store", headers: { Accept: "application/json" }
-          });
-          const json = await res.json();
+          const json = await fetchProfileJson(apiParam);
           if (json.requireLogin) { window.location.href = loginUrl(); return; }
           if (json.status === "ready" && json.data) {
             applyProfile(json.data);
             setLoading(false);
+            if (json.partial || json.data.partial) schedulePartialRefresh(apiParam);
           } else {
             throw new Error(json.message || "Profil alınamadı");
           }
