@@ -12,10 +12,6 @@
   --green: #2ee77d;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 * {
   box-sizing: border-box;
 }
