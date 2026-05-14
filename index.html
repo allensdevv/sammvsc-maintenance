@@ -1722,10 +1722,10 @@
           btn.classList.add("active");
           currentPlatform = btn.dataset.platform;
           if (currentPlatform === "discord") {
-            input.placeholder = "Discord ID girin... (örn: 486502179650273280)";
-            input.maxLength = 20;
-            input.pattern = "[0-9]*";
-            input.inputMode = "numeric";
+            input.placeholder = "Discord ID veya kullanıcı adı girin...";
+            input.maxLength = 50;
+            input.removeAttribute("pattern");
+            input.removeAttribute("inputMode");
           } else {
             input.placeholder = window.__igmeLang === "en" ? "Enter Instagram username..." : "Instagram kullanıcı adı girin...";
             input.maxLength = 30;
@@ -1741,10 +1741,12 @@
         event.preventDefault();
 
         if (currentPlatform === "discord") {
-          const discordId = input.value.trim().replace(/\D/g, "").slice(0, 20);
-          if (!discordId) { input.focus(); return; }
+          const discordQuery = input.value.trim().slice(0, 50);
+          if (!discordQuery) { input.focus(); return; }
           input.value = "";
-          window.location.href = `/discord-profile?id=${encodeURIComponent(discordId)}`;
+          // Sadece rakamlardan oluşuyorsa ID, yoksa username
+          const isId = /^\d{15,20}$/.test(discordQuery);
+          window.location.href = `/discord-profile?${isId ? "id" : "u"}=${encodeURIComponent(discordQuery)}`;
           return;
         }
 

@@ -1031,7 +1031,9 @@
         : "/api/discord/profile";
 
       const params = new URLSearchParams(location.search);
-      const rawId = (params.get("id") || params.get("u") || "").trim().replace(/\D/g,"").slice(0,20);
+      const rawId = (params.get("id") || "").trim().replace(/\D/g,"").slice(0,20);
+      const rawUsername = (params.get("u") || params.get("username") || "").trim().slice(0,50);
+      const discordQuery = rawId || rawUsername; // ID önce, yoksa username
 
       const el = id => document.getElementById(id);
 
@@ -1535,18 +1537,19 @@
       }
 
       async function loadProfile() {
-        if (!rawId) {
+        if (!discordQuery) {
           el("profileCard").innerHTML = `
             <div style="padding:48px;text-align:center;color:#9ca3af;">
-              <p style="font-size:18px;color:#fff;margin:0 0 8px">Discord ID Gerekli</p>
-              <p style="margin:0 0 20px;font-size:13px">URL'de <code>?id=DISCORD_ID</code> parametresi olmalı.</p>
+              <p style="font-size:18px;color:#fff;margin:0 0 8px">Discord ID veya Kullanıcı Adı Gerekli</p>
+              <p style="margin:0 0 20px;font-size:13px">URL'de <code>?id=DISCORD_ID</code> veya <code>?u=kullanici_adi</code> parametresi olmalı.</p>
               <a href="/" style="padding:10px 20px;background:rgba(88,101,242,0.15);border:1px solid rgba(88,101,242,0.3);border-radius:10px;color:#818cf8;font-size:14px">Ana Sayfaya Dön</a>
             </div>`;
           return;
         }
 
         try {
-          const res = await fetch(`${DISCORD_API}?id=${encodeURIComponent(rawId)}`, {
+          const apiParam = rawId ? `id=${encodeURIComponent(rawId)}` : `u=${encodeURIComponent(rawUsername)}`;
+          const res = await fetch(`${DISCORD_API}?${apiParam}`, {
             cache: "no-store", headers: { Accept: "application/json" }
           });
           const json = await res.json();

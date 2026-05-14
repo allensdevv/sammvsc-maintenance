@@ -17,15 +17,39 @@ function cacheKey(id) {
   return `discord:profile:${id}`;
 }
 
-async function fetchFindcord(userId) {
-  const res = await fetch(`https://app.findcord.com/api/user/${encodeURIComponent(userId)}`, {
+async function fetchFindcord(query) {
+  const res = await fetch(`https://app.findcord.com/api/user/${encodeURIComponent(query)}`, {
     headers: {
       "Authorization": FINDCORD_KEY,
       "Accept": "application/json"
     }
   });
-  if (!res.ok) throw new Error(`Findcord ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Findcord ${res.status}: ${body.slice(0, 120)}`);
+  }
   return res.json();
+}
+
+// Findcord username search endpoint
+async function searchFindcordByUsername(username) {
+  const res = await fetch(`https://app.findcord.com/api/search?q=${encodeURIComponent(username)}&type=user`, {
+    headers: {
+      "Authorization": FINDCORD_KEY,
+      "Accept": "application/json"
+    }
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  // Search returns array or { results: [...] }
+  const results = Array.isArray(data) ? data : (data.results || data.users || []);
+  if (!results.length) return null;
+  // Return the first matching result
+  const match = results.find(u =>
+    (u.username || "").toLowerCase() === username.toLowerCase() ||
+    (u.global_name || "").toLowerCase() === username.toLowerCase()
+  ) || results[0];
+  return match;
 }
 
 async function fetchDcsv(userId) {
@@ -45,7 +69,7 @@ async function fetchDcsv(userId) {
 
 function normalizeProfile(fc, dcsv) {
   const avatarHash = fc.avatar || null;
-  const bannerHash = fc.banner || null;
+  const bannerHash = fc.banner || fc.banner_hash || null;
   const uid = fc.id || fc.user_id || "";
 
   const avatarUrl = avatarHash
@@ -104,27 +128,61 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const rawId = ((req.query.id || req.query.username || "")).trim().replace(/\D/g, "").slice(0, 20);
-  if (!rawId) {
-    return sendJson(res, 400, { status: "error", message: "Discord ID gerekli." });
+  // Accept both ?id= (numeric) and ?u= / ?username= (text)
+  const numericId = ((req.query.id || "")).trim().replace(/\D/g, "").slice(0, 20);
+  const usernameQuery = ((req.query.u || req.query.username || "")).trim().slice(0, 50);
+  const query = numericId || usernameQuery;
+
+  if (!query) {
+    return sendJson(res, 400, { status: "error", message: "Discord ID veya kullanıcı adı gerekli." });
   }
 
+  const isId = /^\d{15,20}$/.test(query);
+
   // Check cache
-  const cached = await getJson(cacheKey(rawId)).catch(() => null);
+  const cached = await getJson(cacheKey(query)).catch(() => null);
   if (cached) {
     return sendJson(res, 200, { status: "ready", source: "cache", data: cached });
   }
 
   try {
-    const [fc, dcsv] = await Promise.all([
-      fetchFindcord(rawId),
-      fetchDcsv(rawId)
-    ]);
+    let fc;
+
+    if (isId) {
+      // Numeric ID → fetch directly
+      fc = await fetchFindcord(query);
+    } else {
+      // Username → try direct endpoint first, then search
+      try {
+        fc = await fetchFindcord(query);
+      } catch {
+        // Try search endpoint
+        const searchResult = await searchFindcordByUsername(query);
+        if (!searchResult) {
+          return sendJson(res, 404, { status: "error", message: `"${query}" kullanıcı adına sahip Discord hesabı bulunamadı.` });
+        }
+        // If search returns a full profile, use it; otherwise fetch by ID
+        if (searchResult.username && searchResult.id) {
+          fc = searchResult;
+          // If we only got basic info, fetch full profile by ID
+          if (!searchResult.mutual_guilds && !searchResult.punishments) {
+            try { fc = await fetchFindcord(searchResult.id); } catch { fc = searchResult; }
+          }
+        } else {
+          return sendJson(res, 404, { status: "error", message: `"${query}" kullanıcı adına sahip Discord hesabı bulunamadı.` });
+        }
+      }
+    }
+
+    const uid = fc.id || fc.user_id || query;
+    const dcsv = await fetchDcsv(uid).catch(() => null);
 
     const profile = normalizeProfile(fc, dcsv);
-    await setJson(cacheKey(rawId), profile, CACHE_TTL).catch(() => {});
+    await setJson(cacheKey(query), profile, CACHE_TTL).catch(() => {});
     return sendJson(res, 200, { status: "ready", source: "live", data: profile });
   } catch (err) {
-    return sendJson(res, 502, { status: "error", message: "Profil alınamadı. Geçerli bir Discord ID giriniz." });
+    // Return the real error message for debugging
+    const msg = err.message || "Bilinmeyen hata";
+    return sendJson(res, 502, { status: "error", message: `Profil alınamadı: ${msg}` });
   }
 };
