@@ -17,6 +17,7 @@
 
   let targetY = window.scrollY;
   let frame = null;
+  let lastWheelAt = 0;
 
   function maxScrollY() {
     return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
@@ -67,13 +68,13 @@
     const currentY = window.scrollY;
     const distance = targetY - currentY;
 
-    if (Math.abs(distance) < 0.6) {
+    if (Math.abs(distance) < 1.2) {
       window.scrollTo(0, targetY);
       frame = null;
       return;
     }
 
-    window.scrollTo(0, currentY + distance * 0.16);
+    window.scrollTo(0, currentY + distance * 0.42);
     frame = window.requestAnimationFrame(animate);
   }
 
@@ -89,7 +90,14 @@
     }
 
     event.preventDefault();
-    targetY = clamp(targetY + delta, 0, maxScrollY());
+
+    const now = performance.now();
+    if (now - lastWheelAt > 90) {
+      targetY = window.scrollY;
+    }
+
+    lastWheelAt = now;
+    targetY = clamp(targetY + delta * 0.74, 0, maxScrollY());
 
     if (!frame) {
       frame = window.requestAnimationFrame(animate);
