@@ -127,12 +127,12 @@
       /* Badge row */
       .badge-row {
         position: absolute;
-        top: 66px; right: 8px;
+        top: 74px; right: 8px;
         z-index: 3;
         display: flex; flex-wrap: wrap; gap: 2px; justify-content: flex-end;
         max-width: 100px;
       }
-      .profile-card.has-banner .badge-row { top: 148px; }
+      .profile-card.has-banner .badge-row { top: 148px; right: 8px; }
       .badge {
         width: 16px; height: 16px;
         display: grid; place-items: center;
@@ -149,11 +149,9 @@
       .hero-content {
         padding: 0 24px 24px;
       }
-      .profile-card:not(.has-banner) .hero-content {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding-top: 16px;
+      /* No-banner: avatar kendi satırında (üstte), altında isim+stat */
+      .hero-content {
+        padding: 16px 24px 24px;
       }
       .profile-card.has-banner .hero-content {
         padding-top: 64px;
@@ -161,11 +159,15 @@
       }
 
       /* Avatar */
-      .avatar-wrapper { position: relative; flex-shrink: 0; }
-      .profile-card:not(.has-banner) .avatar-wrapper { display: inline-block; }
+      .avatar-wrapper {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 10px; /* avatar altında isim gelir */
+      }
       .profile-card.has-banner .avatar-wrapper {
         position: absolute;
         top: -60px; left: 24px;
+        margin-bottom: 0;
       }
 
       .avatar {
@@ -178,6 +180,7 @@
         display: grid; place-items: center;
         color: #fff; font-size: 32px; font-weight: 700;
         transition: opacity 160ms;
+        position: relative;
       }
       .avatar:hover { opacity: 0.8; }
       .avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -208,17 +211,11 @@
       .status-dot.dnd { background: #ed4245; }
       .status-dot.offline { background: #6b7280; }
 
-      /* Name info row */
+      /* Name info row — isim solda, stat sağda */
       .hero-info-row {
-        flex: 1 1 0;
         display: flex;
         flex-direction: column;
         gap: 12px;
-      }
-      .profile-card.has-banner .hero-info-row {
-        flex-direction: row;
-        align-items: flex-end;
-        justify-content: space-between;
       }
       .hero-info { flex: 1; min-width: 0; }
 
@@ -621,6 +618,7 @@
         .badge img, .badge svg { width: 18px; height: 18px; }
         .meta-sep { display: inline; }
         h1 { font-size: 24px; }
+        .avatar { width: 96px; height: 96px; font-size: 38px; }
       }
       @media (min-width: 768px) {
         .badge-row { max-width: 260px; gap: 4px; }
@@ -628,6 +626,12 @@
         .badge img, .badge svg { width: 22px; height: 22px; }
         .panel-grid-2 { grid-template-columns: 1fr 1fr; }
         h1 { font-size: 28px; }
+        /* md+: isim solda, stat sağda */
+        .hero-info-row { flex-direction: row; align-items: flex-end; justify-content: space-between; }
+        .avatar { width: 128px; height: 128px; font-size: 48px; }
+      }
+      @media (min-width: 1024px) {
+        .avatar { width: 144px; height: 144px; font-size: 56px; }
       }
       @media (min-width: 1024px) {
         .badge-row { max-width: none; gap: 5px; right: 24px; }
