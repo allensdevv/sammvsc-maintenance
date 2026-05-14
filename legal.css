@@ -533,6 +533,52 @@ body.kvkk-page::before {
   padding: 8px 0 28px;
 }
 
+.kvkk-hero-block {
+  padding: 58px 0 42px;
+  text-align: center;
+}
+
+.kvkk-hero-badge {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 18px;
+  border: 1px solid rgba(111, 99, 255, 0.38);
+  border-radius: 999px;
+  background: rgba(20, 20, 46, 0.92);
+  color: #8f98ff;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.kvkk-hero-badge svg {
+  width: 16px;
+  height: 16px;
+}
+
+.kvkk-hero-block h1 {
+  margin: 20px 0 0;
+  color: #ffffff;
+  font-size: clamp(42px, 7vw, 58px);
+  line-height: 1;
+  font-weight: 950;
+}
+
+.kvkk-hero-block p {
+  margin: 16px 0 0;
+  color: #b7c6db;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.kvkk-hero-block > span:last-child {
+  display: block;
+  margin-top: 10px;
+  color: #71809b;
+  font-size: 14px;
+}
+
 .kvkk-notice {
   display: grid;
   grid-template-columns: 48px 1fr;
@@ -861,6 +907,10 @@ body.kvkk-page::before {
 
   .kvkk-section {
     padding: 26px 18px;
+  }
+
+  .kvkk-hero-block {
+    padding: 40px 0 30px;
   }
 
   .kvkk-heading {
