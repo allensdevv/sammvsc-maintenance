@@ -485,8 +485,8 @@
       }
 
       .profile-menu {
-        width: min(256px, calc(100vw - 32px));
-        padding: 10px 12px;
+        width: min(192px, calc(100vw - 32px));
+        padding: 10px;
       }
 
       .profile-menu-row {
@@ -2094,17 +2094,6 @@
                 </button>
                 <div class="nav-popover profile-menu" id="profileMenu">
                   <a class="profile-menu-row" href="${profileHref}">${icon("user")} Profilim</a>
-                  <a class="profile-menu-row premium" href="#">${icon("diamond")} Premium</a>
-                  <div class="profile-divider"></div>
-                  <div class="profile-section-label">CÜZDAN & MARKET</div>
-                  <a class="profile-menu-row" href="#">${icon("wallet")} Cüzdan <span class="profile-balance">0 DSC</span></a>
-                  <a class="profile-menu-row" href="#">${icon("box")} Envanter</a>
-                  <a class="profile-menu-row" href="#">${icon("chart")} Satışlarım</a>
-                  <div class="profile-divider"></div>
-                  <div class="profile-section-label">İÇERİK YÖNETİMİ</div>
-                  <a class="profile-menu-row" href="/discord-profile?id=${encodeURIComponent(discordSession.discord_id)}">${icon("discord")} Discord Profilim</a>
-                  <a class="profile-menu-row green" href="https://discord.gg/7TaeVxPU" target="_blank" rel="noopener noreferrer">${icon("plus")} Sunucu Ekle</a>
-                  <div class="profile-divider"></div>
                   <button class="profile-menu-row" id="profileSettingsBtn" type="button">${icon("settings")} Ayarlar</button>
                   <a class="profile-menu-row red" href="/api/auth/logout">${icon("logout")} Çıkış Yap</a>
                 </div>

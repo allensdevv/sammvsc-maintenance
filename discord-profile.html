@@ -460,6 +460,41 @@
       .activity-msg { font-size: 11.5px; color: #9ca3af; font-family: monospace; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .activity-time { font-size: 11px; color: #5865f2; white-space: nowrap; flex-shrink: 0; }
 
+      /* ── SAATLER ── */
+      .hours-grid {
+        display: grid;
+        grid-template-columns: repeat(24, minmax(28px, 1fr));
+        gap: 8px;
+        align-items: end;
+        min-height: 180px;
+      }
+      .hour-cell {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        align-items: center;
+        gap: 7px;
+      }
+      .hour-bar {
+        width: 100%;
+        min-height: 10px;
+        border-radius: 999px 999px 4px 4px;
+        background: linear-gradient(180deg, #8b5cf6, #2f7dff);
+        box-shadow: 0 0 18px rgba(88,101,242,0.22);
+        opacity: 0.92;
+      }
+      .hour-label {
+        color: #6b7280;
+        font-size: 10px;
+        font-weight: 700;
+      }
+      .hours-note {
+        margin-top: 14px;
+        color: #8f98a8;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
       /* ── SİCİLLER ── */
       .punishment-list { display: flex; flex-direction: column; gap: 8px; }
       .punishment-row {
@@ -645,6 +680,7 @@
       @media (max-width: 767px) {
         .panel-grid-2 { grid-template-columns: 1fr; }
         .activity-grid { grid-template-columns: 1fr; }
+        .hours-grid { grid-template-columns: repeat(12, minmax(24px, 1fr)); }
         .voice-table th:nth-child(n+4), .voice-table td:nth-child(n+4) { display: none; }
         .report-button { right: 14px; bottom: 14px; }
       }
@@ -1071,6 +1107,7 @@
       function fmtDate(iso) {
         if (!iso) return "";
         const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return String(iso);
         return d.toLocaleDateString("tr-TR", { day:"2-digit", month:"2-digit", year:"numeric" })
           + " " + d.toLocaleTimeString("tr-TR", { hour:"2-digit", minute:"2-digit" });
       }
@@ -1078,6 +1115,7 @@
       function fmtRelative(iso) {
         if (!iso) return "bilinmiyor";
         const ms = Date.now() - new Date(iso).getTime();
+        if (Number.isNaN(ms)) return String(iso);
         const mins = Math.floor(ms / 60000);
         if (mins < 60) return `${mins} dakika önce`;
         const hrs = Math.floor(mins / 60);
@@ -1100,6 +1138,22 @@
         return `${hrs} saat ${remMins} dakika`;
       }
 
+      function guildAssetUrl(gid, value, kind = "icons", size = 128) {
+        if (!value) return "";
+        if (/^https?:\/\//i.test(String(value))) return value;
+        if (!gid) return "";
+        const ext = String(value).startsWith("a_") ? "gif" : "png";
+        return `https://cdn.discordapp.com/${kind}/${gid}/${value}.${ext}?size=${size}`;
+      }
+
+      function discordAvatarUrl(uid, value, size = 64) {
+        if (!value) return "";
+        if (/^https?:\/\//i.test(String(value))) return value;
+        if (!uid) return "";
+        const ext = String(value).startsWith("a_") ? "gif" : "png";
+        return `https://cdn.discordapp.com/avatars/${uid}/${value}.${ext}?size=${size}`;
+      }
+
       function nitroLabel(type) {
         if (type === 1) return "Nitro Classic";
         if (type === 2) return "Nitro";
@@ -1112,6 +1166,10 @@
         if (s === "idle") return "Boşta";
         if (s === "dnd") return "Rahatsız Etme";
         return "Çevrimdışı";
+      }
+
+      function statusClass(s) {
+        return ["online", "idle", "dnd"].includes(s) ? s : "offline";
       }
 
       // Discord badge CDN hashes
@@ -1156,6 +1214,8 @@
           extraBadges.forEach(badge => {
             if (typeof badge === "object" && badge.hash) {
               row.appendChild(makeBadgeEl(badge.hash, badge.name || badge.description || "Badge"));
+            } else if (typeof badge === "object" && badge.icon) {
+              row.appendChild(makeBadgeEl(badge.icon, badge.name || badge.description || badge.id || "Badge"));
             }
           });
         }
@@ -1171,8 +1231,8 @@
         grid.innerHTML = servers.slice(0, 30).map(s => {
           const name = s.name || s.guild_name || "Sunucu";
           const gid = s.id || s.guild_id || "";
-          const iconHash = s.icon || s.guild_icon;
-          const iconUrl = iconHash ? `https://cdn.discordapp.com/icons/${gid}/${iconHash}.png?size=128` : "";
+          const iconUrl = s.icon_url || guildAssetUrl(gid, s.icon || s.guild_icon, "icons", 128);
+          const bannerUrl = s.banner_url || guildAssetUrl(gid, s.banner || s.guild_banner, "banners", 512);
           const nick = s.nick || s.nickname || "";
           const joinDate = s.joined_at ? fmtDate(s.joined_at) : (s.first_message ? fmtDate(s.first_message) : "");
           const voiceSec = s.voice_time || s.voice_seconds || 0;
@@ -1185,7 +1245,7 @@
             return `<span class="role-pill">${dotStyle}${rname}</span>`;
           }).join("");
           const extraRoles = roles.length > 3 ? `<span class="role-pill">+${roles.length-3}</span>` : "";
-          const bgStyle = iconUrl ? `background-image:url(${iconUrl})` : "";
+          const bgStyle = (bannerUrl || iconUrl) ? `background-image:url(${bannerUrl || iconUrl})` : "";
           const iconHtml = iconUrl
             ? `<img src="${iconUrl}" alt="" loading="lazy" onerror="this.style.display='none'">`
             : `<span>${name[0]}</span>`;
@@ -1231,8 +1291,7 @@
         list.innerHTML = servers.slice(0, 10).map(s => {
           const name = s.name || s.guild_name || "Sunucu";
           const gid = s.id || s.guild_id || "";
-          const iconHash = s.icon || s.guild_icon;
-          const iconUrl = iconHash ? `https://cdn.discordapp.com/icons/${gid}/${iconHash}.png?size=64` : "";
+          const iconUrl = s.icon_url || guildAssetUrl(gid, s.icon || s.guild_icon, "icons", 64);
           const voiceSec = s.voice_time || s.voice_seconds || 0;
           const msgCount = s.messages || s.message_count || 0;
           const sub = [
@@ -1263,8 +1322,7 @@
           msgBox.innerHTML = msgHistory.slice(0, 3).map(m => {
             const gname = m.guild_name || m.server_name || "Sunucu";
             const gid = m.guild_id || m.server_id || "";
-            const iconHash = m.guild_icon || m.server_icon;
-            const iconUrl = iconHash ? `https://cdn.discordapp.com/icons/${gid}/${iconHash}.png?size=64` : "";
+            const iconUrl = m.guild_icon_url || guildAssetUrl(gid, m.guild_icon || m.server_icon, "icons", 64);
             const channel = m.channel_name || m.channel || "";
             const content = m.content || m.message || "";
             const ts = m.timestamp || m.created_at || "";
@@ -1287,10 +1345,9 @@
           voiceBox.innerHTML = voiceHistory.slice(0, 3).map(v => {
             const gname = v.guild_name || v.server_name || "Sunucu";
             const gid = v.guild_id || v.server_id || "";
-            const iconHash = v.guild_icon || v.server_icon;
-            const iconUrl = iconHash ? `https://cdn.discordapp.com/icons/${gid}/${iconHash}.png?size=64` : "";
+            const iconUrl = v.guild_icon_url || guildAssetUrl(gid, v.guild_icon || v.server_icon, "icons", 64);
             const channel = v.channel_name || v.channel || "";
-            const dur = v.duration ? fmtVoiceTime(v.duration) : "";
+            const dur = v.duration_label || (v.duration ? fmtVoiceTime(v.duration) : "");
             const ts = v.timestamp || v.last_seen || v.created_at || "";
             const memberCount = v.member_count ? `👥 ${v.member_count}` : "";
             return `<div class="activity-card">
@@ -1325,9 +1382,8 @@
             ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" x2="19.07" y1="4.93" y2="19.07"/></svg>`
             : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>`;
           const gid = p.guild_id || p.server_id || "";
-          const iconHash = p.guild_icon || p.server_icon;
-          const iconUrl = iconHash ? `https://cdn.discordapp.com/icons/${gid}/${iconHash}.png?size=64` : "";
           const gname = p.guild_name || p.server || "Sunucu";
+          const iconUrl = p.guild_icon_url || guildAssetUrl(gid, p.guild_icon || p.server_icon, "icons", 64);
           const ts = p.date || p.created_at || p.timestamp || "";
           return `<div class="punishment-row">
             <div class="server-icon" style="border-radius:50%">${iconUrl ? `<img src="${iconUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : `<span>${gname[0]}</span>`}</div>
@@ -1338,6 +1394,63 @@
             </div>
           </div>`;
         }).join("");
+      }
+
+      function renderActiveHours(activeHours, servers) {
+        const box = el("saatlerState");
+        const hours = Array.from({ length: 24 }, (_, hour) => ({ hour, score: 0, messages: 0, voice_seconds: 0 }));
+
+        const addHour = (hour, payload) => {
+          const idx = Number(hour);
+          if (!Number.isInteger(idx) || idx < 0 || idx > 23) return;
+          const item = hours[idx];
+          if (typeof payload === "number") {
+            item.score += payload;
+            return;
+          }
+          if (!payload || typeof payload !== "object") return;
+          const messages = Number(payload.messages || payload.message || payload.count || 0);
+          const voice = Number(payload.voice_seconds || payload.voiceTime || payload.voice_time || 0);
+          item.messages += messages;
+          item.voice_seconds += voice;
+          item.score += Number(payload.score || payload.value || messages + Math.max(1, Math.round(voice / 60)) || 0);
+        };
+
+        (activeHours?.detailed || []).forEach((item, index) => {
+          if (item && typeof item === "object") addHour(item.hour ?? item.Hour ?? index, item);
+          else addHour(index, Number(item) || 0);
+        });
+
+        if (!hours.some(h => h.score > 0)) {
+          (servers || []).forEach(server => {
+            const active = server.active_hours || {};
+            Object.entries(active.messages || {}).forEach(([hour, count]) => addHour(hour, { messages: Number(count) || 0 }));
+            Object.entries(active.voice || {}).forEach(([hour, value]) => addHour(hour, { voice_seconds: Number(value) > 100000 ? Math.round(Number(value) / 1000) : Number(value) || 0 }));
+          });
+        }
+
+        const max = Math.max(...hours.map(h => h.score), 0);
+        if (!max) {
+          el("saatlerSummary").textContent = activeHours?.summary || "Aktif saat verisi yok";
+          box.innerHTML = `<div class="empty-state"><div class="empty-inner"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="empty-text">Aktif saat verisi bulunamadı</div></div></div>`;
+          return;
+        }
+
+        const top = [...hours].sort((a, b) => b.score - a.score).slice(0, 3).map(h => `${String(h.hour).padStart(2, "0")}:00`);
+        el("saatlerSummary").textContent = activeHours?.summary || `En aktif: ${top.join(", ")}`;
+        box.innerHTML = `
+          <div class="hours-grid">
+            ${hours.map(h => {
+              const height = Math.max(10, Math.round((h.score / max) * 150));
+              const title = `${String(h.hour).padStart(2, "0")}:00 · ${h.messages} mesaj · ${fmtVoiceTime(h.voice_seconds)}`;
+              return `<div class="hour-cell" title="${title}">
+                <div class="hour-bar" style="height:${height}px"></div>
+                <span class="hour-label">${String(h.hour).padStart(2, "0")}</span>
+              </div>`;
+            }).join("")}
+          </div>
+          <div class="hours-note">Mor çubuklar kullanıcının mesaj ve ses verilerine göre en yoğun olduğu saatleri gösterir.</div>
+        `;
       }
 
       // Render voice friends table
@@ -1364,8 +1477,7 @@
             const name = f.global_name || f.username || f.name || "Kullanıcı";
             const handle = f.username || f.id || "";
             const fid = f.id || f.user_id || "";
-            const avatarHash = f.avatar;
-            const avatarUrl = avatarHash ? `https://cdn.discordapp.com/avatars/${fid}/${avatarHash}.png?size=64` : "";
+            const avatarUrl = f.avatar_url || f.avatarURL || discordAvatarUrl(fid, f.avatar, 64);
             const totalSec = f.total_voice || f.voice_time || f.duration || 0;
             const meetings = f.meetings || f.sessions || 1;
             const channels = f.channels || f.channel_count || 1;
@@ -1389,14 +1501,14 @@
                   </div>
                 </div>
               </td>
-              <td><span class="voice-total">${fmtVoiceTime(totalSec)}</span></td>
+              <td><span class="voice-total">${f.duration_label || fmtVoiceTime(totalSec)}</span></td>
               <td style="color:#9ca3af">${meetings}</td>
               <td style="color:#9ca3af">${channels}</td>
-              <td class="voice-time">${fmtVoiceTime(avgSec)}</td>
+              <td class="voice-time">${f.average_duration_label || fmtVoiceTime(f.average_duration || avgSec)}</td>
               <td>
                 <div class="voice-bar-wrap">
                   <div class="voice-bar"><div class="voice-bar-fill" style="width:${pct}%"></div></div>
-                  <span class="voice-pct">${pct}.0%</span>
+                  <span class="voice-pct">${topChannel ? topChannel : `${pct}.0%`}</span>
                 </div>
               </td>
               <td class="voice-time">${lastSeen ? fmtDate(lastSeen) : "—"}</td>
@@ -1418,8 +1530,7 @@
           const name = f.global_name || f.username || f.name || "Kullanıcı";
           const handle = f.username || f.id || "";
           const fid = f.id || f.user_id || "";
-          const avatarHash = f.avatar;
-          const avatarUrl = avatarHash ? `https://cdn.discordapp.com/avatars/${fid}/${avatarHash}.png?size=64` : "";
+          const avatarUrl = f.avatar_url || f.avatarURL || discordAvatarUrl(fid, f.avatar, 64);
           const msgs = f.messages || f.message_count || 0;
           const pct = maxMsg > 0 ? Math.round((msgs / maxMsg) * 100) : 100;
           const firstInt = f.first_interaction || f.first_message || f.first_seen || "";
@@ -1480,7 +1591,8 @@
         }
 
         // Status dot
-        el("statusDot").className = "status-dot " + (data.status || "offline");
+        el("statusDot").className = "status-dot " + statusClass(data.status);
+        el("viewCount").textContent = data.view_count != null ? data.view_count : "0";
 
         // Badges
         renderBadges(data.public_flags || 0, data.premium_type || 0, data.badges);
@@ -1519,6 +1631,9 @@
 
         // Aktivite tab
         renderActivity(data);
+
+        // Saatler tab
+        renderActiveHours(data.active_hours, serverStatsData);
 
         // Siciller
         renderPunishments(data.punishments);

@@ -6,6 +6,7 @@ const DCSV_KEY = process.env.DCSV_API_KEY || "dcsv_ca6ca829a717d342d2a5e2a48fed0
 const DCSV_API_BASE = "https://dcsv.me/api/v1/user";
 const DCSV_PUBLIC_BASE = "https://dcsv.me/users";
 const CACHE_TTL = 60 * 30;
+const CACHE_VERSION = "v3";
 
 function sendJson(res, status, payload) {
   res.statusCode = status;
@@ -17,7 +18,59 @@ function sendJson(res, status, payload) {
 }
 
 function cacheKey(id) {
-  return `discord:profile:${id}`;
+  return `discord:profile:${CACHE_VERSION}:${String(id).toLowerCase()}`;
+}
+
+function isPlainObject(value) {
+  return value && typeof value === "object" && !Array.isArray(value);
+}
+
+function firstArray(...values) {
+  for (const value of values) {
+    if (Array.isArray(value) && value.length > 0) return value;
+  }
+  return [];
+}
+
+function firstValue(...values) {
+  for (const value of values) {
+    if (value !== undefined && value !== null && value !== "") return value;
+  }
+  return null;
+}
+
+function toSeconds(value) {
+  const n = Number(value || 0);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return n > 100000 ? Math.round(n / 1000) : Math.round(n);
+}
+
+function toIso(value) {
+  if (!value) return null;
+  if (typeof value === "number") {
+    const d = new Date(value > 100000000000 ? value : value * 1000);
+    return Number.isNaN(d.getTime()) ? null : d.toISOString();
+  }
+  if (typeof value === "string") {
+    const clean = value.trim();
+    const tr = clean.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+    if (tr) {
+      const [, dd, mm, yyyy, hh = "0", mi = "0", ss = "0"] = tr;
+      const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd), Number(hh), Number(mi), Number(ss));
+      return Number.isNaN(d.getTime()) ? null : d.toISOString();
+    }
+    const d = new Date(clean);
+    return Number.isNaN(d.getTime()) ? null : d.toISOString();
+  }
+  return null;
+}
+
+function imageUrl(gid, hashOrUrl, kind = "icons", size = 128) {
+  if (!hashOrUrl) return null;
+  if (/^https?:\/\//i.test(String(hashOrUrl))) return hashOrUrl;
+  if (!gid) return null;
+  const ext = String(hashOrUrl).startsWith("a_") ? "gif" : "png";
+  return `https://cdn.discordapp.com/${kind}/${gid}/${hashOrUrl}.${ext}?size=${size}`;
 }
 
 async function fetchDcsvUser(query) {
@@ -120,11 +173,13 @@ async function fetchFindcordById(id) {
 
 function buildAvatarUrl(uid, hash) {
   if (!hash) return null;
+  if (/^https?:\/\//i.test(String(hash))) return hash;
   return `https://cdn.discordapp.com/avatars/${uid}/${hash}.${hash.startsWith("a_") ? "gif" : "png"}?size=256`;
 }
 
 function buildBannerUrl(uid, hash) {
   if (!hash) return null;
+  if (/^https?:\/\//i.test(String(hash))) return hash;
   return `https://cdn.discordapp.com/banners/${uid}/${hash}.${hash.startsWith("a_") ? "gif" : "png"}?size=512`;
 }
 
@@ -171,38 +226,250 @@ function normalizeDcsv(d) {
 }
 
 function normalizeFindcord(fc) {
-  const uid = fc.id || fc.user_id || "";
-  const avatarHash = fc.avatar || null;
-  const bannerHash = fc.banner || fc.banner_hash || null;
+  const user = fc.UserInfo || fc.user || fc.data?.UserInfo || fc;
+  const uid = String(firstValue(user.UserID, fc.id, fc.user_id, "") || "");
+  const guildStatsById = new Map((fc.GuildStats || []).map(g => [String(g.GuildID || g.guild_id || g.id), g]));
+
+  const servers = (fc.Guilds || []).map(g => {
+    const gid = String(firstValue(g.GuildId, g.GuildID, g.guild_id, g.id, "") || "");
+    const stat = guildStatsById.get(gid) || {};
+    const userStats = g.UserStats || {};
+    return {
+      id: gid,
+      guild_id: gid,
+      name: firstValue(g.GuildName, stat.GuildName, g.name, "Sunucu"),
+      guild_name: firstValue(g.GuildName, stat.GuildName, g.name, "Sunucu"),
+      icon_url: firstValue(g.GuildIcon, stat.GuildIcon),
+      banner_url: firstValue(g.GuildBanner, stat.GuildBanner),
+      nick: firstValue(g.displayName, g.nick, g.nickname),
+      joined_at: toIso(firstValue(g.JoinTime, g.joined_at)),
+      booster: Boolean(g.Booster),
+      roles: Array.isArray(g.Roles) ? g.Roles : [],
+      messages: firstValue(userStats.total?.messages, stat.MessageStat, g.messages, 0) || 0,
+      message_count: firstValue(userStats.total?.messages, stat.MessageStat, g.message_count, 0) || 0,
+      voice_time: toSeconds(firstValue(userStats.total?.voiceTime, stat.VoiceStat, g.voice_time, 0)),
+      voice_seconds: toSeconds(firstValue(userStats.total?.voiceTime, stat.VoiceStat, g.voice_seconds, 0)),
+      peak_hours: userStats.peakHours || null,
+      active_hours: userStats.activeHours || null,
+      top_channels: userStats.topChannels || null,
+      daily_activity: userStats.dailyActivity || []
+    };
+  });
+
+  const statOnlyServers = (fc.GuildStats || [])
+    .filter(g => !servers.some(s => String(s.guild_id) === String(g.GuildID)))
+    .map(g => ({
+      id: String(g.GuildID || ""),
+      guild_id: String(g.GuildID || ""),
+      name: g.GuildName || "Sunucu",
+      guild_name: g.GuildName || "Sunucu",
+      icon_url: g.GuildIcon || null,
+      banner_url: g.GuildBanner || null,
+      messages: g.MessageStat || 0,
+      message_count: g.MessageStat || 0,
+      voice_time: toSeconds(g.VoiceStat),
+      voice_seconds: toSeconds(g.VoiceStat)
+    }));
+
+  const allServers = servers.length ? servers : statOnlyServers;
+  const hourBuckets = Array.from({ length: 24 }, (_, hour) => ({ hour, messages: 0, voice_seconds: 0, score: 0 }));
+  for (const server of allServers) {
+    const active = server.active_hours || {};
+    for (const [hour, count] of Object.entries(active.messages || {})) {
+      const bucket = hourBuckets[Number(hour)];
+      if (!bucket) continue;
+      bucket.messages += Number(count) || 0;
+      bucket.score += Number(count) || 0;
+    }
+    for (const [hour, value] of Object.entries(active.voice || {})) {
+      const bucket = hourBuckets[Number(hour)];
+      if (!bucket) continue;
+      const seconds = toSeconds(value);
+      bucket.voice_seconds += seconds;
+      bucket.score += Math.max(1, Math.round(seconds / 60));
+    }
+  }
+
+  const badges = (user.UserBadge || user.badges || []).map(b => ({
+    id: b.id || b.name || b.description || "",
+    hash: b.icon || b.hash || null,
+    name: b.description || b.name || b.id || "Badge",
+    description: b.description || b.name || b.id || ""
+  }));
+
+  const lastSeen = fc.LastSeen || {};
+  const messageHistory = (lastSeen.Message || []).map(m => ({
+    guild_id: m.GuildID || m.guild_id,
+    guild_name: m.GuildName || m.guild_name,
+    guild_icon_url: m.GuildIcon || null,
+    channel_name: m.ChannelName || m.channel_name,
+    content: m.Message || m.content || "",
+    timestamp: toIso(m.TimeString || m.timestamp)
+  }));
+  const voiceHistory = (lastSeen.Voice || []).map(v => ({
+    guild_id: v.GuildID || v.guild_id,
+    guild_name: v.GuildName || v.guild_name,
+    guild_icon_url: v.GuildIcon || null,
+    channel_name: v.ChannelName || v.channel_name,
+    duration: toSeconds(v.Stat || v.duration),
+    duration_label: typeof v.Stat === "string" ? v.Stat : null,
+    timestamp: toIso(v.TimeString || v.timestamp),
+    users: v.Users || []
+  }));
+
+  const activeHours = fc.ActiveHours || {};
+  const detailedHours = Array.isArray(activeHours.detailedHours) && activeHours.detailedHours.length
+    ? activeHours.detailedHours
+    : hourBuckets;
+  const topHours = hourBuckets
+    .filter(h => h.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(h => `${String(h.hour).padStart(2, "0")}:00`)
+    .join(", ");
+  const totalVoiceSeconds = allServers.reduce((sum, server) => sum + (Number(server.voice_time) || 0), 0);
+  const rawActiveSummary = activeHours.summary || "";
+  const activeSummary = rawActiveSummary && !/bulunamadı|yok|none/i.test(rawActiveSummary)
+    ? rawActiveSummary
+    : (topHours ? `En aktif saatler: ${topHours}` : rawActiveSummary);
+  const views = fc.LastViewing?.views;
+
   return {
     id: uid,
-    username: fc.username || "",
-    global_name: fc.global_name || fc.display_name || fc.username || "",
-    avatar_url: buildAvatarUrl(uid, avatarHash),
-    banner_url: buildBannerUrl(uid, bannerHash),
-    accent_color: fc.accent_color || null,
-    status: fc.status || "offline",
-    public_flags: fc.public_flags || 0,
+    username: firstValue(user.UserName, user.username, ""),
+    global_name: firstValue(user.UserGlobalName, user.display_name, user.UserName, ""),
+    legacy_username: user.LegacyUserName || null,
+    avatar_url: firstValue(user.UserdisplayAvatar, buildAvatarUrl(uid, user.avatar || fc.avatar)),
+    banner_url: firstValue(user.UserBanner, buildBannerUrl(uid, user.banner || fc.banner)),
+    accent_color: user.accent_color || fc.accent_color || null,
+    status: firstValue(user.Presence?.Status, fc.status, "offline"),
+    public_flags: user.public_flags || fc.public_flags || 0,
     premium_type: fc.premium_type || 0,
-    badges: fc.badges || [],
-    created_at: parseCreatedAt(uid),
-    age: null,
-    gender: null,
-    bio: fc.bio || fc.about_me || null,
-    custom_status: fc.custom_status || null,
-    other_names: fc.previous_usernames || [],
-    server_count: fc.mutual_guilds?.length ?? fc.guild_count ?? null,
-    voice_friend_count: fc.voice_friends?.length ?? null,
-    punishment_count: fc.punishments?.length ?? null,
-    servers: fc.mutual_guilds || fc.guilds || [],
-    activity: fc.activity || fc.activities || null,
-    punishments: fc.punishments || [],
-    admin_servers: fc.admin_guilds || fc.managed_guilds || [],
-    voice_friends: fc.voice_friends || [],
-    voice_history: fc.voice_history || [],
-    message_history: fc.message_history || [],
-    message_friends: fc.message_friends || fc.friends || []
+    badges,
+    created_at: toIso(user.UserCreatedTimestamp) || toIso(user.UserCreated) || parseCreatedAt(uid),
+    age: firstValue(fc.TopAge, user.age),
+    gender: firstValue(fc.TopSex, user.gender),
+    bio: firstValue(user.UserBio, user.bio, fc.bio, fc.about_me),
+    pronouns: user.UserPronouns || null,
+    custom_status: user.Activities?.find?.(a => a?.state)?.state || fc.custom_status || null,
+    other_names: firstArray(fc.displayNames, user.previous_usernames, fc.previous_usernames)
+      .map(n => (typeof n === "string" ? n : firstValue(n.name, n.displayName, n.UserName, n.toString?.())))
+      .filter(Boolean),
+    server_count: allServers.length || fc.GuildStats?.length || null,
+    voice_friend_count: fc.VoiceFrends?.length ?? fc.voice_friends?.length ?? null,
+    punishment_count: fc.Punishments?.length ?? fc.punishments?.length ?? null,
+    servers: allServers,
+    active_hours: {
+      total: toSeconds((activeHours.totalActiveHours || 0) * 60 * 60) || totalVoiceSeconds,
+      summary: activeSummary,
+      ranges: activeHours.activeTimeRanges || [],
+      detailed: detailedHours
+    },
+    view_count: views?.allTime?.total || views?.total || fc.LastViewing?.uniqueVisitors || null,
+    activity: { last_message: messageHistory[0] || null, last_voice: voiceHistory[0] || null },
+    punishments: (fc.Punishments || []).map(p => ({
+      guild_name: p.GuildName || p.guild_name,
+      guild_icon_url: p.GuildIcon || null,
+      type: p.Type || p.type,
+      reason: p.Reason || p.reason,
+      date: toIso(p.Date || p.date)
+    })),
+    admin_servers: (fc.GuildStaff || fc.admin_guilds || []).map(g => ({
+      id: String(firstValue(g.GuildID, g.GuildId, g.id, "")),
+      guild_id: String(firstValue(g.GuildID, g.GuildId, g.id, "")),
+      name: firstValue(g.GuildName, g.name, "Sunucu"),
+      guild_name: firstValue(g.GuildName, g.name, "Sunucu"),
+      icon_url: firstValue(g.GuildIcon, g.icon_url)
+    })),
+    voice_friends: (fc.VoiceFrends || []).map(f => ({
+      id: String(firstValue(f.userId, f.id, f.user_id, "")),
+      user_id: String(firstValue(f.userId, f.id, f.user_id, "")),
+      username: f.username || "",
+      global_name: firstValue(f.displayname, f.displayName, f.username, ""),
+      avatar_url: f.avatarURL || null,
+      total_voice: toSeconds(f.totalDuration),
+      voice_time: toSeconds(f.totalDuration),
+      duration: toSeconds(f.totalDuration),
+      duration_label: f.formattedDuration || null,
+      meetings: f.meetingCount || 0,
+      sessions: f.meetingCount || 0,
+      channels: f.channelsCount || 0,
+      channel_count: f.channelsCount || 0,
+      average_duration: toSeconds(f.averageDurationPerMeeting),
+      average_duration_label: f.formattedAverageDuration || null,
+      top_channel: f.topChannels?.[0]?.channelName || f.lastChannelInfo?.channelName || "",
+      last_seen: toIso(f.lastSeen || f.formattedLastSeen),
+      first_seen: toIso(f.firstSeen || f.formattedFirstSeen),
+      status: f.isRecentlyActive ? "online" : "offline"
+    })),
+    voice_history: voiceHistory,
+    message_history: messageHistory,
+    message_friends: (fc.MessageFriends || []).map(f => ({
+      id: String(firstValue(f.userId, f.id, f.user_id, "")),
+      user_id: String(firstValue(f.userId, f.id, f.user_id, "")),
+      username: f.username || "",
+      global_name: firstValue(f.displayName, f.displayname, f.username, ""),
+      avatar_url: f.avatarURL || null,
+      messages: f.Message || f.messages || f.message_count || 0,
+      message_count: f.Message || f.messages || f.message_count || 0,
+      first_interaction: f.firstInteraction || f.first_seen || "",
+      last_interaction: f.lastInteraction || f.last_seen || "",
+      interaction_score: f.interactionScore || 0,
+      bot: Boolean(f.bot)
+    }))
   };
+}
+
+function hasItems(value) {
+  return Array.isArray(value) && value.length > 0;
+}
+
+function mergeProfiles(dcsv, findcord) {
+  if (!dcsv) return findcord;
+  if (!findcord) return dcsv;
+  return {
+    ...dcsv,
+    ...Object.fromEntries(Object.entries(findcord).filter(([, value]) => value !== null && value !== undefined && value !== "")),
+    id: firstValue(findcord.id, dcsv.id),
+    username: firstValue(findcord.username, dcsv.username),
+    global_name: firstValue(findcord.global_name, dcsv.global_name),
+    avatar_url: firstValue(findcord.avatar_url, dcsv.avatar_url),
+    banner_url: firstValue(findcord.banner_url, dcsv.banner_url),
+    bio: firstValue(findcord.bio, dcsv.bio),
+    status: firstValue(findcord.status, dcsv.status, "offline"),
+    custom_status: firstValue(findcord.custom_status, dcsv.custom_status),
+    badges: hasItems(findcord.badges) ? findcord.badges : dcsv.badges,
+    other_names: hasItems(findcord.other_names) ? findcord.other_names : dcsv.other_names,
+    servers: hasItems(findcord.servers) ? findcord.servers : dcsv.servers,
+    server_count: firstValue(findcord.server_count, dcsv.server_count),
+    active_hours: isPlainObject(findcord.active_hours) ? findcord.active_hours : dcsv.active_hours,
+    activity: isPlainObject(findcord.activity) ? findcord.activity : dcsv.activity,
+    punishments: hasItems(findcord.punishments) ? findcord.punishments : dcsv.punishments,
+    punishment_count: firstValue(findcord.punishment_count, dcsv.punishment_count),
+    admin_servers: hasItems(findcord.admin_servers) ? findcord.admin_servers : dcsv.admin_servers,
+    voice_friends: hasItems(findcord.voice_friends) ? findcord.voice_friends : dcsv.voice_friends,
+    voice_friend_count: firstValue(findcord.voice_friend_count, dcsv.voice_friend_count),
+    voice_history: hasItems(findcord.voice_history) ? findcord.voice_history : dcsv.voice_history,
+    message_history: hasItems(findcord.message_history) ? findcord.message_history : dcsv.message_history,
+    message_friends: hasItems(findcord.message_friends) ? findcord.message_friends : dcsv.message_friends,
+    view_count: firstValue(findcord.view_count, dcsv.view_count),
+    source: "dcsv+findcord"
+  };
+}
+
+async function fetchDcsvProfile(query, isId) {
+  if (isId) {
+    const apiProfile = await fetchDcsvUser(query);
+    const publicProfile = await fetchDcsvPublicProfile(query).catch(() => null);
+    return normalizeDcsv({ ...apiProfile, ...(publicProfile || {}), id: query });
+  }
+
+  const publicProfile = await fetchDcsvPublicProfile(query);
+  let apiProfile = null;
+  if (publicProfile.id) {
+    apiProfile = await fetchDcsvUser(publicProfile.id).catch(() => null);
+  }
+  return normalizeDcsv({ ...(apiProfile || {}), ...publicProfile, id: publicProfile.id || apiProfile?.id });
 }
 
 module.exports = async (req, res) => {
@@ -232,53 +499,32 @@ module.exports = async (req, res) => {
     return sendJson(res, 200, { status: "ready", source: "cache", data: cached });
   }
 
-  const errors = [];
-
   const isId = /^\d{15,20}$/.test(query);
+  const errors = [];
+  let dcsvProfile = null;
+  let findcordProfile = null;
+  let resolvedId = isId ? query : "";
 
-  // 1. Try DCSV first. Username searches are resolved from the public profile
-  // page because the API endpoint is ID-only and returns 500 for usernames.
   try {
-    let d;
-
-    if (isId) {
-      const apiProfile = await fetchDcsvUser(query);
-      const publicProfile = await fetchDcsvPublicProfile(query).catch((err) => {
-        errors.push(`DCSV public: ${err.message}`);
-        return null;
-      });
-      d = { ...apiProfile, ...(publicProfile || {}), id: query };
-    } else {
-      const publicProfile = await fetchDcsvPublicProfile(query);
-      let apiProfile = null;
-
-      if (publicProfile.id) {
-        apiProfile = await fetchDcsvUser(publicProfile.id).catch((err) => {
-          errors.push(`DCSV API: ${err.message}`);
-          return null;
-        });
-      }
-
-      d = { ...(apiProfile || {}), ...publicProfile, id: publicProfile.id || apiProfile?.id };
-    }
-
-    const profile = normalizeDcsv(d);
-    await setJson(cacheKey(query), profile, CACHE_TTL).catch(() => {});
-    return sendJson(res, 200, { status: "ready", source: "dcsv", data: profile });
+    dcsvProfile = await fetchDcsvProfile(query, isId);
+    resolvedId = dcsvProfile.id || resolvedId;
   } catch (err) {
     errors.push(`DCSV: ${err.message}`);
   }
 
-  // 2. Fallback: Findcord (ID only)
-  if (isId) {
+  if (resolvedId) {
     try {
-      const fc = await fetchFindcordById(query);
-      const profile = normalizeFindcord(fc);
-      await setJson(cacheKey(query), profile, CACHE_TTL).catch(() => {});
-      return sendJson(res, 200, { status: "ready", source: "findcord", data: profile });
+      findcordProfile = normalizeFindcord(await fetchFindcordById(resolvedId));
     } catch (err) {
       errors.push(`Findcord: ${err.message}`);
     }
+  }
+
+  const profile = mergeProfiles(dcsvProfile, findcordProfile);
+  if (profile) {
+    await setJson(cacheKey(query), profile, CACHE_TTL).catch(() => {});
+    if (profile.id && profile.id !== query) await setJson(cacheKey(profile.id), profile, CACHE_TTL).catch(() => {});
+    return sendJson(res, 200, { status: "ready", source: profile.source || (findcordProfile ? "findcord" : "dcsv"), data: profile });
   }
 
   return sendJson(res, 502, { status: "error", message: `Profil alınamadı. ${errors.join(" | ")}` });
