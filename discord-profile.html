@@ -1722,9 +1722,13 @@
         const deviceText = deviceLabel(data.client_status);
 
         // Stats
-        el("statServers").textContent = data.server_count != null ? data.server_count : "—";
-        el("statVoice").textContent = data.voice_friend_count != null ? data.voice_friend_count : "—";
-        el("statPunish").textContent = data.punishment_count != null ? data.punishment_count : "0";
+        const serverStatsData = data.servers || data.mutual_guilds || [];
+        const serverCount = data.server_count != null ? data.server_count : serverStatsData.length;
+        const voiceCount = data.voice_friend_count != null ? data.voice_friend_count : (Array.isArray(data.voice_friends) ? data.voice_friends.length : null);
+        const punishCount = data.punishment_count != null ? data.punishment_count : (Array.isArray(data.punishments) ? data.punishments.length : 0);
+        el("statServers").textContent = serverCount != null ? serverCount : "—";
+        el("statVoice").textContent = voiceCount != null ? voiceCount : "—";
+        el("statPunish").textContent = punishCount != null ? punishCount : "0";
 
         // Bilgiler panel
         setText("miniCreated", data.created_at ? fmtRelative(data.created_at) : "Bilinmiyor");
@@ -1751,7 +1755,6 @@
         }
 
         // Server stats (Bilgiler right panel)
-        const serverStatsData = data.servers || data.mutual_guilds || [];
         if (serverStatsData.length > 0) {
           el("serverStatsCount").textContent = `${serverStatsData.length} Kayıt`;
         }

@@ -1,12 +1,18 @@
 const { getJson, setJson } = require("../../lib/cache");
 const { getSession } = require("../../lib/session");
 
-const FINDCORD_KEY = process.env.FINDCORD_API_KEY || "331b483f722e9077c40365f97fd5b5f28ea25456f7af610a1826dd4eadc96b4d";
+const FALLBACK_FINDCORD_KEY = "331b483f722e9077c40365f97fd5b5f28ea25456f7af610a1826dd4eadc96b4d";
+const FINDCORD_KEYS = Array.from(new Set([
+  process.env.FINDCORD_API_KEY,
+  process.env.FINDCORD_KEY,
+  process.env.FINCORD_API_KEY,
+  FALLBACK_FINDCORD_KEY
+].map(v => String(v || "").trim()).filter(Boolean)));
 const DCSV_KEY = process.env.DCSV_API_KEY || "dcsv_ca6ca829a717d342d2a5e2a48fed0fcef33f1ab3098a1a9a";
 const DCSV_API_BASE = "https://dcsv.me/api/v1/user";
 const DCSV_PUBLIC_BASE = "https://dcsv.me/users";
 const CACHE_TTL = 60 * 30;
-const CACHE_VERSION = "v4";
+const CACHE_VERSION = "v5";
 
 function sendJson(res, status, payload) {
   res.statusCode = status;
@@ -14,6 +20,7 @@ function sendJson(res, status, payload) {
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Cache-Control", "no-store");
+  res.setHeader("X-IGME-Profile-Version", CACHE_VERSION);
   res.end(JSON.stringify(payload));
 }
 
@@ -158,17 +165,21 @@ async function fetchDcsvPublicProfile(query) {
 }
 
 async function fetchFindcordById(id) {
-  const res = await fetch(`https://app.findcord.com/api/user/${encodeURIComponent(id)}`, {
-    headers: {
-      "Authorization": FINDCORD_KEY,
-      "Accept": "application/json"
-    }
-  });
-  if (!res.ok) {
+  const errors = [];
+  for (const key of FINDCORD_KEYS) {
+    const res = await fetch(`https://app.findcord.com/api/user/${encodeURIComponent(id)}`, {
+      headers: {
+        "Authorization": key,
+        "Accept": "application/json",
+        "User-Agent": "IGME/1.0 (+https://sammvsc.top)"
+      }
+    });
+    if (res.ok) return res.json();
     const body = await res.text().catch(() => "");
-    throw new Error(`Findcord ${res.status}: ${body.slice(0, 120)}`);
+    errors.push(`${res.status}: ${body.slice(0, 120)}`);
+    if (![401, 403].includes(res.status)) break;
   }
-  return res.json();
+  throw new Error(`Findcord ${errors.join(" | ")}`);
 }
 
 function buildAvatarUrl(uid, hash) {
