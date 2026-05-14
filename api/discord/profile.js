@@ -153,13 +153,15 @@ module.exports = async (req, res) => {
       fc = await fetchFindcord(query);
     } else {
       // Username → try direct endpoint first, then search
+      let directError = null;
       try {
         fc = await fetchFindcord(query);
-      } catch {
+      } catch (err) {
+        directError = err.message;
         // Try search endpoint
         const searchResult = await searchFindcordByUsername(query);
         if (!searchResult) {
-          return sendJson(res, 404, { status: "error", message: `"${query}" kullanıcı adına sahip Discord hesabı bulunamadı.` });
+          return sendJson(res, 404, { status: "error", message: `"${query}" kullanıcı adı bulunamadı. API hatası: ${directError}` });
         }
         // If search returns a full profile, use it; otherwise fetch by ID
         if (searchResult.username && searchResult.id) {
@@ -169,7 +171,7 @@ module.exports = async (req, res) => {
             try { fc = await fetchFindcord(searchResult.id); } catch { fc = searchResult; }
           }
         } else {
-          return sendJson(res, 404, { status: "error", message: `"${query}" kullanıcı adına sahip Discord hesabı bulunamadı.` });
+          return sendJson(res, 404, { status: "error", message: `"${query}" kullanıcı adı bulunamadı. API hatası: ${directError}` });
         }
       }
     }
