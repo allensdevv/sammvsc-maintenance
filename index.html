@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#050505">
     <meta name="google-adsense-account" content="ca-pub-6769023980744799">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6769023980744799" crossorigin="anonymous"></script>
-    <title>IGME | Bakım Modu</title>
+    <title>IGME | Kullanıcıları Araştır</title>
     <style>
       :root {
         color-scheme: dark;
@@ -925,6 +925,192 @@
         font-size: 13px;
       }
 
+      .mini-sponsor {
+        width: min(458px, calc(100vw - 40px));
+        min-height: 74px;
+        margin: 22px auto 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 26px;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: 18px;
+        border: 1px solid rgba(139, 92, 246, 0.26);
+        background:
+          linear-gradient(100deg, rgba(9, 14, 18, 0.96), rgba(18, 38, 42, 0.86) 48%, rgba(13, 13, 19, 0.98)),
+          radial-gradient(circle at 18% 20%, rgba(20, 184, 166, 0.18), transparent 34%),
+          radial-gradient(circle at 78% 72%, rgba(139, 92, 246, 0.18), transparent 38%);
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45), 0 0 34px rgba(20, 184, 166, 0.11);
+        color: #eef4ff;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .mini-sponsor::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+        transform: translateX(-120%);
+        transition: transform 700ms ease;
+      }
+
+      .mini-sponsor:hover::before {
+        transform: translateX(120%);
+      }
+
+      .mini-sponsor-link {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: 52px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        color: inherit;
+        text-decoration: none;
+        z-index: 1;
+      }
+
+      .mini-sponsor-avatar {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #05070a;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        display: grid;
+        place-items: center;
+        box-shadow: 0 0 18px rgba(139, 92, 246, 0.25);
+      }
+
+      .mini-sponsor-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .mini-sponsor-copy {
+        min-width: 0;
+        text-align: left;
+      }
+
+      .mini-sponsor-name {
+        display: block;
+        color: #ffffff;
+        font-size: 18px;
+        font-weight: 850;
+        letter-spacing: 0.12em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .mini-sponsor-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 5px;
+        color: #8d98aa;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .mini-sponsor-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .mini-sponsor-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #20e889;
+        box-shadow: 0 0 14px rgba(32, 232, 137, 0.75);
+      }
+
+      .mini-sponsor-chip {
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 0 15px;
+        border-radius: 12px;
+        border: 1px solid rgba(250, 204, 21, 0.5);
+        background: rgba(250, 204, 21, 0.12);
+        color: #facc15;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+      }
+
+      .mini-sponsor-chip svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .mini-sponsor-close {
+        width: 26px;
+        height: 26px;
+        display: grid;
+        place-items: center;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #7c8798;
+        cursor: pointer;
+        z-index: 2;
+        transition: color 160ms ease, background 160ms ease;
+      }
+
+      .mini-sponsor-close:hover {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .mini-sponsor-close svg {
+        width: 15px;
+        height: 15px;
+      }
+
+      @media (max-width: 520px) {
+        .mini-sponsor {
+          width: min(360px, calc(100vw - 32px));
+          padding: 11px 12px;
+        }
+
+        .mini-sponsor-link {
+          grid-template-columns: 46px minmax(0, 1fr);
+          row-gap: 7px;
+        }
+
+        .mini-sponsor-avatar {
+          width: 46px;
+          height: 46px;
+          border-radius: 13px;
+          grid-row: span 2;
+        }
+
+        .mini-sponsor-name {
+          font-size: 16px;
+        }
+
+        .mini-sponsor-meta {
+          gap: 9px;
+          font-size: 12px;
+        }
+
+        .mini-sponsor-chip {
+          grid-column: 2;
+          justify-self: start;
+          height: 28px;
+          padding: 0 11px;
+          font-size: 11px;
+        }
+      }
+
       /* ── App promo ─────────────────────────────────── */
       .app-promo {
         width: 100vw;
@@ -1739,6 +1925,32 @@
             </div>
             <div id="recentList"></div>
           </div>
+
+          <div class="mini-sponsor" id="miniSponsor">
+            <a class="mini-sponsor-link" href="https://discord.gg/7TaeVxPU" target="_blank" rel="noopener noreferrer" aria-label="Sponsor Discord sunucusuna katıl">
+              <span class="mini-sponsor-avatar" aria-hidden="true">
+                <img src="assets/u.png" alt="">
+              </span>
+              <span class="mini-sponsor-copy">
+                <strong class="mini-sponsor-name">IGME</strong>
+                <span class="mini-sponsor-meta">
+                  <span><i class="mini-sponsor-dot" aria-hidden="true"></i>Discord</span>
+                  <span>Topluluk</span>
+                </span>
+              </span>
+              <span class="mini-sponsor-chip" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="m12 3 2.7 5.47 6.03.88-4.36 4.25 1.03 6-5.4-2.84-5.4 2.84 1.03-6-4.36-4.25 6.03-.88L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                </svg>
+                SPONSOR
+              </span>
+            </a>
+            <button class="mini-sponsor-close" id="miniSponsorClose" type="button" aria-label="Sponsor kutusunu kapat">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
         </section>
 
       </main>
@@ -2213,6 +2425,12 @@
         const username = btn.dataset.username;
         saveRecent(getRecent().filter(i => i.username !== username));
         renderRecent();
+      });
+
+      document.getElementById("miniSponsorClose")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById("miniSponsor")?.remove();
       });
 
       cleanUrl();
