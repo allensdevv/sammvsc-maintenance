@@ -2,7 +2,65 @@
   "version": 2,
   "cleanUrls": true,
   "trailingSlash": false,
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "assets/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "ads.txt",
+      "use": "@vercel/static"
+    }
+  ],
   "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/login.html"
+    },
+    {
+      "source": "/profile",
+      "destination": "/profile.html"
+    },
+    {
+      "source": "/discord-profile",
+      "destination": "/discord-profile.html"
+    },
+    {
+      "source": "/gizlilik-politikasi",
+      "destination": "/gizlilik-politikasi.html"
+    },
+    {
+      "source": "/kvkk-aydinlatma-metni",
+      "destination": "/kvkk-aydinlatma-metni.html"
+    },
+    {
+      "source": "/kullanim-sartlari",
+      "destination": "/kullanim-sartlari.html"
+    },
+    {
+      "source": "/hakkimizda",
+      "destination": "/hakkimizda.html"
+    },
     {
       "source": "/api/auth/discord/callback",
       "destination": "/api/auth/discord/callback.js"
