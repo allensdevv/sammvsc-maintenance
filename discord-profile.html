@@ -4,423 +4,654 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#050505">
+    <meta name="theme-color" content="#0A0A0A">
     <title>IGME | Discord Profil Analizi</title>
     <style>
-      :root {
-        color-scheme: dark;
-        --bg: #050505;
-        --panel: #111111;
-        --line: rgba(255,255,255,0.08);
-        --ink: #f7f9ff;
-        --muted: #6b7280;
-        --blue: #5865f2;
-        --purple: #a78bfa;
-        --gold: #facc15;
-      }
-      * { box-sizing: border-box; }
+      *, *::before, *::after { box-sizing: border-box; }
       html { scroll-behavior: smooth; }
       body {
         min-height: 100vh;
         margin: 0;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: radial-gradient(circle at 50% 30%, rgba(88,101,242,0.1), transparent 26rem), #050505;
-        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: #0A0A0A;
+        color: #fff;
+        -webkit-font-smoothing: antialiased;
       }
       a { color: inherit; text-decoration: none; }
 
-      /* ── PAGE ── */
-      .page {
-        width: min(1220px, calc(100% - 32px));
-        margin: 0 auto;
-        padding-bottom: 56px;
-      }
-
       /* ── TOPBAR ── */
       .topbar {
-        min-height: 70px;
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        align-items: center;
-        gap: 20px;
-        border-bottom: 1px solid rgba(255,255,255,0.07);
+        position: sticky; top: 0; z-index: 50;
+        background: #0a0a0a;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        backdrop-filter: blur(16px);
       }
-      .brand { display: flex; align-items: center; gap: 10px; justify-self: start; font-size: 24px; font-weight: 900; white-space: nowrap; line-height: 1; }
-      .brand-word { color: #fff; font-weight: 900; }
+      .topbar-inner {
+        max-width: 1280px; margin: 0 auto;
+        padding: 0 16px;
+        height: 56px;
+        display: flex; align-items: center; justify-content: space-between; gap: 20px;
+      }
+      .brand { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 900; white-space: nowrap; }
+      .brand-word { color: #fff; }
       .brand-accent { color: #a99cff; }
-      .brand-beta { min-height: 19px; display: inline-grid; place-items: center; padding: 0 7px; border: 1px solid rgba(139,92,246,0.5); border-radius: 5px; background: rgba(104,71,220,0.24); color: #c9c0ff; font-size: 10px; font-weight: 900; line-height: 1; }
-      .brand-logo { width: 42px; height: 42px; object-fit: contain; filter: drop-shadow(0 0 12px rgba(167,139,250,0.28)); }
-      .nav { justify-self: center; display: flex; align-items: center; gap: clamp(18px,4vw,42px); color: #b8c0ce; font-size: 14px; font-weight: 650; }
-      .nav-link { display: flex; align-items: center; gap: 8px; }
-      .nav-gold { color: var(--gold); }
-
-      /* ── PLATFORM BADGE ── */
+      .brand-beta {
+        display: inline-grid; place-items: center;
+        padding: 0 7px; min-height: 18px;
+        border: 1px solid rgba(139,92,246,0.5); border-radius: 5px;
+        background: rgba(104,71,220,0.22); color: #c9c0ff;
+        font-size: 9px; font-weight: 900;
+      }
+      .brand-logo { width: 36px; height: 36px; object-fit: contain; }
+      .nav { display: flex; align-items: center; gap: 32px; color: #9ca3af; font-size: 13.5px; font-weight: 600; }
       .platform-badge {
-        display: inline-flex; align-items: center; gap: 7px;
-        padding: 4px 12px; border-radius: 8px;
-        background: rgba(88,101,242,0.15); border: 1px solid rgba(88,101,242,0.35);
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 4px 11px; border-radius: 8px;
+        background: rgba(88,101,242,0.12); border: 1px solid rgba(88,101,242,0.3);
         color: #7289da; font-size: 12px; font-weight: 700;
-        justify-self: end;
       }
       .platform-badge svg { width: 14px; height: 14px; }
 
-      /* ── HERO ── */
-      main { padding-top: 38px; }
+      /* ── PAGE ── */
+      .page {
+        max-width: 1280px; margin: 0 auto;
+        padding: 32px 16px 80px;
+        display: flex; flex-direction: column; gap: 16px;
+      }
 
-      .profile-hero {
-        position: relative;
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        background: rgba(17,17,17,0.85);
-        overflow: hidden;
+      /* Ambient glow */
+      .ambient {
+        position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
+      }
+      .amb-1 {
+        position: absolute; top: 0; left: 25%;
+        width: 384px; height: 384px;
+        background: rgba(88,101,242,0.07);
+        border-radius: 50%; filter: blur(60px);
+      }
+      .amb-2 {
+        position: absolute; top: 33%; right: 25%;
+        width: 384px; height: 384px;
+        background: rgba(88,101,242,0.07);
+        border-radius: 50%; filter: blur(60px);
+      }
+
+      /* ── PROFILE CARD ── */
+      .profile-card {
+        position: relative; z-index: 1;
+        background: rgba(17,17,17,0.8);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
-      }
-      .hero-banner {
-        height: 140px;
-        position: relative;
-        background: linear-gradient(135deg, #1e1433 0%, #0d0d1a 100%);
         overflow: hidden;
       }
+
+      /* Banner area */
+      .hero-banner {
+        position: relative;
+        height: 48px; /* no-banner default */
+        background: transparent;
+        overflow: hidden;
+        transition: height 300ms ease;
+      }
+      .profile-card.has-banner .hero-banner {
+        height: 140px;
+      }
       .hero-banner-img {
-        position: absolute;
-        inset: 0;
-        background-size: cover;
-        background-position: center;
-        opacity: 0;
-        transition: opacity 400ms ease;
+        position: absolute; inset: 0;
+        background-size: cover; background-position: center;
+        opacity: 0; transition: opacity 400ms ease;
       }
       .hero-banner-img.loaded { opacity: 1; }
       .hero-banner-overlay {
-        position: absolute;
-        inset: 0;
+        position: absolute; inset: 0;
         background: linear-gradient(to top, rgba(17,17,17,0.7) 0%, transparent 50%);
-        z-index: 1;
       }
+      .profile-card.has-banner .hero-banner-overlay { display: block; }
+      .profile-card:not(.has-banner) .hero-banner-overlay { display: none; }
 
-      .hero-body {
-        position: relative;
-        z-index: 2;
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 24px;
-        padding: 66px 28px 28px;
+      /* View pill */
+      .view-pill {
+        position: absolute; top: 10px; right: 12px; z-index: 2;
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 6px 10px; border-radius: 8px;
+        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+        color: #fff; font-size: 13px; font-weight: 600;
+        cursor: default;
+        transition: background 140ms;
       }
-      .hero-info { flex: 1 1 auto; min-width: 0; }
+      .view-pill:hover { background: rgba(255,255,255,0.09); }
+      .view-pill svg { width: 14px; height: 14px; color: #9ca3af; }
+
+      /* Badge row */
+      .badge-row {
+        position: absolute;
+        top: 66px; right: 8px;
+        z-index: 3;
+        display: flex; flex-wrap: wrap; gap: 2px; justify-content: flex-end;
+        max-width: 100px;
+      }
+      .profile-card.has-banner .badge-row { top: 148px; }
+      .badge {
+        width: 16px; height: 16px;
+        display: grid; place-items: center;
+        cursor: default;
+        transition: transform 120ms ease;
+      }
+      .badge:hover { transform: scale(1.2); }
+      .badge img { width: 100%; height: 100%; object-fit: contain; }
+      .badge svg { width: 14px; height: 14px; }
+
+      /* ── HERO CONTENT ── */
+
+      /* No-banner: avatar inline */
+      .hero-content {
+        padding: 0 24px 24px;
+      }
+      .profile-card:not(.has-banner) .hero-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding-top: 16px;
+      }
+      .profile-card.has-banner .hero-content {
+        padding-top: 64px;
+        position: relative;
+      }
 
       /* Avatar */
-      .avatar {
-        width: 120px; height: 120px;
-        display: grid; place-items: center;
+      .avatar-wrapper { position: relative; flex-shrink: 0; }
+      .profile-card:not(.has-banner) .avatar-wrapper { display: inline-block; }
+      .profile-card.has-banner .avatar-wrapper {
         position: absolute;
-        left: 28px; top: -60px;
-        z-index: 3;
-        border: 4px solid #111111;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #1e1433, #2c2060);
-        color: #fff;
-        font-size: 44px; font-weight: 700;
-        text-transform: uppercase;
-        overflow: hidden;
-        flex-shrink: 0;
-        box-shadow: 0 0 0 1px rgba(255,255,255,0.07);
-        cursor: pointer;
+        top: -60px; left: 24px;
       }
+
+      .avatar {
+        width: 80px; height: 80px;
+        border-radius: 50%;
+        border: 3px solid rgba(17,17,17,1);
+        background: #1a1a1a;
+        overflow: hidden;
+        cursor: pointer;
+        display: grid; place-items: center;
+        color: #fff; font-size: 32px; font-weight: 700;
+        transition: opacity 160ms;
+      }
+      .avatar:hover { opacity: 0.8; }
       .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+      .profile-card.has-banner .avatar {
+        width: 120px; height: 120px;
+        border-width: 4px;
+        font-size: 44px;
+      }
 
       /* Status dot */
       .status-dot {
         position: absolute;
-        bottom: 4px; right: 4px;
-        width: 22px; height: 22px;
+        bottom: 1px; right: 1px;
+        width: 16px; height: 16px;
         border-radius: 50%;
-        border: 3px solid #111111;
-        background: #747f8d;
-        z-index: 4;
+        border: 2px solid rgba(17,17,17,1);
+        background: #6b7280;
+        z-index: 1;
+      }
+      .profile-card.has-banner .status-dot {
+        bottom: 3px; right: 3px;
+        width: 22px; height: 22px;
+        border-width: 3px;
       }
       .status-dot.online { background: #3ba55c; }
       .status-dot.idle { background: #faa61a; }
       .status-dot.dnd { background: #ed4245; }
-      .status-dot.offline { background: #747f8d; }
+      .status-dot.offline { background: #6b7280; }
 
-      /* Badges */
-      .badges {
-        position: absolute;
-        right: 18px; top: 150px;
-        display: flex; flex-wrap: wrap; gap: 6px;
-        justify-content: flex-end;
-        max-width: 280px;
-        z-index: 3;
+      /* Name info row */
+      .hero-info-row {
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
       }
-      .badge {
-        width: 26px; height: 26px;
-        display: grid; place-items: center;
-        border-radius: 6px;
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.1);
-        transition: transform 120ms ease;
-        cursor: default;
+      .profile-card.has-banner .hero-info-row {
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: space-between;
       }
-      .badge:hover { transform: scale(1.15); }
-      .badge svg { width: 16px; height: 16px; }
+      .hero-info { flex: 1; min-width: 0; }
 
-      /* Name */
       h1 {
-        display: flex; align-items: center; gap: 8px;
         margin: 0;
+        font-size: 20px; font-weight: 700; line-height: 1.1;
         color: #fff;
-        font-size: 26px; line-height: 1.1;
-        font-weight: 700; letter-spacing: -0.01em;
+        display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
       }
-      .handle-row {
-        display: flex; align-items: center; gap: 8px;
-        margin-top: 6px;
-        color: #6b7280; font-size: 13px; font-weight: 400;
+      .handle-text { color: #9ca3af; font-size: 12px; margin-top: 3px; }
+      .meta-row {
+        display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+        margin-top: 3px; color: #6b7280; font-size: 11px;
       }
+      .meta-sep { display: none; color: #4b5563; }
       .copy-btn {
-        width: 22px; height: 22px;
-        display: inline-grid; place-items: center;
-        border: 0; border-radius: 6px;
-        background: transparent; color: #7f8da2;
-        cursor: pointer;
-        transition: background 160ms, color 160ms;
+        display: inline-flex; align-items: center; gap: 4px;
+        border: 0; background: transparent;
+        color: #6b7280; font-size: 11px; font-family: inherit;
+        cursor: pointer; padding: 0;
+        transition: color 140ms;
       }
-      .copy-btn:hover, .copy-btn.copied { background: rgba(88,101,242,0.15); color: #7289da; }
-      .copy-btn svg { width: 14px; height: 14px; }
-
-      .created-at { margin-top: 5px; color: #4b5563; font-size: 12px; }
+      .copy-btn:hover { color: #fff; }
+      .copy-btn.copied { color: #5865f2; }
+      .copy-btn svg { width: 12px; height: 12px; }
 
       /* Stats */
-      .hero-stats { display: flex; gap: 28px; flex-shrink: 0; align-items: flex-end; }
-      .stat strong { display: block; text-align: center; font-size: 24px; font-weight: 700; color: #fff; }
-      .stat span { display: block; text-align: center; color: #6b7280; font-size: 12px; font-weight: 400; }
-
-      /* View pill */
-      .view-pill {
-        position: absolute;
-        right: 14px; top: 10px;
-        z-index: 4;
-        display: inline-flex; align-items: center; gap: 7px;
-        min-height: 32px; padding: 0 11px;
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 9px;
-        background: rgba(255,255,255,0.05);
-        color: #d7deea; font-size: 13px; font-weight: 700;
-        cursor: default;
+      .hero-stats {
+        display: flex; gap: 20px; flex-shrink: 0;
+        text-align: center;
       }
+      .stat-num { margin: 0; font-size: 20px; font-weight: 700; color: #fff; line-height: 1; }
+      .stat-label { margin: 2px 0 0; font-size: 10px; color: #9ca3af; }
 
       /* ── TABS ── */
       .tabs {
-        min-height: 56px;
+        position: relative; z-index: 1;
         display: grid;
-        grid-template-columns: repeat(8, 1fr);
-        gap: 4px;
-        margin-top: 20px; padding: 6px;
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        background: rgba(17,17,17,0.96);
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2px;
+        padding: 4px 6px;
+        background: #111111;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
       }
       .tab {
         display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-        min-height: 40px; padding: 0 8px;
-        border: 1px solid transparent; border-radius: 8px;
-        background: transparent; color: #6b7280;
+        min-height: 38px; padding: 0 6px;
+        border: 1px solid transparent; border-radius: 7px;
+        background: transparent; color: #9ca3af;
         font: inherit; font-weight: 500; font-size: 12px;
         cursor: pointer; transition: color 140ms, background 140ms;
         white-space: nowrap;
       }
-      .tab:hover:not(.active) { color: #c4cdd8; background: rgba(255,255,255,0.035); }
-      .tab.active { border-color: rgba(88,101,242,0.35); background: rgba(88,101,242,0.18); color: #818cf8; }
-      .tab svg { width: 15px; height: 15px; flex-shrink: 0; }
+      .tab:hover:not(.active) { color: #e5e7eb; background: rgba(255,255,255,0.05); }
+      .tab.active { background: #5865f2; color: #fff; border-color: transparent; }
+      .tab svg { width: 14px; height: 14px; flex-shrink: 0; }
+      .tab-label { display: none; }
 
       /* ── PANELS ── */
-      .tab-panels { margin-top: 20px; }
+      .tab-panels { position: relative; z-index: 1; }
       .tab-panel { display: none; }
       .tab-panel.active { display: block; }
 
-      .panel {
-        min-height: 340px;
-        padding: 22px 24px;
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 16px;
-        background: rgba(17,17,17,0.9);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-      }
-      .panel-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      /* Panel layout (grid of cards) */
+      .panel-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+      .panel-grid-2 { grid-template-columns: 1fr 1fr; }
 
-      .panel-title {
-        display: inline-flex; align-items: center; gap: 9px;
-        margin-bottom: 20px; color: #fff;
-        font-size: 16px; font-weight: 600;
+      /* Card */
+      .card {
+        background: rgba(17,17,17,0.8);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        overflow: hidden;
       }
-      .panel-title svg { width: 17px; height: 17px; color: #818cf8; }
+      .card-header {
+        padding: 16px 24px 0;
+      }
+      .card-title {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 15px; font-weight: 600; color: #fff;
+        margin: 0 0 12px;
+      }
+      .card-title svg { width: 16px; height: 16px; color: #5865f2; flex-shrink: 0; }
+      .card-title-count {
+        margin-left: auto; font-size: 12px; font-weight: 600; color: #5865f2;
+      }
+      .card-body { padding: 0 24px 16px; }
 
       /* Info rows */
       .info-row {
         display: flex; align-items: center; justify-content: space-between;
-        gap: 16px; min-height: 36px; padding: 2px 0;
-        color: #6b7280; font-size: 13.5px; font-weight: 400;
+        gap: 12px; padding: 8px 0;
         border-bottom: 1px solid rgba(255,255,255,0.05);
+        font-size: 13px;
       }
       .info-row:last-of-type { border-bottom: none; }
-      .info-row strong { color: #e8ecf4; font-weight: 600; text-align: right; }
+      .info-row .lbl { color: #9ca3af; }
+      .info-row .val { color: #fff; font-weight: 500; text-align: right; }
 
+      /* Bio / note box */
       .note-box {
-        margin-top: 14px; padding: 14px 16px;
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 10px; background: rgba(255,255,255,0.025);
-        color: #c8d0de; font-size: 13.5px; line-height: 1.55;
+        padding: 12px 14px; margin-top: 8px;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px; background: rgba(255,255,255,0.03);
       }
-      .note-box-label { color: #4b5563; font-size: 12px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-      .note-box-label svg { width: 13px; height: 13px; }
+      .note-box-label {
+        display: flex; align-items: center; gap: 6px;
+        color: #6b7280; font-size: 11px; margin-bottom: 6px;
+      }
+      .note-box-label svg { width: 12px; height: 12px; }
+      .note-box-text { color: #d1d5db; font-size: 13px; line-height: 1.5; }
 
-      /* Tag pills */
-      .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+      /* Tag pills (other names) */
+      .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
       .tag {
-        padding: 4px 12px; border-radius: 999px;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.1);
-        color: #c4cdd8; font-size: 12.5px;
-        max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        padding: 3px 10px; border-radius: 999px;
+        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+        color: #d1d5db; font-size: 12px;
+        max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        transition: border-color 140ms;
+      }
+      .tag:hover { border-color: rgba(88,101,242,0.3); }
+
+      /* ── SERVER CARDS (Sunucular tab) ── */
+      .server-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 12px;
+      }
+      .server-card {
+        position: relative;
+        padding: 16px;
+        background: rgba(17,17,17,0.8);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: border-color 140ms;
+      }
+      .server-card:hover { border-color: rgba(255,255,255,0.15); }
+      .server-card-bg {
+        position: absolute; inset: 0;
+        background-size: cover; background-position: center;
+        opacity: 0.07; filter: blur(4px);
+        pointer-events: none;
+      }
+      .server-card-inner { position: relative; z-index: 1; }
+      .server-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+      .server-card-icon {
+        width: 52px; height: 52px; border-radius: 10px;
+        overflow: hidden; flex-shrink: 0;
+        background: rgba(255,255,255,0.07);
+        display: grid; place-items: center;
+        font-size: 20px; font-weight: 700; color: #fff;
+      }
+      .server-card-icon img { width: 100%; height: 100%; object-fit: cover; }
+      .server-card-link {
+        width: 24px; height: 24px;
+        display: grid; place-items: center;
+        border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
+        background: rgba(255,255,255,0.04); color: #9ca3af;
+        cursor: pointer; transition: color 140ms, background 140ms;
+        flex-shrink: 0;
+      }
+      .server-card-link:hover { color: #fff; background: rgba(255,255,255,0.1); }
+      .server-card-link svg { width: 12px; height: 12px; }
+      .server-card-name { font-size: 14px; font-weight: 700; color: #fff; margin: 0; }
+      .server-card-nick { font-size: 12px; color: #6b7280; margin: 3px 0 0; }
+      .server-card-stats {
+        display: flex; flex-direction: column; gap: 6px;
+        margin-bottom: 10px;
+        padding: 10px 0;
+        border-top: 1px solid rgba(255,255,255,0.06);
+      }
+      .server-stat-row { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+      .server-stat-row svg { width: 13px; height: 13px; color: #6b7280; flex-shrink: 0; }
+      .server-stat-label { color: #6b7280; }
+      .server-stat-value { color: #d1d5db; font-weight: 600; margin-left: auto; }
+      .server-card-roles { display: flex; flex-wrap: wrap; gap: 4px; }
+      .role-pill {
+        padding: 2px 8px; border-radius: 999px;
+        font-size: 11px; font-weight: 500;
+        background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+        color: #d1d5db;
+        max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       }
 
-      /* Server list */
-      .server-list { display: flex; flex-direction: column; gap: 10px; }
+      /* ── SERVER LIST (simple) ── */
+      .server-list { display: flex; flex-direction: column; gap: 8px; }
       .server-row {
         display: flex; align-items: center; gap: 12px;
         padding: 10px 14px;
         border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 10px; background: rgba(255,255,255,0.025);
+        border-radius: 10px; background: rgba(255,255,255,0.02);
         transition: background 140ms;
       }
       .server-row:hover { background: rgba(255,255,255,0.05); }
       .server-icon {
-        width: 38px; height: 38px;
-        border-radius: 10px; overflow: hidden;
+        width: 36px; height: 36px; border-radius: 8px;
+        overflow: hidden; flex-shrink: 0;
+        background: rgba(255,255,255,0.07);
+        display: grid; place-items: center;
+        font-size: 14px; font-weight: 700; color: #fff;
+      }
+      .server-icon img { width: 100%; height: 100%; object-fit: cover; }
+      .server-name { font-size: 13.5px; font-weight: 600; color: #e5e7eb; flex: 1; min-width: 0; }
+      .server-name small { display: block; color: #6b7280; font-size: 11.5px; font-weight: 400; }
+      .server-badge {
+        padding: 2px 8px; border-radius: 5px;
+        background: rgba(88,101,242,0.12); border: 1px solid rgba(88,101,242,0.25);
+        color: #818cf8; font-size: 11px; font-weight: 700;
+      }
+
+      /* ── AKTIVITE ── */
+      .activity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .activity-section-title {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 14px; font-weight: 600; color: #fff;
+        margin-bottom: 10px;
+      }
+      .activity-section-title svg { width: 15px; height: 15px; color: #5865f2; }
+      .activity-count { margin-left: auto; font-size: 12px; color: #6b7280; }
+      .activity-card {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 14px;
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 10px; background: rgba(255,255,255,0.02);
+      }
+      .activity-icon {
+        width: 44px; height: 44px; border-radius: 50%;
+        overflow: hidden; flex-shrink: 0;
+        background: rgba(255,255,255,0.06);
+        display: grid; place-items: center;
+      }
+      .activity-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+      .activity-icon svg { width: 20px; height: 20px; color: #818cf8; }
+      .activity-main { flex: 1; min-width: 0; }
+      .activity-name { font-size: 13px; font-weight: 600; color: #e5e7eb; }
+      .activity-channel { font-size: 11px; color: #6b7280; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .activity-msg { font-size: 11.5px; color: #9ca3af; font-family: monospace; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .activity-time { font-size: 11px; color: #5865f2; white-space: nowrap; flex-shrink: 0; }
+
+      /* ── SİCİLLER ── */
+      .punishment-list { display: flex; flex-direction: column; gap: 8px; }
+      .punishment-row {
+        display: flex; align-items: flex-start; gap: 12px;
+        padding: 12px 14px;
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 10px; background: rgba(255,255,255,0.02);
+      }
+      .pun-icon {
+        width: 36px; height: 36px; border-radius: 8px;
+        display: grid; place-items: center; flex-shrink: 0;
+      }
+      .pun-icon.warn { background: rgba(250,204,21,0.12); color: #facc15; }
+      .pun-icon.ban { background: rgba(237,66,69,0.12); color: #ed4245; }
+      .pun-icon.mute { background: rgba(250,166,26,0.12); color: #faa61a; }
+      .pun-icon.timeout { background: rgba(250,166,26,0.12); color: #faa61a; }
+      .pun-icon svg { width: 16px; height: 16px; }
+      .pun-type-badge {
+        display: inline-flex; align-items: center;
+        padding: 2px 8px; border-radius: 5px;
+        font-size: 11px; font-weight: 600;
+        background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+        color: #d1d5db; margin-left: 8px;
+      }
+      .pun-server { font-size: 13.5px; font-weight: 700; color: #e5e7eb; }
+      .pun-reason { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+      .pun-date { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+      /* ── SES ARKADAŞLARI table ── */
+      .voice-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      .voice-table th {
+        text-align: left; color: #6b7280; font-size: 11px; font-weight: 600;
+        padding: 0 0 8px; border-bottom: 1px solid rgba(255,255,255,0.07);
+      }
+      .voice-table td { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+      .voice-table tr:last-child td { border-bottom: none; }
+      .voice-table .num { color: #6b7280; width: 24px; }
+      .voice-user { display: flex; align-items: center; gap: 10px; }
+      .voice-avatar {
+        width: 32px; height: 32px; border-radius: 50%;
+        overflow: hidden; flex-shrink: 0;
+        background: rgba(255,255,255,0.07);
+        display: grid; place-items: center;
+        font-size: 12px; color: #fff; font-weight: 700;
+      }
+      .voice-avatar img { width: 100%; height: 100%; object-fit: cover; }
+      .voice-username { font-weight: 600; color: #e5e7eb; }
+      .voice-handle { font-size: 11px; color: #6b7280; }
+      .voice-link-icon {
+        display: inline-flex; width: 18px; height: 18px; place-items: center;
+        vertical-align: middle; color: #6b7280; margin-left: 4px;
+      }
+      .voice-link-icon svg { width: 12px; height: 12px; }
+      .voice-total { color: #5865f2; font-weight: 700; }
+      .voice-bar-wrap { display: flex; align-items: center; gap: 8px; }
+      .voice-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; width: 60px; overflow: hidden; }
+      .voice-bar-fill { height: 100%; background: #5865f2; border-radius: 2px; }
+      .voice-pct { font-size: 11px; color: #5865f2; font-weight: 600; }
+      .voice-time { color: #9ca3af; font-size: 12px; }
+
+      /* ── MESAJ ARKADAŞLARI ── */
+      .friend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+      .friend-card {
+        padding: 14px;
+        background: rgba(17,17,17,0.7);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        transition: border-color 140ms;
+      }
+      .friend-card:hover { border-color: rgba(255,255,255,0.15); }
+      .friend-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+      .friend-avatar {
+        width: 44px; height: 44px; border-radius: 50%;
+        overflow: hidden; flex-shrink: 0;
         background: rgba(255,255,255,0.07);
         display: grid; place-items: center;
         font-size: 16px; font-weight: 700; color: #fff;
-        flex-shrink: 0;
       }
-      .server-icon img { width: 100%; height: 100%; object-fit: cover; }
-      .server-name { font-size: 14px; font-weight: 600; color: #e8ecf4; flex: 1; min-width: 0; }
-      .server-name small { display: block; color: #6b7280; font-size: 12px; font-weight: 400; }
-      .server-badge {
-        padding: 2px 8px; border-radius: 5px;
-        background: rgba(88,101,242,0.15); border: 1px solid rgba(88,101,242,0.3);
-        color: #818cf8; font-size: 11px; font-weight: 700;
-        white-space: nowrap;
-      }
+      .friend-avatar img { width: 100%; height: 100%; object-fit: cover; }
+      .friend-name { font-size: 14px; font-weight: 700; color: #fff; }
+      .friend-handle { font-size: 11.5px; color: #6b7280; }
+      .friend-stat-label { font-size: 11.5px; color: #9ca3af; margin-bottom: 4px; }
+      .friend-stat-val { font-size: 22px; font-weight: 700; color: #5865f2; }
+      .friend-bar { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; margin: 6px 0 8px; }
+      .friend-bar-fill { height: 100%; background: #5865f2; border-radius: 2px; }
+      .friend-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .friend-date-label { font-size: 10px; display: flex; align-items: center; gap: 4px; color: #6b7280; margin-bottom: 2px; }
+      .friend-date-label span { width: 6px; height: 6px; border-radius: 50%; background: #5865f2; flex-shrink: 0; }
+      .friend-date-val { font-size: 12px; font-weight: 600; color: #e5e7eb; }
 
-      /* Activity */
-      .activity-card {
-        padding: 14px 16px;
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 12px; background: rgba(255,255,255,0.025);
-        display: flex; align-items: center; gap: 14px;
-      }
-      .activity-icon {
-        width: 48px; height: 48px; border-radius: 8px;
-        overflow: hidden; background: rgba(255,255,255,0.07);
-        display: grid; place-items: center; flex-shrink: 0;
-      }
-      .activity-icon svg { width: 24px; height: 24px; color: #818cf8; }
-      .activity-name { font-size: 14px; font-weight: 600; color: #e8ecf4; }
-      .activity-detail { font-size: 12.5px; color: #6b7280; margin-top: 3px; }
-
-      /* Punishment rows */
-      .punishment-row {
-        padding: 12px 16px;
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 10px; background: rgba(255,255,255,0.025);
-        display: flex; align-items: flex-start; gap: 12px;
-        margin-bottom: 10px;
-      }
-      .punishment-icon {
-        width: 32px; height: 32px; border-radius: 8px;
-        display: grid; place-items: center; flex-shrink: 0;
-      }
-      .punishment-icon.warn { background: rgba(250,204,21,0.15); color: #facc15; }
-      .punishment-icon.ban { background: rgba(237,66,69,0.15); color: #ed4245; }
-      .punishment-icon.mute { background: rgba(250,166,26,0.15); color: #faa61a; }
-      .punishment-icon svg { width: 16px; height: 16px; }
-      .punishment-type { font-size: 13px; font-weight: 600; color: #e8ecf4; }
-      .punishment-server { font-size: 12px; color: #6b7280; margin-top: 2px; }
-      .punishment-date { font-size: 11px; color: #4b5563; margin-left: auto; white-space: nowrap; }
-
-      /* Empty state */
+      /* ── EMPTY STATE ── */
       .empty-state {
-        min-height: 200px; display: grid; place-items: center;
-        color: #4b5563; text-align: center; font-weight: 400;
+        min-height: 180px; display: grid; place-items: center;
+        color: #6b7280; text-align: center;
       }
-      .empty-state svg { width: 32px; height: 32px; margin-bottom: 10px; opacity: 0.4; }
+      .empty-inner { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+      .empty-icon { opacity: 0.3; }
+      .empty-icon svg { width: 28px; height: 28px; }
+      .empty-text { font-size: 13px; }
 
-      /* Skeleton */
-      .skeleton-shape {
-        display: block; border-radius: 7px;
-        background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.07), rgba(255,255,255,0.04));
-        background-size: 220% 100%;
-        animation: skPulse 1.7s ease-in-out infinite;
-      }
-      @keyframes skPulse {
-        0% { background-position: 120% 0; opacity:.72; }
-        50% { opacity: 1; }
-        100% { background-position: -120% 0; opacity:.72; }
-      }
-
-      /* Report button */
+      /* ── REPORT BUTTON ── */
       .report-button {
-        position: fixed; right: 34px; bottom: 34px; z-index: 4;
-        display: inline-flex; align-items: center; gap: 12px;
-        min-height: 64px; padding: 0 24px 0 18px;
-        border: 1px solid rgba(255,255,255,0.1); border-radius: 18px;
-        background: rgba(19,19,19,0.9); color: #f4f7fc;
-        font-size: 15px; font-weight: 650;
-        box-shadow: 0 18px 50px rgba(0,0,0,0.34);
-        transition: box-shadow 280ms ease, border-color 280ms ease;
+        position: fixed; right: 28px; bottom: 28px; z-index: 40;
+        display: inline-flex; align-items: center; gap: 10px;
+        min-height: 56px; padding: 0 20px 0 14px;
+        border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
+        background: rgba(18,18,18,0.92); color: #f4f7fc;
+        font-size: 14px; font-weight: 650; font-family: inherit;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+        transition: border-color 240ms, box-shadow 240ms;
+        cursor: pointer; text-decoration: none;
       }
       .report-button:hover {
-        border-color: rgba(88,101,242,0.45);
-        box-shadow: 0 18px 50px rgba(0,0,0,0.34), 0 0 28px 6px rgba(88,101,242,0.3);
+        border-color: rgba(88,101,242,0.4);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.3), 0 0 24px 4px rgba(88,101,242,0.22);
       }
       .report-icon {
-        width: 36px; height: 36px; display: grid; place-items: center;
-        border: 1px solid rgba(88,101,242,0.34);
-        border-radius: 12px; background: rgba(88,101,242,0.15);
-        color: #7289da;
+        width: 32px; height: 32px; display: grid; place-items: center;
+        border: 1px solid rgba(88,101,242,0.3); border-radius: 10px;
+        background: rgba(88,101,242,0.12); color: #7289da;
       }
-      .report-icon svg { width: 19px; height: 19px; }
+      .report-icon svg { width: 17px; height: 17px; }
 
       /* Lightbox */
       .lightbox { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; }
       .lightbox[hidden] { display: none; }
-      .lightbox-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.88); cursor: zoom-out; }
-      .lightbox-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 14px; }
-      .lightbox-img { max-width: min(420px,88vw); max-height: 78vh; border-radius: 50%; object-fit: cover; border: 3px solid rgba(88,101,242,0.42); box-shadow: 0 0 60px rgba(0,0,0,0.7); display: block; }
-      .lightbox-close { position: absolute; top: -14px; right: -14px; width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,0.14); border-radius: 50%; background: rgba(18,18,18,0.92); color: #d0d7e2; font-size: 20px; line-height: 1; cursor: pointer; transition: background 140ms, color 140ms; }
-      .lightbox-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
-
-      /* Responsive */
-      @media (max-width: 820px) {
-        .topbar { grid-template-columns: 1fr auto; }
-        .nav { display: none; }
-        .hero-body { flex-wrap: wrap; padding-left: 20px; padding-right: 20px; }
-        .avatar { left: 20px; width: 96px; height: 96px; top: -48px; font-size: 36px; }
-        .badges { top: 128px; right: 12px; max-width: 180px; }
-        .hero-stats { width: 100%; justify-content: flex-start; }
-        .tabs { grid-template-columns: repeat(4, 1fr); }
-        .panel-two-col { grid-template-columns: 1fr; }
-        .report-button { right: 16px; bottom: 16px; }
+      .lb-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.88); cursor: zoom-out; }
+      .lb-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+      .lb-img { max-width: min(400px, 88vw); max-height: 78vh; border-radius: 50%; object-fit: cover; border: 3px solid rgba(88,101,242,0.4); display: block; }
+      .lb-close {
+        position: absolute; top: -12px; right: -12px;
+        width: 28px; height: 28px; display: grid; place-items: center;
+        border: 1px solid rgba(255,255,255,0.14); border-radius: 50%;
+        background: rgba(18,18,18,0.9); color: #d0d7e2; font-size: 18px;
+        cursor: pointer; transition: background 140ms;
       }
-      @media (max-width: 500px) {
-        .tabs { grid-template-columns: repeat(4, 1fr); }
-        h1 { font-size: 20px; }
+      .lb-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+      /* ── SKELETON ── */
+      .skeleton {
+        display: block; border-radius: 6px;
+        background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+        background-size: 220% 100%;
+        animation: skPulse 1.6s ease-in-out infinite;
+      }
+      @keyframes skPulse {
+        0% { background-position: 120% 0; }
+        100% { background-position: -120% 0; }
+      }
+
+      /* ── RESPONSIVE ── */
+      @media (min-width: 640px) {
+        .tabs { grid-template-columns: repeat(8, 1fr); }
+        .badge-row { max-width: 180px; gap: 3px; }
+        .badge { width: 20px; height: 20px; }
+        .badge img, .badge svg { width: 18px; height: 18px; }
+        .meta-sep { display: inline; }
+        h1 { font-size: 24px; }
+      }
+      @media (min-width: 768px) {
+        .badge-row { max-width: 260px; gap: 4px; }
+        .badge { width: 24px; height: 24px; }
+        .badge img, .badge svg { width: 22px; height: 22px; }
+        .panel-grid-2 { grid-template-columns: 1fr 1fr; }
+        h1 { font-size: 28px; }
+      }
+      @media (min-width: 1024px) {
+        .badge-row { max-width: none; gap: 5px; right: 24px; }
+        .badge { width: 28px; height: 28px; }
+        .badge img, .badge svg { width: 26px; height: 26px; }
+        .profile-card.has-banner .badge-row { top: 155px; }
+      }
+      @media (min-width: 1280px) {
+        .tab-label { display: inline; }
+      }
+      @media (max-width: 767px) {
+        .panel-grid-2 { grid-template-columns: 1fr; }
+        .activity-grid { grid-template-columns: 1fr; }
+        .voice-table th:nth-child(n+4), .voice-table td:nth-child(n+4) { display: none; }
+        .report-button { right: 14px; bottom: 14px; }
+      }
+      @media (max-width: 479px) {
+        .server-grid { grid-template-columns: 1fr; }
+        .friend-grid { grid-template-columns: 1fr; }
       }
     </style>
   </head>
   <body>
+
     <a class="report-button" href="mailto:destek@sammvsc.top?subject=Hata%20Bildirimi" aria-label="Hata bildir">
       <span class="report-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>
@@ -428,249 +659,365 @@
       Hata Bildir
     </a>
 
-    <div class="page">
-      <header class="topbar">
+    <div class="ambient" aria-hidden="true">
+      <div class="amb-1"></div>
+      <div class="amb-2"></div>
+    </div>
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-inner">
         <a class="brand" href="/" aria-label="IGME ana sayfa">
           <img class="brand-logo" src="assets/si.png" alt="">
           <span class="brand-word">IG<span class="brand-accent">ME</span></span>
           <span class="brand-beta">BETA</span>
         </a>
         <nav class="nav" aria-label="Menü">
-          <span class="nav-link nav-gold">Beta</span>
-          <span class="nav-link">Kullanıcı Analizi</span>
-          <span class="nav-link">Sistem Durumu</span>
+          <span style="color:#facc15;font-weight:700">Beta</span>
+          <span>Kullanıcı Analizi</span>
+          <span>Sistem Durumu</span>
         </nav>
         <span class="platform-badge" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.031.053a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03Z"/></svg>
           Discord
         </span>
-      </header>
+      </div>
+    </header>
 
-      <main>
-        <section class="profile-hero" id="profileHero">
-          <!-- Banner -->
-          <div class="hero-banner" id="heroBanner">
-            <div class="hero-banner-img" id="heroBannerImg"></div>
-            <div class="hero-banner-overlay"></div>
-            <div class="view-pill">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
-              <span id="viewCount">0</span>
-            </div>
+    <!-- Main -->
+    <div class="page">
+
+      <!-- Profile Card -->
+      <div class="profile-card" id="profileCard">
+        <!-- Banner -->
+        <div class="hero-banner" id="heroBanner">
+          <div class="hero-banner-img" id="heroBannerImg"></div>
+          <div class="hero-banner-overlay"></div>
+          <!-- View count -->
+          <div class="view-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+            <span id="viewCount">0</span>
           </div>
+        </div>
 
-          <!-- Badges (top right, below banner) -->
-          <div class="badges" id="badgeRow"></div>
+        <!-- Badge row -->
+        <div class="badge-row" id="badgeRow"></div>
 
-          <!-- Body -->
-          <div class="hero-body">
+        <!-- Hero content -->
+        <div class="hero-content">
+          <div class="avatar-wrapper">
             <div class="avatar" id="avatar" title="Görüntülemek için tıkla">
               D
               <span class="status-dot offline" id="statusDot"></span>
             </div>
+          </div>
+
+          <div class="hero-info-row">
             <div class="hero-info">
               <h1>
                 <span id="displayName">Discord Profili</span>
               </h1>
-              <div class="handle-row">
-                <span id="handle">@username</span>
-                <button class="copy-btn" id="copyHandle" type="button" title="Kopyala" aria-label="ID kopyala">
+              <p class="handle-text" id="handleText">@username</p>
+              <div class="meta-row">
+                <span id="createdAt" style="color:#6b7280;font-size:11px;"></span>
+                <span class="meta-sep" style="color:#4b5563">•</span>
+                <button class="copy-btn" id="copyHandle" type="button" title="ID kopyala">
+                  <span id="handle"></span>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="10" height="10" rx="2"/><path d="M6 16H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
-                <span class="created-at" id="createdAt"></span>
               </div>
             </div>
             <div class="hero-stats">
-              <div class="stat"><strong id="statServers">--</strong><span>Sunucu</span></div>
-              <div class="stat"><strong id="statVoice">--</strong><span>Ses Arkadaşı</span></div>
-              <div class="stat"><strong id="statPunish">--</strong><span>Ceza</span></div>
+              <div class="stat">
+                <p class="stat-num" id="statServers">—</p>
+                <p class="stat-label">Sunucu</p>
+              </div>
+              <div class="stat">
+                <p class="stat-num" id="statVoice">—</p>
+                <p class="stat-label">Ses Arkadaşı</p>
+              </div>
+              <div class="stat">
+                <p class="stat-num" id="statPunish">—</p>
+                <p class="stat-label">Ceza</p>
+              </div>
             </div>
           </div>
-        </section>
+        </div>
+      </div>
 
-        <!-- Tabs -->
-        <nav class="tabs" aria-label="Discord profil sekmeleri" id="tabNav">
-          <button class="tab active" type="button" data-tab="bilgiler">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Bilgiler
-          </button>
-          <button class="tab" type="button" data-tab="sunucular">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>Sunucular
-          </button>
-          <button class="tab" type="button" data-tab="saatler">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Saatler
-          </button>
-          <button class="tab" type="button" data-tab="aktivite">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Aktivite
-          </button>
-          <button class="tab" type="button" data-tab="siciller">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>Siciller
-          </button>
-          <button class="tab" type="button" data-tab="yetkili">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 20 6v6c0 5.5-3.8 10.7-8 12-4.2-1.3-8-6.5-8-12V6l8-4Z"/></svg>Yetkili
-          </button>
-          <button class="tab" type="button" data-tab="ses">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>Ses
-          </button>
-          <button class="tab" type="button" data-tab="mesaj">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>Mesaj
-          </button>
-        </nav>
+      <!-- Tabs -->
+      <nav class="tabs" id="tabNav" aria-label="Sekmeler">
+        <button class="tab active" type="button" data-tab="bilgiler">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="tab-label">Bilgiler</span>
+        </button>
+        <button class="tab" type="button" data-tab="sunucular">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
+          <span class="tab-label">Sunucular</span>
+        </button>
+        <button class="tab" type="button" data-tab="saatler">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span class="tab-label">Saatler</span>
+        </button>
+        <button class="tab" type="button" data-tab="aktivite">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
+          <span class="tab-label">Aktivite</span>
+        </button>
+        <button class="tab" type="button" data-tab="siciller">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+          <span class="tab-label">Siciller</span>
+        </button>
+        <button class="tab" type="button" data-tab="yetkili">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span class="tab-label">Yetkili</span>
+        </button>
+        <button class="tab" type="button" data-tab="ses">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+          <span class="tab-label">Ses</span>
+        </button>
+        <button class="tab" type="button" data-tab="mesaj">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>
+          <span class="tab-label">Mesaj</span>
+        </button>
+      </nav>
 
-        <!-- Panels -->
-        <section class="tab-panels">
+      <!-- Tab Panels -->
+      <div class="tab-panels">
 
-          <!-- Bilgiler -->
-          <div class="panel tab-panel active" id="panel-bilgiler">
-            <div class="panel-two-col">
-              <div>
-                <div class="panel-title">
+        <!-- BİLGİLER -->
+        <div class="tab-panel active" id="panel-bilgiler">
+          <div class="panel-grid panel-grid-2">
+            <!-- Left: User info -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                   Kullanıcı Bilgileri
-                </div>
-                <div class="info-row"><span>Kullanıcı Adı</span><strong id="infoUsername">—</strong></div>
-                <div class="info-row"><span>Görünen Ad</span><strong id="infoGlobalName">—</strong></div>
-                <div class="info-row"><span>Discord ID</span><strong id="infoId">—</strong></div>
-                <div class="info-row"><span>Hesap Yaşı</span><strong id="infoAge">—</strong></div>
-                <div class="info-row"><span>Cinsiyet</span><strong id="infoGender">bilinmiyor</strong></div>
-                <div class="info-row"><span>Özel Durum</span><strong id="infoStatus">—</strong></div>
-                <div class="info-row"><span>Nitro</span><strong id="infoNitro">—</strong></div>
+                </h3>
+              </div>
+              <div class="card-body">
+                <div class="info-row"><span class="lbl">Kullanıcı Adı</span><span class="val" id="infoUsername">—</span></div>
+                <div class="info-row"><span class="lbl">Görünen Ad</span><span class="val" id="infoGlobalName">—</span></div>
+                <div class="info-row"><span class="lbl">Yaş</span><span class="val" id="infoAge">bilinmiyor</span></div>
+                <div class="info-row"><span class="lbl">Cinsiyet</span><span class="val" id="infoGender">bilinmiyor</span></div>
+                <div class="info-row"><span class="lbl">Özel Durum</span><span class="val" id="infoStatus">—</span></div>
                 <div class="note-box" id="bioBx">
                   <div class="note-box-label">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg>
                     Hakkımda
                   </div>
-                  <div id="bio">—</div>
+                  <div class="note-box-text" id="bio">—</div>
                 </div>
-              </div>
-              <div>
-                <div class="panel-title">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-                  Diğer İsimler
-                </div>
-                <div class="tag-list" id="otherNames">
-                  <span style="color:#4b5563;font-size:13px;">Kayıt bulunamadı</span>
+                <div style="margin-top:14px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                    <span style="display:flex;align-items:center;gap:6px;color:#9ca3af;font-size:11.5px">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+                      Diğer İsimler
+                    </span>
+                    <span id="otherNamesCount" style="font-size:11.5px;color:#5865f2;font-weight:600"></span>
+                  </div>
+                  <div class="tag-list" id="otherNames">
+                    <span style="color:#6b7280;font-size:12px">Kayıt bulunamadı</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Sunucular -->
-          <div class="panel tab-panel" id="panel-sunucular">
-            <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
-              Ortak Sunucular
-            </div>
-            <div class="server-list" id="serverList">
-              <div class="empty-state">
-                <div>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/></svg>
-                  <div>Sunucu bilgisi yükleniyor...</div>
-                </div>
+            <!-- Right: Server stats -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
+                  Sunucu İstatistikleri
+                  <span class="card-title-count" id="serverStatsCount"></span>
+                </h3>
               </div>
-            </div>
-          </div>
-
-          <!-- Saatler -->
-          <div class="panel tab-panel" id="panel-saatler">
-            <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-              Aktif Saatler
-            </div>
-            <div class="empty-state" id="saatlerState">
-              <div>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-                <div>Aktif saat verisi yakında eklenecek.</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Aktivite -->
-          <div class="panel tab-panel" id="panel-aktivite">
-            <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-              Aktivite
-            </div>
-            <div id="aktiviteContent">
-              <div class="empty-state">
-                <div>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                  <div>Aktivite verisi yükleniyor...</div>
+              <div class="card-body">
+                <div class="server-list" id="serverStatList">
+                  <div class="empty-state">
+                    <div class="empty-inner">
+                      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/></svg></div>
+                      <div class="empty-text">Sunucu istatistiği bulunamadı</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Siciller -->
-          <div class="panel tab-panel" id="panel-siciller">
-            <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-              Sicil Kayıtları
+        <!-- SUNUCULAR -->
+        <div class="tab-panel" id="panel-sunucular">
+          <div class="server-grid" id="serverGrid">
+            <div class="empty-state" style="min-height:200px;grid-column:1/-1">
+              <div class="empty-inner">
+                <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/></svg></div>
+                <div class="empty-text">Sunucu bilgisi yükleniyor...</div>
+              </div>
             </div>
-            <div id="sicilList">
-              <div class="empty-state">
-                <div>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg>
-                  <div>Sicil verisi yükleniyor...</div>
+          </div>
+        </div>
+
+        <!-- SAATLER -->
+        <div class="tab-panel" id="panel-saatler">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Aktif Saatler
+                <span style="margin-left:auto;font-size:12px;color:#6b7280" id="saatlerSummary">Bugün 0 saat aktif</span>
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="empty-state" id="saatlerState">
+                <div class="empty-inner">
+                  <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+                  <div class="empty-text">Aktif saat verisi bulunamadı</div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Yetkili -->
-          <div class="panel tab-panel" id="panel-yetkili">
-            <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 20 6v6c0 5.5-3.8 10.7-8 12-4.2-1.3-8-6.5-8-12V6l8-4Z"/></svg>
-              Yetkili Olduğu Sunucular
+        <!-- AKTİVİTE -->
+        <div class="tab-panel" id="panel-aktivite">
+          <div class="activity-grid" id="aktiviteGrid">
+            <!-- Son Mesaj -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>
+                  Son Mesaj
+                  <span class="card-title-count" id="lastMsgCount"></span>
+                </h3>
+              </div>
+              <div class="card-body" id="lastMsgContent">
+                <div class="empty-state" style="min-height:120px">
+                  <div class="empty-inner">
+                    <div class="empty-text">Mesaj aktivitesi yükleniyor...</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="server-list" id="adminServerList">
-              <div class="empty-state">
-                <div>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2 20 6v6c0 5.5-3.8 10.7-8 12-4.2-1.3-8-6.5-8-12V6l8-4Z"/></svg>
-                  <div>Yetkili sunucu verisi yükleniyor...</div>
+            <!-- Son Ses -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                  Son Ses
+                  <span class="card-title-count" id="lastVoiceCount"></span>
+                </h3>
+              </div>
+              <div class="card-body" id="lastVoiceContent">
+                <div class="empty-state" style="min-height:120px">
+                  <div class="empty-inner">
+                    <div class="empty-text">Ses aktivitesi yükleniyor...</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Ses -->
-          <div class="panel tab-panel" id="panel-ses">
-            <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
-              Ses Geçmişi
+        <!-- SİCİLLER -->
+        <div class="tab-panel" id="panel-siciller">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title" style="color:#ef4444">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#ef4444"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+                Ceza Geçmişi
+                <span class="card-title-count" id="punishCount" style="color:#6b7280"></span>
+              </h3>
             </div>
-            <div class="empty-state">
-              <div>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-                <div>Ses kanalı geçmişi yakında eklenecek.</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Mesaj -->
-          <div class="panel tab-panel" id="panel-mesaj">
-            <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>
-              Mesaj Arkadaşları
-            </div>
-            <div class="server-list" id="friendList">
-              <div class="empty-state">
-                <div>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>
-                  <div>Mesaj arkadaşları yükleniyor...</div>
+            <div class="card-body">
+              <div class="punishment-list" id="sicilList">
+                <div class="empty-state" style="min-height:140px">
+                  <div class="empty-inner">
+                    <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div>
+                    <div class="empty-text">Sicil kaydı bulunamadı</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-        </section>
-      </main>
+        <!-- YETKİLİ -->
+        <div class="tab-panel" id="panel-yetkili">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title" style="color:#3ba55c">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#3ba55c"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Yetkili Sunucular
+                <span class="card-title-count" id="adminCount" style="color:#6b7280"></span>
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="server-list" id="adminServerList">
+                <div class="empty-state" style="min-height:140px">
+                  <div class="empty-inner">
+                    <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                    <div class="empty-text">Bu kullanıcının yetkili olduğu sunucu bulunmuyor.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SES -->
+        <div class="tab-panel" id="panel-ses">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                Ses Arkadaşları
+                <span class="card-title-count" id="voiceCount" style="color:#6b7280"></span>
+              </h3>
+            </div>
+            <div class="card-body" id="sesContent">
+              <div class="empty-state" style="min-height:140px">
+                <div class="empty-inner">
+                  <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg></div>
+                  <div class="empty-text">Ses arkadaşları yükleniyor...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MESAJ -->
+        <div class="tab-panel" id="panel-mesaj">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>
+                Mesaj Arkadaşları
+                <span class="card-title-count" id="msgFriendCount" style="color:#6b7280"></span>
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="friend-grid" id="friendGrid">
+                <div class="empty-state" style="min-height:140px;grid-column:1/-1">
+                  <div class="empty-inner">
+                    <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg></div>
+                    <div class="empty-text">Mesaj arkadaşları yükleniyor...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
 
     <!-- Lightbox -->
     <div class="lightbox" id="lightbox" hidden>
-      <div class="lightbox-backdrop" id="lightboxBackdrop"></div>
-      <div class="lightbox-inner">
-        <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Kapat">×</button>
-        <img class="lightbox-img" id="lightboxImg" alt="" referrerpolicy="no-referrer">
+      <div class="lb-backdrop" id="lbBackdrop"></div>
+      <div class="lb-inner">
+        <button class="lb-close" id="lbClose" type="button" aria-label="Kapat">×</button>
+        <img class="lb-img" id="lbImg" alt="" referrerpolicy="no-referrer">
       </div>
     </div>
 
@@ -685,16 +1032,11 @@
       const el = id => document.getElementById(id);
 
       // Lightbox
-      el("lightboxClose").onclick = el("lightboxBackdrop").onclick = () => { el("lightbox").hidden = true; el("lightboxImg").src = ""; };
-      document.addEventListener("keydown", e => { if (e.key === "Escape") { el("lightbox").hidden = true; } });
+      el("lbClose").onclick = el("lbBackdrop").onclick = () => { el("lightbox").hidden = true; el("lbImg").src = ""; };
+      document.addEventListener("keydown", e => { if (e.key === "Escape") el("lightbox").hidden = true; });
+      function openLightbox(src) { if (!src) return; el("lbImg").src = src; el("lightbox").hidden = false; }
 
-      function openLightbox(src) {
-        if (!src) return;
-        el("lightboxImg").src = src;
-        el("lightbox").hidden = false;
-      }
-
-      // Tab switching
+      // Tabs
       document.querySelectorAll(".tab[data-tab]").forEach(tab => {
         tab.addEventListener("click", () => {
           document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -705,7 +1047,7 @@
         });
       });
 
-      // Copy handle
+      // Copy ID
       el("copyHandle").addEventListener("click", async () => {
         const val = el("handle").textContent.trim();
         try { await navigator.clipboard.writeText(val); } catch {}
@@ -720,19 +1062,35 @@
       });
 
       function fmtDate(iso) {
-        if (!iso) return null;
+        if (!iso) return "";
         const d = new Date(iso);
         return d.toLocaleDateString("tr-TR", { day:"2-digit", month:"2-digit", year:"numeric" })
           + " " + d.toLocaleTimeString("tr-TR", { hour:"2-digit", minute:"2-digit" });
       }
 
-      function accountAge(iso) {
+      function fmtRelative(iso) {
         if (!iso) return "bilinmiyor";
         const ms = Date.now() - new Date(iso).getTime();
-        const days = Math.floor(ms / 86400000);
-        if (days < 30) return `${days} gün`;
-        if (days < 365) return `${Math.floor(days/30)} ay`;
-        return `${Math.floor(days/365)} yıl ${Math.floor((days%365)/30)} ay`;
+        const mins = Math.floor(ms / 60000);
+        if (mins < 60) return `${mins} dakika önce`;
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24) return `${hrs} saat önce`;
+        const days = Math.floor(hrs / 24);
+        if (days < 30) return `${days} gün önce`;
+        const months = Math.floor(days / 30);
+        if (months < 12) return `${months} ay önce`;
+        return `${Math.floor(months/12)} yıl önce`;
+      }
+
+      function fmtVoiceTime(seconds) {
+        if (!seconds || seconds === 0) return "0 saniye";
+        if (seconds < 60) return `${seconds} saniye`;
+        const mins = Math.floor(seconds / 60);
+        if (mins < 60) return `${mins} dakika ${seconds % 60} saniye`;
+        const hrs = Math.floor(mins / 60);
+        const remMins = mins % 60;
+        if (remMins === 0) return `${hrs} saat`;
+        return `${hrs} saat ${remMins} dakika`;
       }
 
       function nitroLabel(type) {
@@ -749,168 +1107,373 @@
         return "Çevrimdışı";
       }
 
-      // Discord badge flags
+      // Discord badge CDN hashes
       const BADGE_DEFS = [
-        { flag: 1 << 0,  label: "Discord Çalışanı",       color: "#5865f2" },
-        { flag: 1 << 1,  label: "Partner",                 color: "#5865f2" },
-        { flag: 1 << 2,  label: "HypeSquad Events",        color: "#f47fff" },
-        { flag: 1 << 3,  label: "Bug Hunter Lvl 1",        color: "#3ba55c" },
-        { flag: 1 << 6,  label: "HypeSquad Bravery",       color: "#9c59fe" },
-        { flag: 1 << 7,  label: "HypeSquad Brilliance",    color: "#f47fff" },
-        { flag: 1 << 8,  label: "HypeSquad Balance",       color: "#45ddc0" },
-        { flag: 1 << 9,  label: "Early Supporter",         color: "#7289da" },
-        { flag: 1 << 14, label: "Bug Hunter Lvl 2",        color: "#3ba55c" },
-        { flag: 1 << 17, label: "Erken Doğrulanmış Bot",   color: "#5865f2" },
-        { flag: 1 << 18, label: "Aktif Geliştirici",       color: "#3ba55c" },
-        { flag: 1 << 22, label: "Aktif Üye",               color: "#7289da" },
+        { flag: 1<<0,  hash: "5e74e9b61934fc1f67c2387a548b87dc",  label: "Discord Çalışanı" },
+        { flag: 1<<1,  hash: "3f9748e53446a137a052f3454e2de41e",  label: "Partner" },
+        { flag: 1<<2,  hash: "bf01d1073931f921909045f3a39fd264",  label: "HypeSquad Events" },
+        { flag: 1<<3,  hash: "2717692e3f6f3beb470b1e2ef66e04fe",  label: "Bug Hunter Lvl 1" },
+        { flag: 1<<6,  hash: "8a88d63823d8a71cd5e390baa45efa02",  label: "HypeSquad Bravery" },
+        { flag: 1<<7,  hash: "011940fd013da3f7fb926e4a1cd9e618",  label: "HypeSquad Brilliance" },
+        { flag: 1<<8,  hash: "3aa41de486fa12454c3761e8e223442e",  label: "HypeSquad Balance" },
+        { flag: 1<<9,  hash: "7060786766c9c840eb3019e725d2b358",  label: "Erken Destekçi" },
+        { flag: 1<<14, hash: "848f79194d4be5ff5f81505cbd0ce1e6",  label: "Bug Hunter Lvl 2" },
+        { flag: 1<<17, hash: "6df5892e0f35b051f8b61eace34f4967",  label: "Erken Doğrulanmış Bot Geliştiricisi" },
+        { flag: 1<<18, hash: "6bdc42827a38498929a4920da12981d5",  label: "Aktif Geliştirici" },
+        { flag: 1<<22, hash: "ca30b0e8e01d754b72db2f18528c2971",  label: "Aktif Üye" },
       ];
+      const NITRO_HASH = "2ba85e8026a8614b640c2837bcdfe21b";
 
-      function renderBadges(flags, premiumType, badges) {
+      function makeBadgeEl(hash, label) {
+        const b = document.createElement("div");
+        b.className = "badge"; b.title = label;
+        const img = document.createElement("img");
+        img.src = `https://cdn.discordapp.com/badge-icons/${hash}.png`;
+        img.alt = label; img.loading = "lazy";
+        img.onerror = () => { b.style.display = "none"; };
+        b.appendChild(img);
+        return b;
+      }
+
+      function renderBadges(flags, premiumType, extraBadges) {
         const row = el("badgeRow");
         row.innerHTML = "";
-        // From public_flags
         BADGE_DEFS.forEach(def => {
           if (!(flags & def.flag)) return;
-          const b = document.createElement("div");
-          b.className = "badge";
-          b.title = def.label;
-          b.style.color = def.color;
-          b.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>`;
-          row.appendChild(b);
+          row.appendChild(makeBadgeEl(def.hash, def.label));
         });
-        // Nitro
         if (premiumType > 0) {
-          const b = document.createElement("div");
-          b.className = "badge";
-          b.title = nitroLabel(premiumType);
-          b.style.color = "#f47fff";
-          b.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`;
-          row.appendChild(b);
+          row.appendChild(makeBadgeEl(NITRO_HASH, nitroLabel(premiumType)));
         }
-        // Extra badges from API
-        if (Array.isArray(badges)) {
-          badges.forEach(badge => {
-            if (typeof badge === "string") {
-              const b = document.createElement("div");
-              b.className = "badge";
-              b.title = badge;
-              b.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" style="color:#818cf8"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>`;
-              row.appendChild(b);
+        if (Array.isArray(extraBadges)) {
+          extraBadges.forEach(badge => {
+            if (typeof badge === "object" && badge.hash) {
+              row.appendChild(makeBadgeEl(badge.hash, badge.name || badge.description || "Badge"));
             }
           });
         }
       }
 
-      function renderServers(servers, containerId, emptyMsg) {
-        const list = el(containerId);
+      // Render server cards (Sunucular tab)
+      function renderServerCards(servers) {
+        const grid = el("serverGrid");
         if (!servers || servers.length === 0) {
-          list.innerHTML = `<div class="empty-state"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/></svg><div>${emptyMsg}</div></div></div>`;
+          grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-inner"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/></svg></div><div class="empty-text">Ortak sunucu bulunamadı.</div></div></div>`;
           return;
         }
-        list.innerHTML = servers.slice(0, 20).map(s => {
+        grid.innerHTML = servers.slice(0, 30).map(s => {
           const name = s.name || s.guild_name || "Sunucu";
-          const id = s.id || s.guild_id || "";
-          const icon = s.icon ? `https://cdn.discordapp.com/icons/${id}/${s.icon}.png?size=64` : "";
-          const members = s.member_count ? `${Number(s.member_count).toLocaleString("tr-TR")} üye` : "";
-          const iconHtml = icon
-            ? `<img src="${icon}" alt="" loading="lazy" onerror="this.style.display='none'">`
+          const gid = s.id || s.guild_id || "";
+          const iconHash = s.icon || s.guild_icon;
+          const iconUrl = iconHash ? `https://cdn.discordapp.com/icons/${gid}/${iconHash}.png?size=128` : "";
+          const nick = s.nick || s.nickname || "";
+          const joinDate = s.joined_at ? fmtDate(s.joined_at) : (s.first_message ? fmtDate(s.first_message) : "");
+          const voiceSec = s.voice_time || s.voice_seconds || 0;
+          const msgCount = s.messages || s.message_count || 0;
+          const roles = Array.isArray(s.roles) ? s.roles : [];
+          const roleDisplay = roles.slice(0, 3).map(r => {
+            const rname = typeof r === "string" ? r : (r.name || "");
+            const rcolor = typeof r === "object" && r.color ? r.color : null;
+            const dotStyle = rcolor ? `<span style="width:6px;height:6px;border-radius:50%;background:${rcolor};display:inline-block;margin-right:4px;flex-shrink:0"></span>` : "";
+            return `<span class="role-pill">${dotStyle}${rname}</span>`;
+          }).join("");
+          const extraRoles = roles.length > 3 ? `<span class="role-pill">+${roles.length-3}</span>` : "";
+          const bgStyle = iconUrl ? `background-image:url(${iconUrl})` : "";
+          const iconHtml = iconUrl
+            ? `<img src="${iconUrl}" alt="" loading="lazy" onerror="this.style.display='none'">`
             : `<span>${name[0]}</span>`;
+
+          return `<div class="server-card">
+            ${bgStyle ? `<div class="server-card-bg" style="${bgStyle}"></div>` : ""}
+            <div class="server-card-inner">
+              <div class="server-card-head">
+                <div class="server-card-icon">${iconHtml}</div>
+                <div style="flex:1;min-width:0">
+                  <p class="server-card-name">${name}</p>
+                  ${nick || joinDate ? `<p class="server-card-nick">${nick ? `• ${nick}` : ""}${nick && joinDate ? " • " : ""}${joinDate}</p>` : ""}
+                </div>
+                <div class="server-card-link" title="Sunucuya git">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+                </div>
+              </div>
+              <div class="server-card-stats">
+                <div class="server-stat-row">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                  <span class="server-stat-label">Ses:</span>
+                  <span class="server-stat-value">${fmtVoiceTime(voiceSec)}</span>
+                </div>
+                <div class="server-stat-row">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>
+                  <span class="server-stat-label">Mesaj:</span>
+                  <span class="server-stat-value">${Number(msgCount).toLocaleString("tr-TR")}</span>
+                </div>
+              </div>
+              ${(roleDisplay || extraRoles) ? `<div class="server-card-roles">${roleDisplay}${extraRoles}</div>` : ""}
+            </div>
+          </div>`;
+        }).join("");
+      }
+
+      // Render simple server list (Bilgiler right panel + Yetkili)
+      function renderServerList(servers, containerId, emptyMsg) {
+        const list = el(containerId);
+        if (!servers || servers.length === 0) {
+          list.innerHTML = `<div class="empty-state" style="min-height:120px"><div class="empty-inner"><div class="empty-text">${emptyMsg}</div></div></div>`;
+          return;
+        }
+        list.innerHTML = servers.slice(0, 10).map(s => {
+          const name = s.name || s.guild_name || "Sunucu";
+          const gid = s.id || s.guild_id || "";
+          const iconHash = s.icon || s.guild_icon;
+          const iconUrl = iconHash ? `https://cdn.discordapp.com/icons/${gid}/${iconHash}.png?size=64` : "";
+          const voiceSec = s.voice_time || s.voice_seconds || 0;
+          const msgCount = s.messages || s.message_count || 0;
+          const sub = [
+            voiceSec ? `🎙 ${fmtVoiceTime(voiceSec)}` : "",
+            msgCount ? `💬 ${Number(msgCount).toLocaleString("tr-TR")}` : ""
+          ].filter(Boolean).join(" • ");
           return `<div class="server-row">
-            <div class="server-icon">${iconHtml}</div>
-            <div class="server-name">${name}<small>${members}</small></div>
+            <div class="server-icon">${iconUrl ? `<img src="${iconUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : `<span>${name[0]}</span>`}</div>
+            <div class="server-name">${name}${sub ? `<small>${sub}</small>` : ""}</div>
             ${s.owner ? '<span class="server-badge">Sahip</span>' : ''}
             ${s.admin ? '<span class="server-badge">Yönetici</span>' : ''}
           </div>`;
         }).join("");
       }
 
-      function renderActivity(activity) {
-        const box = el("aktiviteContent");
-        if (!activity || (Array.isArray(activity) && activity.length === 0)) {
-          box.innerHTML = `<div class="empty-state"><div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-            <div>Şu an aktif bir aktivite yok.</div>
-          </div></div>`;
+      // Render activity tab
+      function renderActivity(data) {
+        // Son Mesaj
+        const msgBox = el("lastMsgContent");
+        const voiceBox = el("lastVoiceContent");
+        const msgHistory = data.message_history || (data.activity && data.activity.last_message ? [data.activity.last_message] : []);
+        const voiceHistory = data.voice_history || (data.activity && data.activity.last_voice ? [data.activity.last_voice] : []);
+
+        if (msgHistory.length === 0) {
+          msgBox.innerHTML = `<div class="empty-state" style="min-height:100px"><div class="empty-inner"><div class="empty-text">Son mesaj verisi bulunamadı.</div></div></div>`;
+        } else {
+          el("lastMsgCount").textContent = `${msgHistory.length} kayıt`;
+          msgBox.innerHTML = msgHistory.slice(0, 3).map(m => {
+            const gname = m.guild_name || m.server_name || "Sunucu";
+            const gid = m.guild_id || m.server_id || "";
+            const iconHash = m.guild_icon || m.server_icon;
+            const iconUrl = iconHash ? `https://cdn.discordapp.com/icons/${gid}/${iconHash}.png?size=64` : "";
+            const channel = m.channel_name || m.channel || "";
+            const content = m.content || m.message || "";
+            const ts = m.timestamp || m.created_at || "";
+            return `<div class="activity-card">
+              <div class="activity-icon">${iconUrl ? `<img src="${iconUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>`}</div>
+              <div class="activity-main">
+                <div class="activity-name">${gname}${channel ? ` <span style="color:#6b7280;font-size:11px">#${channel}</span>` : ""}</div>
+                ${content ? `<div class="activity-msg">${content.slice(0,60)}${content.length > 60 ? "…" : ""}</div>` : ""}
+                ${ts ? `<div class="activity-channel">${fmtDate(ts)}</div>` : ""}
+              </div>
+              ${ts ? `<div class="activity-time">Son Mesaj</div>` : ""}
+            </div>`;
+          }).join("");
+        }
+
+        if (voiceHistory.length === 0) {
+          voiceBox.innerHTML = `<div class="empty-state" style="min-height:100px"><div class="empty-inner"><div class="empty-text">Son ses verisi bulunamadı.</div></div></div>`;
+        } else {
+          el("lastVoiceCount").textContent = `${voiceHistory.length} kayıt`;
+          voiceBox.innerHTML = voiceHistory.slice(0, 3).map(v => {
+            const gname = v.guild_name || v.server_name || "Sunucu";
+            const gid = v.guild_id || v.server_id || "";
+            const iconHash = v.guild_icon || v.server_icon;
+            const iconUrl = iconHash ? `https://cdn.discordapp.com/icons/${gid}/${iconHash}.png?size=64` : "";
+            const channel = v.channel_name || v.channel || "";
+            const dur = v.duration ? fmtVoiceTime(v.duration) : "";
+            const ts = v.timestamp || v.last_seen || v.created_at || "";
+            const memberCount = v.member_count ? `👥 ${v.member_count}` : "";
+            return `<div class="activity-card">
+              <div class="activity-icon">${iconUrl ? `<img src="${iconUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>`}</div>
+              <div class="activity-main">
+                <div class="activity-name">${memberCount}${memberCount ? " " : ""}${channel || gname}</div>
+                ${gname !== channel && channel ? `<div class="activity-channel">↑ ${gname}</div>` : ""}
+                ${ts ? `<div class="activity-channel">🕐 ${fmtDate(ts)}</div>` : ""}
+              </div>
+              ${dur || ts ? `<div class="activity-time">${dur || "Son Ses"}</div>` : ""}
+            </div>`;
+          }).join("");
+        }
+      }
+
+      // Render punishments
+      function renderPunishments(punishments) {
+        const box = el("sicilList");
+        if (!punishments || punishments.length === 0) {
+          box.innerHTML = `<div class="empty-state" style="min-height:120px"><div class="empty-inner"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div><div class="empty-text">Sicil kaydı bulunamadı</div></div></div>`;
           return;
         }
-        const activities = Array.isArray(activity) ? activity : [activity];
-        box.innerHTML = activities.map(a => {
-          const name = a.name || a.game || a.song || "Aktivite";
-          const detail = a.details || a.artist || a.state || "";
-          const isMusic = a.type === 2 || a.spotify || a.song;
-          const iconSvg = isMusic
-            ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 17V9l8 2v8M9 13l8 2"/></svg>`
-            : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`;
-          return `<div class="activity-card">
-            <div class="activity-icon">${iconSvg}</div>
-            <div>
-              <div class="activity-name">${name}</div>
-              ${detail ? `<div class="activity-detail">${detail}</div>` : ""}
+        el("punishCount").textContent = `${punishments.length} kayıt`;
+        box.innerHTML = punishments.map(p => {
+          const typeRaw = (p.type || "").toLowerCase();
+          const isBan = typeRaw.includes("ban");
+          const isMute = typeRaw.includes("mute") || typeRaw.includes("sustur");
+          const isTimeout = typeRaw.includes("timeout");
+          const cls = isBan ? "ban" : (isTimeout ? "timeout" : isMute ? "mute" : "warn");
+          const typelabel = isBan ? "Ban" : isTimeout ? "Timeout" : isMute ? "Susturma" : "Uyarı";
+          const iconSvg = isBan
+            ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" x2="19.07" y1="4.93" y2="19.07"/></svg>`
+            : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>`;
+          const gid = p.guild_id || p.server_id || "";
+          const iconHash = p.guild_icon || p.server_icon;
+          const iconUrl = iconHash ? `https://cdn.discordapp.com/icons/${gid}/${iconHash}.png?size=64` : "";
+          const gname = p.guild_name || p.server || "Sunucu";
+          const ts = p.date || p.created_at || p.timestamp || "";
+          return `<div class="punishment-row">
+            <div class="server-icon" style="border-radius:50%">${iconUrl ? `<img src="${iconUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : `<span>${gname[0]}</span>`}</div>
+            <div style="flex:1;min-width:0">
+              <div class="pun-server">${gname} <span class="pun-type-badge">${typelabel}</span></div>
+              <div class="pun-reason">${p.reason || "Sebep belirtilmedi"}</div>
+              ${ts ? `<div class="pun-date">${fmtDate(ts) || ts}</div>` : ""}
             </div>
           </div>`;
         }).join("");
       }
 
-      function renderPunishments(punishments) {
-        const box = el("sicilList");
-        if (!punishments || punishments.length === 0) {
-          box.innerHTML = `<div class="empty-state"><div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg>
-            <div>Sicil kaydı bulunamadı.</div>
-          </div></div>`;
+      // Render voice friends table
+      function renderVoiceFriends(friends) {
+        const box = el("sesContent");
+        if (!friends || friends.length === 0) {
+          box.innerHTML = `<div class="empty-state" style="min-height:120px"><div class="empty-inner"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg></div><div class="empty-text">Ses arkadaşı bulunamadı</div></div></div>`;
           return;
         }
-        box.innerHTML = punishments.map(p => {
-          const type = (p.type || "").toLowerCase();
-          const isBan = type.includes("ban");
-          const isMute = type.includes("mute") || type.includes("sustur");
-          const cls = isBan ? "ban" : isMute ? "mute" : "warn";
-          const label = isBan ? "Ban" : isMute ? "Susturma" : "Uyarı";
-          const iconSvg = isBan
-            ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" x2="19.07" y1="4.93" y2="19.07"/></svg>`
-            : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>`;
-          return `<div class="punishment-row">
-            <div class="punishment-icon ${cls}">${iconSvg}</div>
-            <div>
-              <div class="punishment-type">${p.guild_name || p.server || "Sunucu"} — ${label}</div>
-              <div class="punishment-server">${p.reason || "Sebep belirtilmemiş"}</div>
+        el("voiceCount").textContent = `${friends.length} arkadaş`;
+        const maxVoice = Math.max(...friends.map(f => f.total_voice || f.voice_time || f.duration || 0));
+        box.innerHTML = `<table class="voice-table">
+          <thead><tr>
+            <th class="num">#</th>
+            <th>Kullanıcı</th>
+            <th>Toplam</th>
+            <th>Buluşma</th>
+            <th>Kanal</th>
+            <th>Ortalama</th>
+            <th>En Çok Kanal</th>
+            <th>Son Görülme</th>
+          </tr></thead>
+          <tbody>${friends.slice(0, 20).map((f, i) => {
+            const name = f.global_name || f.username || f.name || "Kullanıcı";
+            const handle = f.username || f.id || "";
+            const fid = f.id || f.user_id || "";
+            const avatarHash = f.avatar;
+            const avatarUrl = avatarHash ? `https://cdn.discordapp.com/avatars/${fid}/${avatarHash}.png?size=64` : "";
+            const totalSec = f.total_voice || f.voice_time || f.duration || 0;
+            const meetings = f.meetings || f.sessions || 1;
+            const channels = f.channels || f.channel_count || 1;
+            const avgSec = meetings > 0 ? Math.floor(totalSec / meetings) : totalSec;
+            const topChannel = f.top_channel || f.channel_name || "";
+            const lastSeen = f.last_seen || f.last_voice || "";
+            const pct = maxVoice > 0 ? Math.round((totalSec / maxVoice) * 100) : 100;
+            const status = f.status || "offline";
+            const dotColor = status === "online" ? "#3ba55c" : status === "idle" ? "#faa61a" : status === "dnd" ? "#ed4245" : "#6b7280";
+            return `<tr>
+              <td class="num">${i+1}</td>
+              <td>
+                <div class="voice-user">
+                  <div class="voice-avatar" style="position:relative">
+                    ${avatarUrl ? `<img src="${avatarUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : `<span>${name[0]}</span>`}
+                    <span style="position:absolute;bottom:1px;right:1px;width:8px;height:8px;border-radius:50%;background:${dotColor};border:1.5px solid #111"></span>
+                  </div>
+                  <div>
+                    <div class="voice-username">${name} <span class="voice-link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg></span></div>
+                    <div class="voice-handle">@${handle}</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="voice-total">${fmtVoiceTime(totalSec)}</span></td>
+              <td style="color:#9ca3af">${meetings}</td>
+              <td style="color:#9ca3af">${channels}</td>
+              <td class="voice-time">${fmtVoiceTime(avgSec)}</td>
+              <td>
+                <div class="voice-bar-wrap">
+                  <div class="voice-bar"><div class="voice-bar-fill" style="width:${pct}%"></div></div>
+                  <span class="voice-pct">${pct}.0%</span>
+                </div>
+              </td>
+              <td class="voice-time">${lastSeen ? fmtDate(lastSeen) : "—"}</td>
+            </tr>`;
+          }).join("")}</tbody>
+        </table>`;
+      }
+
+      // Render message friends
+      function renderMessageFriends(friends) {
+        const grid = el("friendGrid");
+        if (!friends || friends.length === 0) {
+          grid.innerHTML = `<div class="empty-state" style="min-height:120px;grid-column:1/-1"><div class="empty-inner"><div class="empty-text">Mesaj arkadaşı bulunamadı</div></div></div>`;
+          return;
+        }
+        el("msgFriendCount").textContent = `${friends.length} arkadaş`;
+        const maxMsg = Math.max(...friends.map(f => f.messages || f.message_count || 0));
+        grid.innerHTML = friends.slice(0, 12).map(f => {
+          const name = f.global_name || f.username || f.name || "Kullanıcı";
+          const handle = f.username || f.id || "";
+          const fid = f.id || f.user_id || "";
+          const avatarHash = f.avatar;
+          const avatarUrl = avatarHash ? `https://cdn.discordapp.com/avatars/${fid}/${avatarHash}.png?size=64` : "";
+          const msgs = f.messages || f.message_count || 0;
+          const pct = maxMsg > 0 ? Math.round((msgs / maxMsg) * 100) : 100;
+          const firstInt = f.first_interaction || f.first_message || f.first_seen || "";
+          const lastInt = f.last_interaction || f.last_message || f.last_seen || "";
+          return `<div class="friend-card">
+            <div class="friend-card-head">
+              <div class="friend-avatar">${avatarUrl ? `<img src="${avatarUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : `<span>${name[0]}</span>`}</div>
+              <div>
+                <div class="friend-name">${name}</div>
+                <div class="friend-handle">@${handle}</div>
+              </div>
             </div>
-            <div class="punishment-date">${p.date || p.created_at ? fmtDate(p.date || p.created_at) : ""}</div>
+            <div class="friend-stat-label">Mesaj</div>
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <div class="friend-stat-val">${msgs}</div>
+            </div>
+            <div class="friend-bar"><div class="friend-bar-fill" style="width:${pct}%"></div></div>
+            <div class="friend-dates">
+              <div>
+                <div class="friend-date-label"><span style="background:#3ba55c"></span>İlk Etkileşim</div>
+                <div class="friend-date-val">${firstInt ? fmtRelative(firstInt) : "—"}</div>
+              </div>
+              <div>
+                <div class="friend-date-label"><span></span>Son Etkileşim</div>
+                <div class="friend-date-val">${lastInt ? fmtRelative(lastInt) : "—"}</div>
+              </div>
+            </div>
           </div>`;
         }).join("");
       }
 
       function applyProfile(data) {
+        const card = el("profileCard");
+
+        // Banner
+        if (data.banner_url) {
+          card.classList.add("has-banner");
+          const bannerImg = el("heroBannerImg");
+          bannerImg.style.backgroundImage = `url(${data.banner_url})`;
+          bannerImg.classList.add("loaded");
+        }
+
         // Name + handle
         el("displayName").textContent = data.global_name || data.username || "—";
-        el("handle").textContent = `@${data.username || ""}  •  ${data.id}`;
+        el("handleText").textContent = `@${data.username || ""}`;
+        el("handle").textContent = data.id || "";
 
         // Created at
-        if (data.created_at) {
-          el("createdAt").textContent = fmtDate(data.created_at);
-        }
+        if (data.created_at) el("createdAt").textContent = fmtDate(data.created_at);
 
         // Avatar
         if (data.avatar_url) {
           const img = document.createElement("img");
-          img.alt = "";
-          img.loading = "eager";
-          img.referrerPolicy = "no-referrer";
+          img.alt = ""; img.loading = "eager"; img.referrerPolicy = "no-referrer";
           img.src = data.avatar_url;
           const dot = el("statusDot");
           el("avatar").replaceChildren(img, dot);
         }
 
-        // Banner
-        if (data.banner_url) {
-          const bannerEl = el("heroBannerImg");
-          bannerEl.style.backgroundImage = `url(${data.banner_url})`;
-          bannerEl.classList.add("loaded");
-        }
-
         // Status dot
-        const dot = el("statusDot");
-        dot.className = "status-dot " + (data.status || "offline");
+        el("statusDot").className = "status-dot " + (data.status || "offline");
 
         // Badges
         renderBadges(data.public_flags || 0, data.premium_type || 0, data.badges);
@@ -923,57 +1486,57 @@
         // Bilgiler panel
         el("infoUsername").textContent = data.username || "—";
         el("infoGlobalName").textContent = data.global_name || "—";
-        el("infoId").textContent = data.id || "—";
-        el("infoAge").textContent = accountAge(data.created_at);
+        if (data.age != null) el("infoAge").textContent = data.age;
+        else el("infoAge").textContent = "bilinmiyor";
         if (data.gender) el("infoGender").textContent = data.gender;
-        el("infoStatus").textContent = statusLabel(data.status);
-        el("infoNitro").textContent = nitroLabel(data.premium_type || 0);
+        el("infoStatus").textContent = data.custom_status || statusLabel(data.status);
         el("bio").textContent = data.bio || "Biyografi bulunamadı.";
-        if (data.custom_status) el("infoStatus").textContent = data.custom_status;
 
         // Other names
         if (Array.isArray(data.other_names) && data.other_names.length > 0) {
+          el("otherNamesCount").textContent = `${data.other_names.length} Kayıt`;
           el("otherNames").innerHTML = data.other_names.map(n =>
             `<span class="tag" title="${n}">• ${n}</span>`
           ).join("");
         }
 
-        // Sunucular
-        renderServers(data.servers, "serverList", "Ortak sunucu bulunamadı.");
+        // Server stats (Bilgiler right panel)
+        const serverStatsData = data.servers || data.mutual_guilds || [];
+        if (serverStatsData.length > 0) {
+          el("serverStatsCount").textContent = `${serverStatsData.length} Kayıt`;
+        }
+        renderServerList(serverStatsData, "serverStatList", "Sunucu istatistiği bulunamadı");
 
-        // Aktivite
-        renderActivity(data.activity);
+        // Sunucular tab
+        renderServerCards(serverStatsData);
+
+        // Aktivite tab
+        renderActivity(data);
 
         // Siciller
         renderPunishments(data.punishments);
 
-        // Yetkili sunucular
-        renderServers(data.admin_servers, "adminServerList", "Yetkili olduğu sunucu bulunamadı.");
+        // Yetkili
+        const adminServers = data.admin_servers || [];
+        if (adminServers.length > 0) el("adminCount").textContent = `${adminServers.length} sunucu`;
+        renderServerList(adminServers, "adminServerList", "Bu kullanıcının yetkili olduğu sunucu bulunmuyor.");
 
-        // Mesaj arkadaşları (server-list style)
-        const friends = data.message_friends;
-        if (friends && friends.length > 0) {
-          el("friendList").innerHTML = friends.slice(0, 20).map(f => {
-            const name = f.username || f.global_name || f.name || "Kullanıcı";
-            const id = f.id || "";
-            const avatar = f.avatar ? `https://cdn.discordapp.com/avatars/${id}/${f.avatar}.png?size=64` : "";
-            return `<div class="server-row">
-              <div class="server-icon">${avatar ? `<img src="${avatar}" alt="" loading="lazy">` : `<span>${name[0]}</span>`}</div>
-              <div class="server-name">${name}<small>@${f.username || id}</small></div>
-            </div>`;
-          }).join("");
-        } else {
-          el("friendList").innerHTML = `<div class="empty-state"><div>Mesaj arkadaşı bulunamadı.</div></div>`;
-        }
+        // Ses arkadaşları
+        const voiceFriends = data.voice_friends || data.voice_history || [];
+        renderVoiceFriends(voiceFriends);
+
+        // Mesaj arkadaşları
+        const msgFriends = data.message_friends || [];
+        renderMessageFriends(msgFriends);
       }
 
       async function loadProfile() {
         if (!rawId) {
-          document.querySelector(".profile-hero").innerHTML = `
-            <div style="padding:48px;text-align:center;color:#6b7280;">
+          el("profileCard").innerHTML = `
+            <div style="padding:48px;text-align:center;color:#9ca3af;">
               <p style="font-size:18px;color:#fff;margin:0 0 8px">Discord ID Gerekli</p>
-              <p style="margin:0 0 20px">URL'de <code>?id=DISCORD_ID</code> parametresi olmalı.</p>
-              <a href="/" style="padding:10px 20px;background:rgba(88,101,242,0.2);border:1px solid rgba(88,101,242,0.3);border-radius:10px;color:#818cf8;">Ana Sayfaya Dön</a>
+              <p style="margin:0 0 20px;font-size:13px">URL'de <code>?id=DISCORD_ID</code> parametresi olmalı.</p>
+              <a href="/" style="padding:10px 20px;background:rgba(88,101,242,0.15);border:1px solid rgba(88,101,242,0.3);border-radius:10px;color:#818cf8;font-size:14px">Ana Sayfaya Dön</a>
             </div>`;
           return;
         }
@@ -989,8 +1552,8 @@
             throw new Error(json.message || "Profil alınamadı");
           }
         } catch (err) {
-          document.querySelector(".profile-hero").insertAdjacentHTML("beforeend", `
-            <div style="padding:24px 28px;border-top:1px solid rgba(255,255,255,0.07);color:#ef4444;font-size:14px;">
+          el("profileCard").insertAdjacentHTML("beforeend", `
+            <div style="padding:16px 24px;border-top:1px solid rgba(255,255,255,0.07);color:#ef4444;font-size:13px;">
               ⚠ ${err.message || "Profil yüklenemedi. Geçerli bir Discord ID giriniz."}
             </div>`);
         }
@@ -999,9 +1562,9 @@
       loadProfile();
     </script>
 
-    <!-- Laser effect (outside cards only) -->
+    <!-- Laser (Discord blue, outside cards only) -->
     <script>
-      (function() {
+      (function(){
         const cv = document.createElement("canvas");
         cv.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:9999;";
         document.body.appendChild(cv);
@@ -1015,8 +1578,7 @@
           if (!streaks.length) { cx.clearRect(0,0,W,H); running = false; return; }
           cx.clearRect(0,0,W,H);
           for (let i = streaks.length-1; i >= 0; i--) {
-            const s = streaks[i];
-            s.life -= s.decay;
+            const s = streaks[i]; s.life -= s.decay;
             if (s.life <= 0) { streaks.splice(i,1); continue; }
             const {x1,y1,x2,y2,life,w} = s;
             cx.save();
@@ -1035,10 +1597,10 @@
           requestAnimationFrame(draw);
         }
 
-        const CARDS = ".profile-hero,.tabs,.tab-panels,.panel";
+        const CARDS = ".profile-card,.tabs,.tab-panels,.card,.server-card,.friend-card";
         function overCard(x,y) {
-          for (const el of document.querySelectorAll(CARDS)) {
-            const r = el.getBoundingClientRect();
+          for (const e of document.querySelectorAll(CARDS)) {
+            const r = e.getBoundingClientRect();
             if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return true;
           }
           return false;

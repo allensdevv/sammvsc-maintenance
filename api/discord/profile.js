@@ -89,8 +89,10 @@ function normalizeProfile(fc, dcsv) {
     activity: fc.activity || fc.activities || null,
     punishments: fc.punishments || dcsv?.punishments || [],
     admin_servers: fc.admin_guilds || fc.managed_guilds || [],
+    voice_friends: fc.voice_friends || dcsv?.voice_friends || [],
     voice_history: fc.voice_history || [],
-    message_friends: fc.message_friends || fc.friends || []
+    message_history: fc.message_history || [],
+    message_friends: fc.message_friends || fc.friends || dcsv?.message_friends || []
   };
 }
 
