@@ -6,7 +6,7 @@ const DCSV_KEY = process.env.DCSV_API_KEY || "dcsv_ca6ca829a717d342d2a5e2a48fed0
 const DCSV_API_BASE = "https://dcsv.me/api/v1/user";
 const DCSV_PUBLIC_BASE = "https://dcsv.me/users";
 const CACHE_TTL = 60 * 30;
-const CACHE_VERSION = "v3";
+const CACHE_VERSION = "v4";
 
 function sendJson(res, status, payload) {
   res.statusCode = status;
@@ -202,6 +202,7 @@ function normalizeDcsv(d) {
     banner_url: d.banner_url || buildBannerUrl(uid, bannerHash),
     accent_color: d.accent_color || null,
     status: d.status || "offline",
+    client_status: d.client_status || d.devices || [],
     public_flags: d.public_flags || 0,
     premium_type: d.premium_type || (d.is_premium ? 2 : 0),
     badges: d.badges || [],
@@ -343,6 +344,7 @@ function normalizeFindcord(fc) {
     banner_url: firstValue(user.UserBanner, buildBannerUrl(uid, user.banner || fc.banner)),
     accent_color: user.accent_color || fc.accent_color || null,
     status: firstValue(user.Presence?.Status, fc.status, "offline"),
+    client_status: firstArray(user.Presence?.Type, fc.client_status, fc.devices),
     public_flags: user.public_flags || fc.public_flags || 0,
     premium_type: fc.premium_type || 0,
     badges,
@@ -437,6 +439,7 @@ function mergeProfiles(dcsv, findcord) {
     banner_url: firstValue(findcord.banner_url, dcsv.banner_url),
     bio: firstValue(findcord.bio, dcsv.bio),
     status: firstValue(findcord.status, dcsv.status, "offline"),
+    client_status: hasItems(findcord.client_status) ? findcord.client_status : dcsv.client_status,
     custom_status: firstValue(findcord.custom_status, dcsv.custom_status),
     badges: hasItems(findcord.badges) ? findcord.badges : dcsv.badges,
     other_names: hasItems(findcord.other_names) ? findcord.other_names : dcsv.other_names,

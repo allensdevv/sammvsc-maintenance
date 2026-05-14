@@ -225,6 +225,15 @@
         color: #fff;
         display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
       }
+      .device-icon {
+        display: none;
+        width: 18px;
+        height: 18px;
+        color: #ed4245;
+        flex-shrink: 0;
+      }
+      .device-icon.show { display: inline-flex; }
+      .device-icon svg { width: 18px; height: 18px; }
       .handle-text { color: #9ca3af; font-size: 12px; margin-top: 3px; }
       .meta-row {
         display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
@@ -317,6 +326,37 @@
       .info-row:last-of-type { border-bottom: none; }
       .info-row .lbl { color: #9ca3af; }
       .info-row .val { color: #fff; font-weight: 500; text-align: right; }
+      .info-overview {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .info-mini-card {
+        min-width: 0;
+        padding: 12px;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        background: rgba(255,255,255,0.035);
+      }
+      .info-mini-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #7f8796;
+        font-size: 11px;
+        font-weight: 600;
+        margin-bottom: 5px;
+      }
+      .info-mini-label svg { width: 13px; height: 13px; color: #818cf8; }
+      .info-mini-value {
+        color: #f7f9ff;
+        font-size: 15px;
+        font-weight: 700;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
 
       /* Bio / note box */
       .note-box {
@@ -687,6 +727,7 @@
       @media (max-width: 479px) {
         .server-grid { grid-template-columns: 1fr; }
         .friend-grid { grid-template-columns: 1fr; }
+        .info-overview { grid-template-columns: 1fr; }
       }
     </style>
   </head>
@@ -756,6 +797,7 @@
             <div class="hero-info">
               <h1>
                 <span id="displayName">Discord Profili</span>
+                <span class="device-icon" id="deviceIcon" title="Aktif cihaz"></span>
               </h1>
               <p class="handle-text" id="handleText">@username</p>
               <div class="meta-row">
@@ -836,8 +878,42 @@
                 </h3>
               </div>
               <div class="card-body">
+                <div class="info-overview">
+                  <div class="info-mini-card">
+                    <div class="info-mini-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                      Hesap
+                    </div>
+                    <div class="info-mini-value" id="miniCreated">—</div>
+                  </div>
+                  <div class="info-mini-card">
+                    <div class="info-mini-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0"/><circle cx="12" cy="10" r="4"/></svg>
+                      Durum
+                    </div>
+                    <div class="info-mini-value" id="miniStatus">—</div>
+                  </div>
+                  <div class="info-mini-card">
+                    <div class="info-mini-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+                      Cihaz
+                    </div>
+                    <div class="info-mini-value" id="miniDevice">—</div>
+                  </div>
+                  <div class="info-mini-card">
+                    <div class="info-mini-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                      Rozet
+                    </div>
+                    <div class="info-mini-value" id="miniBadges">0</div>
+                  </div>
+                </div>
                 <div class="info-row"><span class="lbl">Kullanıcı Adı</span><span class="val" id="infoUsername">—</span></div>
                 <div class="info-row"><span class="lbl">Görünen Ad</span><span class="val" id="infoGlobalName">—</span></div>
+                <div class="info-row"><span class="lbl">Discord ID</span><span class="val" id="infoId">—</span></div>
+                <div class="info-row"><span class="lbl">Hesap Oluşturma</span><span class="val" id="infoCreated">—</span></div>
+                <div class="info-row"><span class="lbl">Cihaz</span><span class="val" id="infoDevice">—</span></div>
+                <div class="info-row"><span class="lbl">Zamir</span><span class="val" id="infoPronouns">—</span></div>
                 <div class="info-row"><span class="lbl">Yaş</span><span class="val" id="infoAge">bilinmiyor</span></div>
                 <div class="info-row"><span class="lbl">Cinsiyet</span><span class="val" id="infoGender">bilinmiyor</span></div>
                 <div class="info-row"><span class="lbl">Özel Durum</span><span class="val" id="infoStatus">—</span></div>
@@ -1072,6 +1148,10 @@
       const discordQuery = rawId || rawUsername; // ID önce, yoksa username
 
       const el = id => document.getElementById(id);
+      const setText = (id, value) => {
+        const node = el(id);
+        if (node) node.textContent = value ?? "—";
+      };
       const loginUrl = () => `/login?reason=discord&next=${encodeURIComponent(location.pathname + location.search)}`;
 
       // Lightbox
@@ -1172,6 +1252,43 @@
         return ["online", "idle", "dnd"].includes(s) ? s : "offline";
       }
 
+      function deviceList(value) {
+        if (Array.isArray(value)) return value.filter(Boolean).map(v => String(v).toLowerCase());
+        if (!value) return [];
+        return String(value).split(/[,\s]+/).map(v => v.toLowerCase()).filter(Boolean);
+      }
+
+      function deviceLabel(value) {
+        const devices = deviceList(value);
+        if (devices.includes("desktop")) return "Masaüstü";
+        if (devices.includes("mobile")) return "Mobil";
+        if (devices.includes("web")) return "Web";
+        return devices[0] ? devices[0] : "Bilinmiyor";
+      }
+
+      function deviceIconSvg(value) {
+        const devices = deviceList(value);
+        if (devices.includes("mobile")) {
+          return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg>`;
+        }
+        if (devices.includes("web")) {
+          return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z"/></svg>`;
+        }
+        if (devices.includes("desktop")) {
+          return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>`;
+        }
+        return "";
+      }
+
+      function renderDeviceIcon(value) {
+        const node = el("deviceIcon");
+        if (!node) return;
+        const icon = deviceIconSvg(value);
+        node.innerHTML = icon;
+        node.classList.toggle("show", Boolean(icon));
+        node.title = icon ? `Aktif cihaz: ${deviceLabel(value)}` : "Aktif cihaz bilinmiyor";
+      }
+
       // Discord badge CDN hashes
       const BADGE_DEFS = [
         { flag: 1<<0,  hash: "5e74e9b61934fc1f67c2387a548b87dc",  label: "Discord Çalışanı" },
@@ -1193,7 +1310,7 @@
         const b = document.createElement("div");
         b.className = "badge"; b.title = label;
         const img = document.createElement("img");
-        img.src = `https://cdn.discordapp.com/badge-icons/${hash}.png`;
+        img.src = /^https?:\/\//i.test(String(hash)) ? hash : `https://cdn.discordapp.com/badge-icons/${hash}.png`;
         img.alt = label; img.loading = "lazy";
         img.onerror = () => { b.style.display = "none"; };
         b.appendChild(img);
@@ -1577,9 +1694,11 @@
         el("displayName").textContent = data.global_name || data.username || "—";
         el("handleText").textContent = `@${data.username || ""}`;
         el("handle").textContent = data.id || "";
+        renderDeviceIcon(data.client_status);
 
         // Created at
-        if (data.created_at) el("createdAt").textContent = fmtDate(data.created_at);
+        const createdText = data.created_at ? fmtDate(data.created_at) : "—";
+        if (data.created_at) el("createdAt").textContent = createdText;
 
         // Avatar
         if (data.avatar_url) {
@@ -1596,6 +1715,11 @@
 
         // Badges
         renderBadges(data.public_flags || 0, data.premium_type || 0, data.badges);
+        const badgeCount = (Array.isArray(data.badges) ? data.badges.length : 0)
+          + (data.premium_type > 0 ? 1 : 0)
+          + BADGE_DEFS.filter(def => (data.public_flags || 0) & def.flag).length;
+        const statusText = data.custom_status || statusLabel(data.status);
+        const deviceText = deviceLabel(data.client_status);
 
         // Stats
         el("statServers").textContent = data.server_count != null ? data.server_count : "—";
@@ -1603,13 +1727,20 @@
         el("statPunish").textContent = data.punishment_count != null ? data.punishment_count : "0";
 
         // Bilgiler panel
-        el("infoUsername").textContent = data.username || "—";
-        el("infoGlobalName").textContent = data.global_name || "—";
-        if (data.age != null) el("infoAge").textContent = data.age;
-        else el("infoAge").textContent = "bilinmiyor";
-        if (data.gender) el("infoGender").textContent = data.gender;
-        el("infoStatus").textContent = data.custom_status || statusLabel(data.status);
-        el("bio").textContent = data.bio || "Biyografi bulunamadı.";
+        setText("miniCreated", data.created_at ? fmtRelative(data.created_at) : "Bilinmiyor");
+        setText("miniStatus", statusText);
+        setText("miniDevice", deviceText);
+        setText("miniBadges", String(badgeCount));
+        setText("infoUsername", data.username || "—");
+        setText("infoGlobalName", data.global_name || "—");
+        setText("infoId", data.id || "—");
+        setText("infoCreated", createdText);
+        setText("infoDevice", deviceText);
+        setText("infoPronouns", data.pronouns || "—");
+        setText("infoAge", data.age != null ? data.age : "bilinmiyor");
+        setText("infoGender", data.gender || "bilinmiyor");
+        setText("infoStatus", statusText);
+        setText("bio", data.bio || "Biyografi bulunamadı.");
 
         // Other names
         if (Array.isArray(data.other_names) && data.other_names.length > 0) {
