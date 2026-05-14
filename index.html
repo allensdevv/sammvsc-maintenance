@@ -532,10 +532,52 @@
         min-height: 62px;
         padding: 0 18px;
         color: inherit;
+        transition: background 160ms ease;
+        border-radius: 0;
+        position: relative;
+      }
+
+      .recent-row:hover {
+        background: rgba(109, 59, 231, 0.09);
       }
 
       .recent-row + .recent-row {
         border-top: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .row-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+      }
+
+      .row-remove {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border: 0;
+        background: transparent;
+        color: #4a5468;
+        border-radius: 6px;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 160ms ease, background 160ms ease, color 160ms ease;
+      }
+
+      .recent-row:hover .row-remove {
+        opacity: 1;
+      }
+
+      .row-remove:hover {
+        background: rgba(248, 113, 113, 0.12);
+        color: #f87171;
+      }
+
+      .row-remove svg {
+        width: 14px;
+        height: 14px;
       }
 
       .recent-copy strong {
@@ -1384,13 +1426,14 @@
             <div class="recent-head">
               <span class="recent-title">
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M3 12a9 9 0 1 0 3-6.7M3 4v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 <span data-i18n="recentTitle">Son Aramalar</span> <span id="recentCount">(0)</span>
               </span>
               <span class="recent-actions">
                 <button class="recent-action icon-only" type="button" id="toggleRecent" aria-label="Son aramaları gizle veya göster">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
                     <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/>
                   </svg>
@@ -1599,7 +1642,14 @@
                   <span>${subLabel}</span>
                 </div>
               </div>
-              <span class="chev">›</span>
+              <div class="row-actions">
+                <button class="row-remove" data-username="${item.username}" type="button" aria-label="Kaldır" title="Kaldır">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                </button>
+                <span class="chev">›</span>
+              </div>
             </a>
           `;
         }).join("");
@@ -1624,9 +1674,23 @@
         renderRecent();
       });
 
+      const EYE_OPEN = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/>`;
+      const EYE_CLOSED = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+
       toggleRecent.addEventListener("click", () => {
         recentVisible = !recentVisible;
         toggleRecent.setAttribute("aria-label", recentVisible ? "Son aramaları gizle" : "Son aramaları göster");
+        document.getElementById("eyeIcon").innerHTML = recentVisible ? EYE_OPEN : EYE_CLOSED;
+        renderRecent();
+      });
+
+      recentList.addEventListener("click", (e) => {
+        const btn = e.target.closest(".row-remove");
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const username = btn.dataset.username;
+        saveRecent(getRecent().filter(i => i.username !== username));
         renderRecent();
       });
 
