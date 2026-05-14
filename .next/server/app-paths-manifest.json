@@ -1,8 +1,0 @@
-{
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/instagram/avatar/route": "app/api/instagram/avatar/route.js",
-  "/page": "app/page.js",
-  "/api/instagram/profile/route": "app/api/instagram/profile/route.js",
-  "/api/instagram/views/route": "app/api/instagram/views/route.js",
-  "/profile/[username]/page": "app/profile/[username]/page.js"
-}
