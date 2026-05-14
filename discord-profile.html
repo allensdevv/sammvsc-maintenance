@@ -234,6 +234,25 @@
       }
       .device-icon.show { display: inline-flex; }
       .device-icon svg { width: 18px; height: 18px; }
+      .device-icon.online { color: #3ba55c; }
+      .device-icon.idle { color: #faa61a; }
+      .device-icon.dnd { color: #ed4245; }
+      .device-icon.offline { color: #6b7280; }
+      .identity-tag {
+        display: none;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 8px;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 5px;
+        background: rgba(255,255,255,0.05);
+        color: #60a5fa;
+        font-size: 13px;
+        font-weight: 650;
+        line-height: 1.2;
+      }
+      .identity-tag.show { display: inline-flex; }
+      .identity-tag img { width: 16px; height: 16px; object-fit: contain; }
       .handle-text { color: #9ca3af; font-size: 12px; margin-top: 3px; }
       .meta-row {
         display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
@@ -256,6 +275,7 @@
         display: flex; gap: 20px; flex-shrink: 0;
         text-align: center;
       }
+      .stat.is-hidden { display: none; }
       .stat-num { margin: 0; font-size: 20px; font-weight: 700; color: #fff; line-height: 1; }
       .stat-label { margin: 2px 0 0; font-size: 10px; color: #9ca3af; }
 
@@ -280,7 +300,12 @@
         white-space: nowrap;
       }
       .tab:hover:not(.active) { color: #e5e7eb; background: rgba(255,255,255,0.05); }
-      .tab.active { background: #5865f2; color: #fff; border-color: transparent; }
+      .tab.active {
+        background: rgba(255,255,255,0.06);
+        color: #fff;
+        border-color: rgba(255,255,255,0.12);
+        box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset;
+      }
       .tab svg { width: 14px; height: 14px; flex-shrink: 0; }
       .tab-label { display: none; }
 
@@ -798,6 +823,7 @@
               <h1>
                 <span id="displayName">Discord Profili</span>
                 <span class="device-icon" id="deviceIcon" title="Aktif cihaz"></span>
+                <span class="identity-tag" id="identityTag"></span>
               </h1>
               <p class="handle-text" id="handleText">@username</p>
               <div class="meta-row">
@@ -810,15 +836,15 @@
               </div>
             </div>
             <div class="hero-stats">
-              <div class="stat">
+              <div class="stat is-hidden" id="statServersItem">
                 <p class="stat-num" id="statServers">—</p>
                 <p class="stat-label">Sunucu</p>
               </div>
-              <div class="stat">
+              <div class="stat is-hidden" id="statVoiceItem">
                 <p class="stat-num" id="statVoice">—</p>
                 <p class="stat-label">Ses Arkadaşı</p>
               </div>
-              <div class="stat">
+              <div class="stat is-hidden" id="statPunishItem">
                 <p class="stat-num" id="statPunish">—</p>
                 <p class="stat-label">Ceza</p>
               </div>
@@ -1152,6 +1178,9 @@
         const node = el(id);
         if (node) node.textContent = value ?? "—";
       };
+      const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      }[ch]));
       const loginUrl = () => `/login?reason=discord&next=${encodeURIComponent(location.pathname + location.search)}`;
 
       // Lightbox
@@ -1287,6 +1316,47 @@
         node.innerHTML = icon;
         node.classList.toggle("show", Boolean(icon));
         node.title = icon ? `Aktif cihaz: ${deviceLabel(value)}` : "Aktif cihaz bilinmiyor";
+      }
+
+      function imageFromTag(tag) {
+        if (!tag || typeof tag !== "object") return "";
+        const guildId = tag.identity_guild_id || tag.guild_id || tag.GuildID || tag.guildId;
+        const badgeHash = tag.badge || tag.Badge || tag.badge_hash || tag.BadgeHash;
+        if (guildId && badgeHash && !/^https?:\/\//i.test(String(badgeHash))) {
+          return `https://cdn.discordapp.com/clan-badges/${guildId}/${badgeHash}.png?size=64`;
+        }
+        return tag.icon_url || tag.badge_url || tag.image_url || tag.Icon || tag.BadgeIcon || tag.BadgeURL || tag.badge || tag.icon || "";
+      }
+
+      function textFromTag(tag) {
+        if (!tag) return "";
+        if (typeof tag === "string") return tag;
+        return tag.tag || tag.name || tag.text || tag.Tag || tag.GuildTag || tag.display || "";
+      }
+
+      function renderIdentityTag(tag) {
+        const node = el("identityTag");
+        if (!node) return;
+        const image = imageFromTag(tag);
+        const text = textFromTag(tag);
+        if (!image && !text) {
+          node.classList.remove("show");
+          node.innerHTML = "";
+          return;
+        }
+        const imageHtml = image ? `<img src="${escapeHtml(image)}" alt="" loading="lazy" onerror="this.remove()">` : "";
+        node.innerHTML = `${imageHtml}<span>${escapeHtml(text || "")}</span>`;
+        node.classList.add("show");
+      }
+
+      function setHeroStat(itemId, valueId, value) {
+        const item = el(itemId);
+        const node = el(valueId);
+        if (!item || !node) return;
+        const numeric = Number(value);
+        const hasValue = value !== null && value !== undefined && value !== "" && Number.isFinite(numeric) && numeric > 0;
+        item.classList.toggle("is-hidden", !hasValue);
+        if (hasValue) node.textContent = numeric.toLocaleString("tr-TR");
       }
 
       // Discord badge CDN hashes
@@ -1695,6 +1765,8 @@
         el("handleText").textContent = `@${data.username || ""}`;
         el("handle").textContent = data.id || "";
         renderDeviceIcon(data.client_status);
+        el("deviceIcon").className = "device-icon " + statusClass(data.status) + (deviceIconSvg(data.client_status) ? " show" : "");
+        renderIdentityTag(data.guild_tag);
 
         // Created at
         const createdText = data.created_at ? fmtDate(data.created_at) : "—";
@@ -1726,9 +1798,9 @@
         const serverCount = data.server_count != null ? data.server_count : serverStatsData.length;
         const voiceCount = data.voice_friend_count != null ? data.voice_friend_count : (Array.isArray(data.voice_friends) ? data.voice_friends.length : null);
         const punishCount = data.punishment_count != null ? data.punishment_count : (Array.isArray(data.punishments) ? data.punishments.length : 0);
-        el("statServers").textContent = serverCount != null ? serverCount : "—";
-        el("statVoice").textContent = voiceCount != null ? voiceCount : "—";
-        el("statPunish").textContent = punishCount != null ? punishCount : "0";
+        setHeroStat("statServersItem", "statServers", serverCount);
+        setHeroStat("statVoiceItem", "statVoice", voiceCount);
+        setHeroStat("statPunishItem", "statPunish", punishCount);
 
         // Bilgiler panel
         setText("miniCreated", data.created_at ? fmtRelative(data.created_at) : "Bilinmiyor");
