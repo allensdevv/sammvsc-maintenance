@@ -175,15 +175,18 @@
         border-radius: 50%;
         border: 3px solid rgba(17,17,17,1);
         background: #1a1a1a;
-        overflow: hidden;
+        overflow: visible;
         cursor: pointer;
         display: grid; place-items: center;
         color: #fff; font-size: 32px; font-weight: 700;
-        transition: opacity 160ms;
         position: relative;
       }
-      .avatar:hover { opacity: 0.8; }
-      .avatar img { width: 100%; height: 100%; object-fit: cover; }
+      .avatar img {
+        width: 100%; height: 100%; object-fit: cover;
+        border-radius: 50%;
+        transition: opacity 160ms;
+      }
+      .avatar:hover img { opacity: 0.72; }
 
       .profile-card.has-banner .avatar {
         width: 120px; height: 120px;
@@ -194,22 +197,49 @@
       /* Status dot */
       .status-dot {
         position: absolute;
-        bottom: 1px; right: 1px;
-        width: 16px; height: 16px;
+        bottom: 3px; right: 3px;
+        width: 18px; height: 18px;
         border-radius: 50%;
-        border: 2px solid rgba(17,17,17,1);
+        border: 4px solid rgba(17,17,17,1);
         background: #6b7280;
-        z-index: 1;
+        z-index: 5;
+        cursor: default;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.35);
       }
       .profile-card.has-banner .status-dot {
-        bottom: 3px; right: 3px;
+        bottom: 5px; right: 5px;
         width: 22px; height: 22px;
-        border-width: 3px;
+        border-width: 4px;
       }
       .status-dot.online { background: #3ba55c; }
       .status-dot.idle { background: #faa61a; }
       .status-dot.dnd { background: #ed4245; }
       .status-dot.offline { background: #6b7280; }
+      .status-dot::after {
+        content: attr(data-label);
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 10px);
+        transform: translateX(-50%) translateY(4px);
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: #181818;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 650;
+        line-height: 1;
+        white-space: nowrap;
+        box-shadow: 0 14px 34px rgba(0,0,0,0.42);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 140ms ease, transform 140ms ease;
+      }
+      .status-dot:hover::after,
+      .status-dot:focus-visible::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
 
       /* Name info row — isim solda, stat sağda */
       .hero-info-row {
@@ -1212,6 +1242,7 @@
         const img = el("avatar").querySelector("img");
         if (img) openLightbox(img.src);
       });
+      el("statusDot").addEventListener("click", e => e.stopPropagation());
 
       function fmtDate(iso) {
         if (!iso) return "";
@@ -1781,8 +1812,15 @@
           el("avatar").replaceChildren(img, dot);
         }
 
+        const statusText = data.custom_status || statusLabel(data.status);
+        const deviceText = deviceLabel(data.client_status);
+
         // Status dot
-        el("statusDot").className = "status-dot " + statusClass(data.status);
+        const statusDot = el("statusDot");
+        statusDot.className = "status-dot " + statusClass(data.status);
+        statusDot.dataset.label = statusText;
+        statusDot.title = statusText;
+        statusDot.tabIndex = 0;
         el("viewCount").textContent = data.view_count != null ? data.view_count : "0";
 
         // Badges
@@ -1790,8 +1828,6 @@
         const badgeCount = (Array.isArray(data.badges) ? data.badges.length : 0)
           + (data.premium_type > 0 ? 1 : 0)
           + BADGE_DEFS.filter(def => (data.public_flags || 0) & def.flag).length;
-        const statusText = data.custom_status || statusLabel(data.status);
-        const deviceText = deviceLabel(data.client_status);
 
         // Stats
         const serverStatsData = data.servers || data.mutual_guilds || [];
