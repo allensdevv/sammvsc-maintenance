@@ -7,29 +7,36 @@
   <title>Giriş Yap | IGME</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
+    html, body { min-height: 100%; }
     body {
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: #0d0f13;
+      background:
+        radial-gradient(circle at 50% 28%, rgba(88, 101, 242, 0.12), transparent 26rem),
+        radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+        #0b0d12;
+      background-size: auto, 24px 24px, auto;
       color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
+      padding: 42px 16px;
       -webkit-font-smoothing: antialiased;
+    }
+
+    .auth-shell {
+      width: min(360px, 100%);
     }
 
     /* Back link */
     .back-link {
-      position: fixed;
-      top: 20px;
-      left: 20px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      color: #8b95a5;
+      gap: 8px;
+      margin: 0 0 24px;
+      color: #718099;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 650;
       text-decoration: none;
       transition: color 150ms;
     }
@@ -75,28 +82,31 @@
 
     /* Card */
     .card {
-      width: min(380px, calc(100vw - 32px));
-      background: #13161c;
+      width: 100%;
+      background: rgba(20, 21, 30, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 20px;
       overflow: hidden;
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.36);
     }
 
     .card-body {
-      padding: 36px 32px 28px;
+      padding: 32px;
       text-align: center;
     }
 
     .card-icon {
-      width: 64px;
-      height: 64px;
-      border-radius: 20px;
-      background: #5865f2;
+      width: 50px;
+      height: 50px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #6f7bff, #5865f2);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 20px;
+      margin-bottom: 22px;
+      box-shadow: 0 14px 34px rgba(88, 101, 242, 0.28);
     }
-    .card-icon svg { width: 32px; height: 32px; color: #fff; }
+    .card-icon svg { width: 26px; height: 26px; color: #fff; }
 
     h1 {
       font-size: 22px;
@@ -119,9 +129,9 @@
       gap: 10px;
       width: 100%;
       height: 48px;
-      border-radius: 12px;
+      border-radius: 16px;
       border: none;
-      background: #5865f2;
+      background: linear-gradient(135deg, #6673ff, #5865f2);
       color: #fff;
       font-size: 15px;
       font-weight: 700;
@@ -137,7 +147,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      margin: 24px 0 20px;
+      margin: 28px 0 20px;
     }
     .divider::before, .divider::after {
       content: "";
@@ -159,7 +169,8 @@
       gap: 12px;
       padding: 12px 14px;
       background: rgba(255,255,255,0.04);
-      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.045);
+      border-radius: 14px;
       text-align: left;
     }
     .feature-icon {
@@ -178,9 +189,8 @@
     .feature-label { font-size: 13.5px; font-weight: 600; color: #d1d5db; }
 
     .card-footer {
-      padding: 16px 32px 24px;
+      padding: 24px 18px 0;
       text-align: center;
-      border-top: 1px solid rgba(255,255,255,0.06);
     }
     .card-footer p {
       font-size: 12px;
@@ -196,79 +206,81 @@
 </head>
 <body>
 
-  <a class="back-link" href="/">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="m15 18-6-6 6-6"/>
-    </svg>
-    Ana Sayfa
-  </a>
-
-  <div class="toast" id="toast" style="display:none">
-    <div class="toast-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-        <path d="M12 9v4M12 17h.01"/>
+  <main class="auth-shell">
+    <a class="back-link" href="/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m15 18-6-6 6-6"/>
       </svg>
-    </div>
-    <div>
-      <div class="toast-title">Giriş yapmalısın</div>
-      <div class="toast-desc" id="toastDesc">Discord aramak için lütfen giriş yap.</div>
-    </div>
-  </div>
+      Ana Sayfa
+    </a>
 
-  <div class="card">
-    <div class="card-body">
-      <div class="card-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    <div class="toast" id="toast" style="display:none">
+      <div class="toast-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M12 9v4M12 17h.01"/>
         </svg>
       </div>
-
-      <h1>👋 Hoş Geldin</h1>
-      <p class="subtitle">Devam etmek için Discord ile giriş yap</p>
-
-      <a class="login-btn" href="/api/auth/discord" id="loginBtn">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.031.053a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03Z"/>
-        </svg>
-        Discord ile Giriş Yap
-      </a>
-
-      <div class="divider">
-        <span class="divider-text">Neden giriş yapmalısın?</span>
+      <div>
+        <div class="toast-title" id="toastTitle">Giriş yapmalısın</div>
+        <div class="toast-desc" id="toastDesc">Discord aramak için lütfen giriş yap.</div>
       </div>
+    </div>
 
-      <div class="features">
-        <div class="feature">
-          <div class="feature-icon green">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-          </div>
-          <span class="feature-label">Hızlı ve güvenli giriş</span>
+    <div class="card">
+      <div class="card-body">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
         </div>
-        <div class="feature">
-          <div class="feature-icon blue">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-            </svg>
-          </div>
-          <span class="feature-label">Sunuculara doğrudan katılım</span>
+
+        <h1>👋 Hoş Geldin</h1>
+        <p class="subtitle">Devam etmek için Discord ile giriş yap</p>
+
+        <a class="login-btn" href="/api/auth/discord" id="loginBtn">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.031.053a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03Z"/>
+          </svg>
+          Discord ile Giriş Yap
+        </a>
+
+        <div class="divider">
+          <span class="divider-text">Neden giriş yapmalısın?</span>
         </div>
-        <div class="feature">
-          <div class="feature-icon amber">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-            </svg>
+
+        <div class="features">
+          <div class="feature">
+            <div class="feature-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <span class="feature-label">Hızlı ve güvenli giriş</span>
           </div>
-          <span class="feature-label">Enerji ile toplulukları destekle</span>
+          <div class="feature">
+            <div class="feature-icon blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+              </svg>
+            </div>
+            <span class="feature-label">Sunuculara doğrudan katılım</span>
+          </div>
+          <div class="feature">
+            <div class="feature-icon amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+            </div>
+            <span class="feature-label">Enerji ile toplulukları destekle</span>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="card-footer">
-      <p>Giriş yaparak <a href="#">Kullanım Koşulları</a>'nı ve <a href="#">Gizlilik Politikası</a>'nı kabul edersin.</p>
+      <p>Giriş yaparak <a href="kullanim-sartlari.html">Kullanım Koşulları</a>'nı ve <a href="gizlilik-politikasi.html">Gizlilik Politikası</a>'nı kabul edersin.</p>
     </div>
-  </div>
+  </main>
 
   <script>
     const params = new URLSearchParams(location.search);
@@ -277,8 +289,13 @@
 
     if (reason) {
       const toast = document.getElementById("toast");
+      const toastTitle = document.getElementById("toastTitle");
       const toastDesc = document.getElementById("toastDesc");
       if (reason === "discord") toastDesc.textContent = "Discord aramak için lütfen giriş yap.";
+      if (reason === "config") {
+        toastTitle.textContent = "Giriş ayarı eksik";
+        toastDesc.textContent = "Discord giriş sistemi şu an hazırlanıyor. Lütfen biraz sonra tekrar dene.";
+      }
       toast.style.display = "flex";
       setTimeout(() => { toast.style.opacity = "0"; toast.style.transition = "opacity 400ms"; setTimeout(() => toast.remove(), 400); }, 4000);
     }
