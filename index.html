@@ -374,13 +374,13 @@
         height: 40px;
         flex: 0 0 40px;
         border-radius: 50%;
-        background: rgba(139, 92, 246, 0.18);
-        border: 1px solid rgba(139, 92, 246, 0.3);
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         overflow: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #a78bfa;
+        color: #8b9ab5;
         font-size: 17px;
         font-weight: 700;
         text-transform: uppercase;
@@ -418,7 +418,7 @@
       .recent-actions {
         display: inline-flex;
         align-items: center;
-        gap: 14px;
+        gap: 8px;
         color: #5f6876;
         font-size: 12px;
       }
@@ -427,27 +427,42 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        border: 0;
-        padding: 0;
+        border: 1px solid transparent;
+        padding: 5px 10px;
+        border-radius: 8px;
         background: transparent;
-        color: #657082;
+        color: #6b7585;
         font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 200ms ease, color 200ms ease, border-color 200ms ease;
       }
 
       .recent-action.icon-only {
-        width: 22px;
-        height: 22px;
+        width: 30px;
+        height: 30px;
+        padding: 0;
         display: grid;
         place-items: center;
+        border-radius: 8px;
       }
 
       .recent-action svg {
-        width: 15px;
-        height: 15px;
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
       }
 
       .recent-action:hover {
-        color: #9db6d6;
+        color: #c9d4e8;
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.09);
+      }
+
+      .recent-action#clearRecent:hover {
+        color: #f87171;
+        background: rgba(248, 113, 113, 0.08);
+        border-color: rgba(248, 113, 113, 0.2);
       }
 
       .recent-row {
@@ -917,13 +932,16 @@
               <span class="recent-actions">
                 <button class="recent-action icon-only" type="button" id="toggleRecent" aria-label="Son aramaları gizle veya göster">
                   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                    <circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/>
                   </svg>
                 </button>
                 <button class="recent-action" type="button" id="clearRecent" aria-label="Son aramaları temizle">
                   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    <path d="M9 6V4h6v2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
                   Temizle
                 </button>
