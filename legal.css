@@ -929,6 +929,66 @@ body.kvkk-page::before {
   color: #8f98ff;
 }
 
+.side-ad {
+  position: fixed;
+  top: 208px;
+  z-index: 2;
+  width: 160px;
+  height: 600px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  border: 1px solid rgba(139, 92, 246, 0.22);
+  border-radius: 14px;
+  background: rgba(17, 17, 17, 0.62);
+  overflow: hidden;
+}
+
+.side-ad.left {
+  left: max(24px, calc((100vw - 980px) / 2 - 240px));
+}
+
+.side-ad.right {
+  right: max(24px, calc((100vw - 980px) / 2 - 240px));
+}
+
+.side-ad-unit {
+  display: inline-block;
+  width: 160px;
+  height: 600px;
+}
+
+.side-ad::before {
+  content: "Reklam";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #596273;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.side-ad .adsbygoogle {
+  position: relative;
+  z-index: 1;
+}
+
+.side-ad .adsbygoogle[data-ad-status="filled"] {
+  background: transparent;
+}
+
+.side-ad .adsbygoogle[data-ad-status="unfilled"] {
+  display: none !important;
+}
+
+@media (max-width: 1360px) {
+  .side-ad {
+    display: none;
+  }
+}
+
 @media (max-width: 760px) {
   .kvkk-shell {
     width: 100%;
