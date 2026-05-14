@@ -96,6 +96,10 @@
     {
       "source": "/api/discord/profile",
       "destination": "/api/discord/profile.js"
+    },
+    {
+      "source": "/api/discord/invite",
+      "destination": "/api/discord/invite.js"
     }
   ],
   "headers": [

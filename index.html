@@ -1029,6 +1029,11 @@
         gap: 5px;
       }
 
+      .mini-sponsor-meta b {
+        color: inherit;
+        font: inherit;
+      }
+
       .mini-sponsor-meta svg {
         width: 14px;
         height: 14px;
@@ -1947,21 +1952,21 @@
               <span class="mini-sponsor-copy">
                 <strong class="mini-sponsor-name">IGME</strong>
                 <span class="mini-sponsor-meta">
-                  <span><i class="mini-sponsor-dot" aria-hidden="true"></i>1.251</span>
+                  <span><i class="mini-sponsor-dot" aria-hidden="true"></i><b id="miniSponsorOnline">--</b></span>
                   <span>
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
                       <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.7"/>
                       <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.74" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
                     </svg>
-                    5.322
+                    <b id="miniSponsorMembers">--</b>
                   </span>
                   <span>
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                       <path d="M12 3 21 12 12 21 3 12 12 3Z" fill="#f472d0"/>
                       <path d="M3 12h18M8 3l4 18 4-18" stroke="rgba(255,255,255,0.45)" stroke-width="1.2" stroke-linecap="round"/>
                     </svg>
-                    119
+                    <b id="miniSponsorBoosts">--</b>
                   </span>
                 </span>
               </span>
@@ -2459,6 +2464,40 @@
         e.stopPropagation();
         document.getElementById("miniSponsor")?.remove();
       });
+
+      const sponsorNumber = new Intl.NumberFormat("tr-TR");
+
+      function writeSponsorValue(id, value) {
+        const element = document.getElementById(id);
+        if (!element) return;
+        element.textContent = Number.isFinite(Number(value)) ? sponsorNumber.format(Number(value)) : "--";
+      }
+
+      async function loadSponsorStats() {
+        const sponsor = document.getElementById("miniSponsor");
+        if (!sponsor) return;
+
+        try {
+          const response = await fetch("/api/discord/invite?code=7TaeVxPU", {
+            headers: { "Accept": "application/json" }
+          });
+          const payload = await response.json();
+          if (!response.ok || payload.status !== "ready") {
+            throw new Error(payload.message || "Sponsor stats unavailable");
+          }
+
+          const data = payload.data || {};
+          const name = document.querySelector(".mini-sponsor-name");
+          if (name && data.name) name.textContent = data.name;
+          writeSponsorValue("miniSponsorOnline", data.online_count);
+          writeSponsorValue("miniSponsorMembers", data.member_count);
+          writeSponsorValue("miniSponsorBoosts", data.boost_count);
+        } catch (error) {
+          console.warn("[IGME] Sponsor bilgileri alınamadı:", error.message);
+        }
+      }
+
+      loadSponsorStats();
 
       cleanUrl();
       renderRecent();
