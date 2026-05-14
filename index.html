@@ -92,11 +92,10 @@
       }
 
       .topbar {
-        min-height: 70px;
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
+        min-height: 64px;
+        display: flex;
         align-items: center;
-        gap: 20px;
+        gap: 0;
         border-bottom: 1px solid rgba(255, 255, 255, 0.07);
       }
 
@@ -189,27 +188,89 @@
       }
 
       .nav-links {
-        justify-self: center;
-        gap: clamp(18px, 4vw, 42px);
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: clamp(20px, 3vw, 36px);
         color: #b9c0ce;
-        font-size: 14px;
-        font-weight: 700;
+        font-size: 13.5px;
+        font-weight: 600;
       }
 
       .nav-link {
         display: inline-flex;
         align-items: center;
+        gap: 6px;
+        transition: color 180ms ease;
+      }
+
+      .nav-link:hover { color: #e4e8f2; }
+
+      .nav-link.gold { color: var(--gold); }
+
+      .nav-link svg { display: none; }
+
+      /* ── Navbar right ───────────────────────────── */
+      .nav-right {
+        display: flex;
+        align-items: center;
         gap: 8px;
+        flex-shrink: 0;
       }
 
-      .nav-link.gold {
-        color: var(--gold);
+      .nav-login-btn {
+        display: inline-flex;
+        align-items: center;
+        height: 36px;
+        padding: 0 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: #ffffff;
+        color: #0d0d0d;
+        font-size: 13.5px;
+        font-weight: 700;
+        white-space: nowrap;
+        transition: background 180ms ease, border-color 180ms ease;
       }
 
-      .nav-link svg {
-        width: 16px;
-        height: 16px;
+      .nav-login-btn:hover {
+        background: #e8e4ff;
+        border-color: rgba(139, 92, 246, 0.5);
       }
+
+      .nav-settings-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: transparent;
+        color: #7a8699;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+      }
+
+      .nav-settings-btn:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(167, 139, 250, 0.35);
+        color: #a78bfa;
+      }
+
+      .nav-settings-btn svg {
+        width: 17px;
+        height: 17px;
+        transition: transform 400ms ease;
+      }
+
+      .nav-settings-btn.open {
+        background: rgba(139, 92, 246, 0.12);
+        border-color: rgba(139, 92, 246, 0.4);
+        color: #a78bfa;
+      }
+
+      .nav-settings-btn.open svg { transform: rotate(65deg); }
 
       main {
         display: flex;
@@ -773,8 +834,7 @@
 
       @media (max-width: 760px) {
         .topbar {
-          grid-template-columns: 1fr;
-          justify-items: center;
+          justify-content: space-between;
         }
 
         .nav-links {
@@ -827,41 +887,7 @@
       [data-adult] { display: none !important; }
       body.igme-adult [data-adult] { display: revert !important; }
 
-      /* ── Settings ─────────────────────────────────── */
-      .settings-btn {
-        position: fixed;
-        left: 34px;
-        bottom: 34px;
-        z-index: 4;
-        width: 64px;
-        height: 64px;
-        border-radius: 18px;
-        border: 1px solid rgba(255,255,255,0.1);
-        background: rgba(19,19,19,0.9);
-        color: #a78bfa;
-        display: grid;
-        place-items: center;
-        cursor: pointer;
-        backdrop-filter: blur(14px);
-        box-shadow: 0 18px 50px rgba(0,0,0,0.34);
-        transition: box-shadow 280ms ease, border-color 280ms ease;
-      }
-
-      .settings-btn:hover {
-        border-color: rgba(167,139,250,0.45);
-        box-shadow: 0 18px 50px rgba(0,0,0,0.34), 0 0 28px 6px rgba(139,92,246,0.35);
-      }
-
-      .settings-btn svg {
-        width: 22px;
-        height: 22px;
-        transition: transform 420ms ease;
-      }
-
-      .settings-btn.open svg {
-        transform: rotate(65deg);
-      }
-
+      /* ── Settings panel ───────────────────────────── */
       .settings-overlay {
         position: fixed;
         inset: 0;
@@ -873,8 +899,8 @@
 
       .settings-panel {
         position: fixed;
-        left: 34px;
-        bottom: calc(34px + 64px + 12px);
+        right: 16px;
+        top: 72px;
         z-index: 6;
         width: 340px;
         border-radius: 20px;
@@ -1053,17 +1079,9 @@
 
       @media (max-width: 480px) {
         .settings-panel {
-          left: 16px;
-          right: 16px;
+          left: 8px;
+          right: 8px;
           width: auto;
-          bottom: calc(16px + 56px + 10px);
-        }
-        .settings-btn {
-          left: 16px;
-          bottom: 16px;
-          width: 56px;
-          height: 56px;
-          border-radius: 14px;
         }
       }
     </style>
@@ -1092,14 +1110,6 @@
       (adsbygoogle = window.adsbygoogle || []).push({});
       (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
-
-    <!-- Settings -->
-    <button class="settings-btn" id="settingsBtn" aria-label="Site Ayarları" aria-expanded="false">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
 
     <div class="settings-overlay" id="settingsOverlay"></div>
     <div class="settings-panel" id="settingsPanel" role="dialog" aria-label="Site Ayarları" aria-modal="true">
@@ -1203,7 +1213,15 @@
           </span>
         </nav>
 
-        <span aria-hidden="true"></span>
+        <div class="nav-right">
+          <a class="nav-login-btn" href="#" data-i18n="loginBtn">Giriş Yap</a>
+          <button class="nav-settings-btn" id="settingsBtn" aria-label="Site Ayarları" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
       </header>
 
       <main>
@@ -1486,6 +1504,7 @@
           footerCopyright: '© 2026 IGME. Tüm hakları saklıdır.',
           footerSystemActive: 'Tüm sistemler aktif',
           emptyRecent: 'Henüz arama yapılmadı.',
+          loginBtn: 'Giriş Yap',
         },
         en: {
           pageTitle: 'IGME | Maintenance Mode',
@@ -1518,6 +1537,7 @@
           footerCopyright: '© 2026 IGME. All rights reserved.',
           footerSystemActive: 'All systems active',
           emptyRecent: 'No searches yet.',
+          loginBtn: 'Sign In',
         }
       };
 
@@ -1568,6 +1588,7 @@
           panel.classList.remove('open');
           overlay.classList.remove('open');
         }
+
 
         btn.addEventListener('click', () => panel.classList.contains('open') ? closePanel() : openPanel());
         overlay.addEventListener('click', closePanel);
