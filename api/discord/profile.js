@@ -16,6 +16,7 @@ const PARTIAL_CACHE_TTL = 60;
 const STALE_CACHE_TTL = 60 * 60 * 12;
 const EXTERNAL_TIMEOUT_MS = 9000;
 const CACHE_VERSION = "v12";
+const DISCORD_PROFILE_PAUSED = true;
 const TRANSIENT_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 
 function sendJson(res, status, payload) {
@@ -955,6 +956,13 @@ module.exports = async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.end();
     return;
+  }
+
+  if (DISCORD_PROFILE_PAUSED) {
+    return sendJson(res, 503, {
+      status: "paused",
+      message: "Discord arama gecici olarak kapali. Su an sadece Instagram calisiyor."
+    });
   }
 
   // Auth check

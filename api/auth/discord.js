@@ -3,6 +3,7 @@ const { generateId } = require('../../lib/session');
 
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || 'https://www.sammvsc.top/api/auth/discord/callback';
+const DISCORD_AUTH_PAUSED = true;
 
 function safeNext(value) {
   const next = typeof value === 'string' ? value : '/?auth=profile';
@@ -12,6 +13,13 @@ function safeNext(value) {
 
 module.exports = async (req, res) => {
   const next = safeNext(req.query?.next);
+
+  if (DISCORD_AUTH_PAUSED) {
+    res.statusCode = 302;
+    res.setHeader('Location', '/?auth=discord-paused');
+    res.end();
+    return;
+  }
 
   if (!CLIENT_ID) {
     res.statusCode = 302;
