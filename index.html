@@ -567,17 +567,19 @@
 
       /* ── App promo ─────────────────────────────────── */
       .app-promo {
+        width: 100vw;
+        margin: 60px 0 0 calc(50% - 50vw);
         text-align: center;
-        padding: 80px 24px 72px;
-        border-radius: 20px;
+        padding: 90px max(24px, calc((100vw - 1490px) / 2)) 80px;
         position: relative;
         overflow: hidden;
         background:
-          radial-gradient(ellipse at 85% 75%, rgba(220,38,38,0.13), transparent 48%),
-          radial-gradient(ellipse at 15% 55%, rgba(109,59,231,0.11), transparent 48%),
-          #0a0a0f;
-        border: 1px solid rgba(255,255,255,0.07);
-        margin-bottom: 0;
+          linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px),
+          radial-gradient(ellipse at 82% 78%, rgba(200,30,30,0.14), transparent 45%),
+          radial-gradient(ellipse at 14% 52%, rgba(100,50,220,0.12), transparent 45%),
+          #07070c;
+        background-size: 56px 56px, 56px 56px, auto, auto, auto;
       }
 
       .app-promo-badge {
@@ -730,7 +732,6 @@
         height: 34px;
         display: grid;
         place-items: center;
-        margin-top: 22px;
         border: 1px solid rgba(255, 255, 255, 0.06);
         border-radius: 12px;
         background: rgba(255, 255, 255, 0.045);
@@ -745,47 +746,51 @@
       }
 
       .footer-col strong {
-        display: inline-flex;
+        display: flex;
         align-items: center;
-        gap: 8px;
         color: #cfd8ee;
         font-size: 13px;
-        font-weight: 900;
-        letter-spacing: 0;
-        margin-bottom: 20px;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        margin-bottom: 18px;
+        padding-left: 11px;
+        border-left: 2.5px solid #8b5cf6;
       }
 
-      .footer-heading-icon {
-        width: 14px;
-        height: 14px;
-        color: #8ba5ff;
-      }
-
-      .footer-heading-icon.gold {
-        color: #f2b705;
-      }
-
-      .footer-heading-icon.green {
-        color: #00d39c;
-      }
+      .footer-col strong svg { display: none; }
 
       .footer-col a,
       .footer-col span {
         display: flex;
         align-items: center;
-        min-height: 24px;
-        margin-top: 9px;
-        color: #7382a3;
-        font-size: 15px;
+        gap: 0;
+        min-height: 22px;
+        margin-top: 8px;
+        color: #63718a;
+        font-size: 14px;
         font-weight: 500;
         line-height: 1.45;
         text-decoration: none;
-        transition: color 160ms ease, transform 160ms ease;
+        transition: color 160ms ease;
+      }
+
+      .footer-col a::before,
+      .footer-col span::before {
+        content: "•";
+        margin-right: 9px;
+        font-size: 11px;
+        color: #323d52;
+        flex-shrink: 0;
       }
 
       .footer-col a:hover {
-        color: #dfe6ff;
-        transform: translateX(2px);
+        color: #c8d3e8;
+      }
+
+      .footer-socials {
+        display: flex;
+        gap: 8px;
+        margin-top: 20px;
       }
 
       .footer-bottom {
@@ -1448,19 +1453,23 @@
               <span class="brand-word">IG<span class="brand-accent">ME</span></span>
             </a>
             <p class="footer-text" data-i18n="footerDesc">Instagram profil analiz platformu. Güvenli veri akışı, sade metrikler ve hızlı profil keşfi.</p>
-            <a class="footer-social" href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-              <svg viewBox="0 0 24 24" fill="none" width="17" height="17" aria-hidden="true">
-                <rect x="4" y="4" width="16" height="16" rx="5" stroke="currentColor" stroke-width="1.8"/>
-                <circle cx="12" cy="12" r="3.3" stroke="currentColor" stroke-width="1.8"/>
-              </svg>
-            </a>
+            <div class="footer-socials">
+              <a class="footer-social" href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <svg viewBox="0 0 24 24" fill="none" width="16" height="16" aria-hidden="true">
+                  <rect x="4" y="4" width="16" height="16" rx="5" stroke="currentColor" stroke-width="1.8"/>
+                  <circle cx="12" cy="12" r="3.3" stroke="currentColor" stroke-width="1.8"/>
+                  <circle cx="16.5" cy="7.5" r="0.8" fill="currentColor"/>
+                </svg>
+              </a>
+              <a class="footer-social" href="https://twitter.com/" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15" aria-hidden="true">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+              </a>
+            </div>
           </div>
           <nav class="footer-col" aria-label="Keşfet">
-            <strong>
-              <svg class="footer-heading-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M3 12h18M12 3c2.2 2.5 3.2 5.5 3.2 9S14.2 18.5 12 21M12 3c-2.2 2.5-3.2 5.5-3.2 9s1 6.5 3.2 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-              </svg>
+            <strong style="border-left-color:#8b5cf6">
               <span data-i18n="footerExplore">KEŞFET</span>
             </strong>
             <a href="/" data-i18n="footerMaintenance">Bakım Modu</a>
@@ -1469,10 +1478,7 @@
             <a href="hakkimizda.html" data-i18n="footerAbout">Hakkımızda</a>
           </nav>
           <nav class="footer-col" aria-label="Kaynaklar">
-            <strong>
-              <svg class="footer-heading-icon gold" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M13 2 5 13h6l-1 9 9-13h-6l1-7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-              </svg>
+            <strong style="border-left-color:#f59e0b">
               <span data-i18n="footerResources">KAYNAKLAR</span>
             </strong>
             <a href="/" data-i18n="footerProfileAnalysis">Profil Analizi</a>
@@ -1480,11 +1486,7 @@
             <a href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer" data-i18n="footerInstagram">Instagram Profilimiz</a>
           </nav>
           <nav class="footer-col" aria-label="Yasal">
-            <strong>
-              <svg class="footer-heading-icon green" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M7 3h7l4 4v14H7V3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                <path d="M14 3v5h5M9.5 13h5M9.5 17h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-              </svg>
+            <strong style="border-left-color:#10b981">
               <span data-i18n="footerLegal">YASAL</span>
             </strong>
             <a href="kvkk-aydinlatma-metni.html">KVKK</a>
