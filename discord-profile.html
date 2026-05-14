@@ -1472,11 +1472,6 @@
                   </div>
                 </div>
                 <div class="info-row"><span class="lbl">Kullanıcı Adı</span><span class="val" id="infoUsername">—</span></div>
-                <div class="info-row"><span class="lbl">Görünen Ad</span><span class="val" id="infoGlobalName">—</span></div>
-                <div class="info-row"><span class="lbl">Discord ID</span><span class="val" id="infoId">—</span></div>
-                <div class="info-row"><span class="lbl">Hesap Oluşturma</span><span class="val" id="infoCreated">—</span></div>
-                <div class="info-row"><span class="lbl">Cihaz</span><span class="val" id="infoDevice">—</span></div>
-                <div class="info-row"><span class="lbl">Zamir</span><span class="val" id="infoPronouns">—</span></div>
                 <div class="info-row"><span class="lbl">Yaş</span><span class="val" id="infoAge">bilinmiyor</span></div>
                 <div class="info-row"><span class="lbl">Cinsiyet</span><span class="val" id="infoGender">bilinmiyor</span></div>
                 <div class="info-row"><span class="lbl">Özel Durum</span><span class="val" id="infoStatus">—</span></div>
@@ -2673,20 +2668,11 @@
         setHeroStat("statPunishItem", "statPunish", punishCount);
 
         // Bilgiler panel
-        ["infoGlobalName", "infoId", "infoCreated", "infoDevice", "infoPronouns"].forEach(id => {
-          const row = el(id)?.closest(".info-row");
-          if (row) row.hidden = true;
-        });
         setText("miniCreated", data.created_at ? fmtRelative(data.created_at) : "Bilinmiyor");
         setText("miniStatus", presenceText);
         setText("miniDevice", deviceText);
         setText("miniBadges", String(badgeCount));
         setText("infoUsername", data.global_name || data.username || "—");
-        setText("infoGlobalName", data.global_name || "—");
-        setText("infoId", data.id || "—");
-        setText("infoCreated", createdText);
-        setText("infoDevice", deviceText);
-        setText("infoPronouns", data.pronouns || "—");
         setText("infoAge", data.age != null ? data.age : "bilinmiyor");
         setText("infoGender", data.gender || "bilinmiyor");
         setText("infoStatus", customStatusText);

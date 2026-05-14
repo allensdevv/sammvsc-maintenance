@@ -15,7 +15,7 @@ const CACHE_TTL = 60 * 30;
 const PARTIAL_CACHE_TTL = 60;
 const STALE_CACHE_TTL = 60 * 60 * 12;
 const EXTERNAL_TIMEOUT_MS = 9000;
-const CACHE_VERSION = "v11";
+const CACHE_VERSION = "v12";
 const TRANSIENT_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 
 function sendJson(res, status, payload) {
@@ -64,7 +64,15 @@ function firstArray(...values) {
 
 function listFrom(value) {
   if (Array.isArray(value)) return value.filter(Boolean);
-  if (isPlainObject(value)) return Object.values(value).filter(Boolean);
+  if (isPlainObject(value)) {
+    for (const key of ["data", "items", "list", "rows", "records", "friends", "users", "Voice", "Message"]) {
+      if (Array.isArray(value[key])) return value[key].filter(Boolean);
+    }
+    return Object.values(value).flatMap(item => {
+      if (Array.isArray(item)) return item.filter(Boolean);
+      return item ? [item] : [];
+    });
+  }
   return [];
 }
 
