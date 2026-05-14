@@ -783,6 +783,160 @@
         background-size: 220% 100%;
         animation: skPulse 1.6s ease-in-out infinite;
       }
+      .discord-loading-layer {
+        display: none;
+        pointer-events: none;
+      }
+      .discord-loading .discord-loading-layer {
+        display: block;
+      }
+      .discord-loading .profile-card {
+        min-height: 330px;
+      }
+      .discord-loading .profile-card > :not(.discord-profile-skeleton),
+      .discord-loading .tabs .tab,
+      .discord-loading .tab-panel.active {
+        visibility: hidden;
+      }
+      .discord-profile-skeleton {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        background:
+          linear-gradient(90deg, rgba(17,17,17,0.92), rgba(15,20,28,0.82) 42%, rgba(17,17,17,0.94)),
+          #111;
+        border-radius: inherit;
+      }
+      .discord-profile-skeleton .sk-cover {
+        position: absolute;
+        left: 0; right: 0; top: 0;
+        height: 58%;
+        border-radius: 0;
+        background: rgba(255,255,255,0.028);
+      }
+      .discord-profile-skeleton .sk-avatar {
+        position: absolute;
+        left: 28px; bottom: 28px;
+        width: 122px; height: 122px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.045);
+      }
+      .discord-profile-skeleton .sk-name {
+        position: absolute;
+        left: 168px; bottom: 84px;
+        width: 192px; height: 32px;
+      }
+      .discord-profile-skeleton .sk-handle {
+        position: absolute;
+        left: 168px; bottom: 56px;
+        width: 128px; height: 20px;
+      }
+      .discord-profile-skeleton .sk-tags {
+        position: absolute;
+        left: 168px; bottom: 24px;
+        display: flex; gap: 8px;
+      }
+      .discord-profile-skeleton .sk-tags .skeleton {
+        width: 26px; height: 24px;
+      }
+      .discord-profile-skeleton .sk-stats {
+        position: absolute;
+        right: 24px; bottom: 34px;
+        display: flex; gap: 32px;
+      }
+      .discord-profile-skeleton .sk-stat {
+        display: grid;
+        justify-items: center;
+        gap: 8px;
+      }
+      .discord-profile-skeleton .sk-stat .skeleton:first-child {
+        width: 48px; height: 28px;
+      }
+      .discord-profile-skeleton .sk-stat .skeleton:last-child {
+        width: 56px; height: 16px;
+      }
+      .discord-tabs-skeleton {
+        position: absolute;
+        inset: 6px;
+        z-index: 3;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 4px;
+      }
+      .discord-loading .discord-tabs-skeleton {
+        display: grid;
+      }
+      .discord-tabs-skeleton .skeleton {
+        height: 40px;
+        border-radius: 7px;
+      }
+      .discord-panel-skeleton {
+        position: absolute;
+        inset: 0;
+        z-index: 4;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .discord-loading .discord-panel-skeleton {
+        display: grid;
+      }
+      .discord-loading .tab-panels {
+        min-height: 520px;
+      }
+      .discord-panel-card {
+        min-height: 245px;
+        padding: 24px;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        background:
+          linear-gradient(90deg, rgba(17,17,17,0.92), rgba(16,21,30,0.8), rgba(17,17,17,0.92)),
+          rgba(17,17,17,0.8);
+        overflow: hidden;
+      }
+      .discord-panel-card .sk-title {
+        width: 160px; height: 24px; margin-bottom: 16px;
+      }
+      .discord-panel-card .sk-row {
+        height: 16px; margin: 12px 0; width: 72%;
+      }
+      .discord-panel-card .sk-row.short { width: 44%; }
+      .discord-panel-card .sk-row.right {
+        margin-left: auto;
+        width: 24%;
+      }
+      @media (max-width: 767px) {
+        .discord-loading .profile-card { min-height: 300px; }
+        .discord-profile-skeleton .sk-avatar {
+          width: 92px; height: 92px;
+          left: 22px; bottom: 34px;
+        }
+        .discord-profile-skeleton .sk-name,
+        .discord-profile-skeleton .sk-handle,
+        .discord-profile-skeleton .sk-tags {
+          left: 132px;
+        }
+        .discord-profile-skeleton .sk-name {
+          width: 150px; height: 26px; bottom: 86px;
+        }
+        .discord-profile-skeleton .sk-handle {
+          width: 100px; height: 18px; bottom: 60px;
+        }
+        .discord-profile-skeleton .sk-tags { bottom: 32px; }
+        .discord-profile-skeleton .sk-stats {
+          right: 18px; bottom: 34px; gap: 12px;
+        }
+        .discord-profile-skeleton .sk-stat .skeleton:first-child {
+          width: 34px; height: 22px;
+        }
+        .discord-profile-skeleton .sk-stat .skeleton:last-child {
+          width: 42px; height: 12px;
+        }
+        .discord-panel-skeleton { grid-template-columns: 1fr; }
+        .discord-panel-card:nth-child(n+3) { display: none; }
+        .discord-loading .tab-panels { min-height: 520px; }
+      }
+      @media (max-width: 639px) {
+        .discord-tabs-skeleton { grid-template-columns: repeat(4, 1fr); }
+      }
       @keyframes skPulse {
         0% { background-position: 120% 0; }
         100% { background-position: -120% 0; }
@@ -834,7 +988,7 @@
       }
     </style>
   </head>
-  <body>
+  <body class="discord-loading">
 
     <a class="report-button" href="mailto:destek@sammvsc.top?subject=Hata%20Bildirimi" aria-label="Hata bildir">
       <span class="report-icon" aria-hidden="true">
@@ -873,6 +1027,31 @@
 
       <!-- Profile Card -->
       <div class="profile-card" id="profileCard">
+        <div class="discord-loading-layer discord-profile-skeleton" aria-hidden="true">
+          <span class="sk-cover skeleton"></span>
+          <span class="sk-avatar skeleton"></span>
+          <span class="sk-name skeleton"></span>
+          <span class="sk-handle skeleton"></span>
+          <span class="sk-tags">
+            <span class="skeleton"></span>
+            <span class="skeleton"></span>
+            <span class="skeleton"></span>
+          </span>
+          <span class="sk-stats">
+            <span class="sk-stat">
+              <span class="skeleton"></span>
+              <span class="skeleton"></span>
+            </span>
+            <span class="sk-stat">
+              <span class="skeleton"></span>
+              <span class="skeleton"></span>
+            </span>
+            <span class="sk-stat">
+              <span class="skeleton"></span>
+              <span class="skeleton"></span>
+            </span>
+          </span>
+        </div>
         <!-- Banner -->
         <div class="hero-banner" id="heroBanner">
           <div class="hero-banner-img" id="heroBannerImg"></div>
@@ -933,6 +1112,16 @@
 
       <!-- Tabs -->
       <nav class="tabs" id="tabNav" aria-label="Sekmeler">
+        <div class="discord-loading-layer discord-tabs-skeleton" aria-hidden="true">
+          <span class="skeleton"></span>
+          <span class="skeleton"></span>
+          <span class="skeleton"></span>
+          <span class="skeleton"></span>
+          <span class="skeleton"></span>
+          <span class="skeleton"></span>
+          <span class="skeleton"></span>
+          <span class="skeleton"></span>
+        </div>
         <button class="tab active" type="button" data-tab="bilgiler">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           <span class="tab-label">Bilgiler</span>
@@ -969,6 +1158,40 @@
 
       <!-- Tab Panels -->
       <div class="tab-panels">
+        <div class="discord-loading-layer discord-panel-skeleton" aria-hidden="true">
+          <div class="discord-panel-card">
+            <span class="sk-title skeleton"></span>
+            <span class="sk-row skeleton"></span>
+            <span class="sk-row short skeleton"></span>
+            <span class="sk-row skeleton"></span>
+            <span class="sk-row short skeleton"></span>
+            <span class="sk-row skeleton"></span>
+            <span class="sk-row short skeleton"></span>
+          </div>
+          <div class="discord-panel-card">
+            <span class="sk-title skeleton"></span>
+            <span class="sk-row skeleton"></span>
+            <span class="sk-row right skeleton"></span>
+            <span class="sk-row skeleton"></span>
+            <span class="sk-row right skeleton"></span>
+            <span class="sk-row skeleton"></span>
+            <span class="sk-row right skeleton"></span>
+          </div>
+          <div class="discord-panel-card">
+            <span class="sk-title skeleton"></span>
+            <span class="sk-row skeleton"></span>
+            <span class="sk-row short skeleton"></span>
+            <span class="sk-row skeleton"></span>
+            <span class="sk-row short skeleton"></span>
+          </div>
+          <div class="discord-panel-card">
+            <span class="sk-title skeleton"></span>
+            <span class="sk-row skeleton"></span>
+            <span class="sk-row short skeleton"></span>
+            <span class="sk-row skeleton"></span>
+            <span class="sk-row short skeleton"></span>
+          </div>
+        </div>
 
         <!-- BİLGİLER -->
         <div class="tab-panel active" id="panel-bilgiler">
@@ -1260,6 +1483,7 @@
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
       }[ch]));
       const loginUrl = () => `/login?reason=discord&next=${encodeURIComponent(location.pathname + location.search)}`;
+      const setLoading = state => document.body.classList.toggle("discord-loading", Boolean(state));
 
       // Lightbox
       el("lbClose").onclick = el("lbBackdrop").onclick = () => { el("lightbox").hidden = true; el("lbImg").src = ""; };
@@ -1965,6 +2189,7 @@
         } catch { window.location.href = loginUrl(); return; }
 
         if (!discordQuery) {
+          setLoading(false);
           el("profileCard").innerHTML = `
             <div style="padding:48px;text-align:center;color:#9ca3af;">
               <p style="font-size:18px;color:#fff;margin:0 0 8px">Discord ID veya Kullanıcı Adı Gerekli</p>
@@ -1983,10 +2208,12 @@
           if (json.requireLogin) { window.location.href = loginUrl(); return; }
           if (json.status === "ready" && json.data) {
             applyProfile(json.data);
+            setLoading(false);
           } else {
             throw new Error(json.message || "Profil alınamadı");
           }
         } catch (err) {
+          setLoading(false);
           el("profileCard").insertAdjacentHTML("beforeend", `
             <div style="padding:16px 24px;border-top:1px solid rgba(255,255,255,0.07);color:#ef4444;font-size:13px;">
               ⚠ ${err.message || "Profil yüklenemedi. Geçerli bir Discord ID giriniz."}
