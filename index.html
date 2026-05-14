@@ -592,6 +592,31 @@
         height: 19px;
       }
 
+      .side-ad {
+        position: fixed;
+        top: 208px;
+        z-index: 2;
+        width: 160px;
+        min-height: 600px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+      }
+
+      .side-ad.left {
+        left: max(24px, calc((100vw - 1220px) / 2 - 240px));
+      }
+
+      .side-ad.right {
+        right: max(24px, calc((100vw - 1220px) / 2 - 240px));
+      }
+
+      .side-ad-unit {
+        display: block;
+        width: 160px;
+        min-height: 600px;
+      }
+
       .spark {
         position: fixed;
         z-index: 0;
@@ -670,6 +695,12 @@
           border-radius: 14px;
         }
       }
+
+      @media (max-width: 1590px) {
+        .side-ad {
+          display: none;
+        }
+      }
     </style>
   </head>
   <body>
@@ -677,6 +708,27 @@
     <span class="spark one" aria-hidden="true"></span>
     <span class="spark two" aria-hidden="true"></span>
     <span class="spark three" aria-hidden="true"></span>
+
+    <aside class="side-ad left" aria-label="Sol reklam alanı">
+      <ins class="adsbygoogle side-ad-unit"
+        data-ad-client="ca-pub-6769023980744799"
+        data-ad-slot="4498574821"
+        data-ad-format="auto"
+        data-full-width-responsive="false"></ins>
+    </aside>
+
+    <aside class="side-ad right" aria-label="Sağ reklam alanı">
+      <ins class="adsbygoogle side-ad-unit"
+        data-ad-client="ca-pub-6769023980744799"
+        data-ad-slot="4498574821"
+        data-ad-format="auto"
+        data-full-width-responsive="false"></ins>
+    </aside>
+
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
 
     <a class="report-button" href="mailto:destek@sammvsc.top?subject=Hata%20Bildirimi" aria-label="Hata bildir">
       <span class="report-icon" aria-hidden="true">
