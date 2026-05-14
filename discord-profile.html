@@ -96,7 +96,8 @@
         transition: height 300ms ease;
       }
       .profile-card.has-banner .hero-banner {
-        height: 140px;
+        height: 224px;
+        cursor: zoom-in;
       }
       .hero-banner-img {
         position: absolute; inset: 0;
@@ -110,6 +111,22 @@
       }
       .profile-card.has-banner .hero-banner-overlay { display: block; }
       .profile-card:not(.has-banner) .hero-banner-overlay { display: none; }
+      .hero-banner-view {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 15px;
+        font-weight: 800;
+        text-shadow: 0 8px 22px rgba(0,0,0,0.75);
+        opacity: 0;
+        transition: opacity 160ms ease;
+      }
+      .profile-card.has-banner .hero-banner-view { display: flex; }
+      .profile-card.has-banner .hero-banner:hover .hero-banner-view { opacity: 1; }
 
       /* View pill */
       .view-pill {
@@ -132,16 +149,43 @@
         display: flex; flex-wrap: wrap; gap: 2px; justify-content: flex-end;
         max-width: 100px;
       }
-      .profile-card.has-banner .badge-row { top: 148px; right: 8px; }
+      .profile-card.has-banner .badge-row { top: 236px; right: 24px; }
       .badge {
         width: 16px; height: 16px;
         display: grid; place-items: center;
+        position: relative;
         cursor: default;
         transition: transform 120ms ease;
       }
       .badge:hover { transform: scale(1.2); }
       .badge img { width: 100%; height: 100%; object-fit: contain; }
       .badge svg { width: 14px; height: 14px; }
+      .badge::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 10px);
+        transform: translateX(-50%) translateY(4px);
+        max-width: min(330px, 72vw);
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: #181818;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.35;
+        white-space: nowrap;
+        box-shadow: 0 14px 34px rgba(0,0,0,0.42);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 140ms ease, transform 140ms ease;
+      }
+      .badge:hover::after,
+      .badge:focus-visible::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
 
       /* ── HERO CONTENT ── */
 
@@ -154,7 +198,7 @@
         padding: 16px 24px 24px;
       }
       .profile-card.has-banner .hero-content {
-        padding-top: 64px;
+        padding-top: 78px;
         position: relative;
       }
 
@@ -166,7 +210,7 @@
       }
       .profile-card.has-banner .avatar-wrapper {
         position: absolute;
-        top: -60px; left: 24px;
+        top: -76px; left: 24px;
         margin-bottom: 0;
       }
 
@@ -189,7 +233,7 @@
       .avatar:hover img { opacity: 0.72; }
 
       .profile-card.has-banner .avatar {
-        width: 120px; height: 120px;
+        width: 136px; height: 136px;
         border-width: 4px;
         font-size: 44px;
       }
@@ -257,6 +301,7 @@
       }
       .device-icon {
         display: none;
+        position: relative;
         width: 18px;
         height: 18px;
         color: #ed4245;
@@ -268,6 +313,30 @@
       .device-icon.idle { color: #faa61a; }
       .device-icon.dnd { color: #ed4245; }
       .device-icon.offline { color: #6b7280; }
+      .device-icon::after {
+        content: attr(data-label);
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 10px);
+        transform: translateX(-50%) translateY(4px);
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: #181818;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+        box-shadow: 0 14px 34px rgba(0,0,0,0.42);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 140ms ease, transform 140ms ease;
+      }
+      .device-icon.show:hover::after,
+      .device-icon.show:focus-visible::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
       .identity-tag {
         display: none;
         align-items: center;
@@ -465,8 +534,8 @@
       }
       .server-card.has-banner-bg::after {
         background:
-          linear-gradient(90deg, rgba(16,16,16,0.76) 0%, rgba(16,16,16,0.38) 52%, rgba(16,16,16,0.66) 100%),
-          linear-gradient(180deg, rgba(16,16,16,0.06) 0%, rgba(16,16,16,0.78) 100%);
+          linear-gradient(90deg, rgba(16,16,16,0.64) 0%, rgba(16,16,16,0.26) 52%, rgba(16,16,16,0.58) 100%),
+          linear-gradient(180deg, rgba(16,16,16,0.03) 0%, rgba(16,16,16,0.74) 100%);
       }
       .server-card-bg {
         position: absolute; inset: 0;
@@ -476,8 +545,8 @@
         pointer-events: none;
       }
       .server-card.has-banner-bg .server-card-bg {
-        opacity: 0.58;
-        filter: blur(0.6px) brightness(0.92) saturate(1.12);
+        opacity: 0.68;
+        filter: blur(0.2px) brightness(0.98) saturate(1.14);
         transform: scale(1.02);
       }
       .server-card.has-icon-bg .server-card-bg {
@@ -572,6 +641,107 @@
         padding: 2px 8px; border-radius: 5px;
         background: rgba(88,101,242,0.12); border: 1px solid rgba(88,101,242,0.25);
         color: #818cf8; font-size: 11px; font-weight: 700;
+      }
+      .info-server-list {
+        max-height: 198px;
+        overflow-y: auto;
+        padding-right: 4px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .info-server-list::-webkit-scrollbar { width: 5px; }
+      .info-server-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.16); border-radius: 999px; }
+      .info-server-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        border: 1px solid rgba(255,255,255,0.09);
+        border-radius: 10px;
+        background: rgba(255,255,255,0.045);
+      }
+      .info-server-icon {
+        width: 44px; height: 44px;
+        border-radius: 10px;
+        overflow: hidden;
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        background: rgba(255,255,255,0.07);
+        color: #fff;
+        font-weight: 800;
+      }
+      .info-server-icon img { width: 100%; height: 100%; object-fit: cover; }
+      .info-server-main { min-width: 0; flex: 1; }
+      .info-server-name {
+        color: #fff;
+        font-size: 15px;
+        font-weight: 800;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .info-server-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 5px;
+        color: #9aa3b3;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .info-server-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .info-server-meta svg { width: 13px; height: 13px; color: #9aa3b3; }
+      .recent-voice-mini {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px;
+        margin-bottom: 16px;
+        min-height: 116px;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        background: linear-gradient(90deg, rgba(30,36,48,0.78), rgba(17,17,17,0.86));
+      }
+      .recent-voice-mini[hidden] { display: none; }
+      .recent-voice-avatar {
+        width: 48px; height: 48px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: rgba(255,255,255,0.07);
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-weight: 800;
+      }
+      .recent-voice-avatar img { width: 100%; height: 100%; object-fit: cover; }
+      .recent-voice-main { min-width: 0; flex: 1; }
+      .recent-voice-title {
+        color: #e5e7eb;
+        font-size: 15px;
+        font-weight: 800;
+        margin-bottom: 4px;
+      }
+      .recent-voice-sub {
+        color: #8f98aa;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .recent-voice-tag {
+        color: #9aa3b3;
+        font-size: 12px;
+        font-weight: 700;
+        margin-left: auto;
+        white-space: nowrap;
       }
 
       /* ── AKTIVITE ── */
@@ -764,9 +934,27 @@
       /* Lightbox */
       .lightbox { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; }
       .lightbox[hidden] { display: none; }
-      .lb-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.88); cursor: zoom-out; }
+      .lb-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.9); cursor: zoom-out; backdrop-filter: blur(2px); }
       .lb-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-      .lb-img { max-width: min(400px, 88vw); max-height: 78vh; border-radius: 50%; object-fit: cover; border: 3px solid rgba(88,101,242,0.4); display: block; }
+      .lb-img {
+        display: block;
+        object-fit: cover;
+        box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+      }
+      .lb-img.avatar {
+        width: min(512px, 78vw);
+        height: min(512px, 78vw);
+        max-height: 78vh;
+        border-radius: 50%;
+        border: 0;
+      }
+      .lb-img.banner {
+        width: min(1024px, 82vw);
+        max-height: 76vh;
+        border-radius: 12px;
+        object-fit: contain;
+        border: 1px solid rgba(255,255,255,0.08);
+      }
       .lb-close {
         position: absolute; top: -12px; right: -12px;
         width: 28px; height: 28px; display: grid; place-items: center;
@@ -969,7 +1157,8 @@
         .badge-row { max-width: none; gap: 5px; right: 24px; }
         .badge { width: 28px; height: 28px; }
         .badge img, .badge svg { width: 26px; height: 26px; }
-        .profile-card.has-banner .badge-row { top: 155px; }
+        .profile-card.has-banner .badge-row { top: 236px; }
+        .profile-card.has-banner .avatar { width: 144px; height: 144px; }
       }
       @media (min-width: 1280px) {
         .tab-label { display: inline; }
@@ -1056,6 +1245,7 @@
         <div class="hero-banner" id="heroBanner">
           <div class="hero-banner-img" id="heroBannerImg"></div>
           <div class="hero-banner-overlay"></div>
+          <div class="hero-banner-view">Görüntülemek için tıkla</div>
           <!-- View count -->
           <div class="view-pill">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
@@ -1276,6 +1466,7 @@
                 </h3>
               </div>
               <div class="card-body">
+                <div class="recent-voice-mini" id="infoRecentVoice" hidden></div>
                 <div class="server-list" id="serverStatList">
                   <div class="empty-state">
                     <div class="empty-inner">
@@ -1474,6 +1665,9 @@
       const rawUsername = (params.get("u") || params.get("username") || "").trim().slice(0,50);
       const discordQuery = rawId || rawUsername; // ID önce, yoksa username
 
+      let currentAvatarUrl = "";
+      let currentBannerUrl = "";
+
       const el = id => document.getElementById(id);
       const setText = (id, value) => {
         const node = el(id);
@@ -1501,20 +1695,39 @@
       }
 
       function schedulePartialRefresh(apiParam) {
-        window.setTimeout(async () => {
+        [2400, 6500, 12000].forEach(delay => window.setTimeout(async () => {
           try {
             const json = await fetchProfileJson(apiParam);
             if (json.status === "ready" && json.data && !json.partial && !json.data.partial) {
               applyProfile(json.data);
             }
           } catch {}
-        }, 2400);
+        }, delay));
       }
 
       // Lightbox
       el("lbClose").onclick = el("lbBackdrop").onclick = () => { el("lightbox").hidden = true; el("lbImg").src = ""; };
       document.addEventListener("keydown", e => { if (e.key === "Escape") el("lightbox").hidden = true; });
-      function openLightbox(src) { if (!src) return; el("lbImg").src = src; el("lightbox").hidden = false; }
+      function withCdnSize(url, size = 1024) {
+        if (!url) return "";
+        try {
+          const target = new URL(url, location.origin);
+          if (/cdn\.discordapp\.com|discordapp\.net/i.test(target.hostname)) {
+            target.searchParams.set("size", String(size));
+          }
+          return target.toString();
+        } catch {
+          return url;
+        }
+      }
+
+      function openLightbox(src, type = "avatar") {
+        if (!src) return;
+        const img = el("lbImg");
+        img.className = `lb-img ${type}`;
+        img.src = src;
+        el("lightbox").hidden = false;
+      }
 
       // Tabs
       document.querySelectorAll(".tab[data-tab]").forEach(tab => {
@@ -1538,7 +1751,10 @@
       // Click avatar → lightbox
       el("avatar").addEventListener("click", () => {
         const img = el("avatar").querySelector("img");
-        if (img) openLightbox(img.src);
+        if (img) openLightbox(currentAvatarUrl || img.src, "avatar");
+      });
+      el("heroBanner").addEventListener("click", () => {
+        if (currentBannerUrl) openLightbox(currentBannerUrl, "banner");
       });
       el("statusDot").addEventListener("click", e => e.stopPropagation());
 
@@ -1611,14 +1827,19 @@
       }
 
       function deviceList(value) {
-        if (Array.isArray(value)) return value.filter(Boolean).map(v => String(v).toLowerCase());
-        if (!value) return [];
-        return String(value).split(/[,\s]+/).map(v => v.toLowerCase()).filter(Boolean);
+        const source = Array.isArray(value) ? value : (value ? String(value).split(/[,\s]+/) : []);
+        return source.filter(Boolean).map(v => {
+          const token = String(v).toLowerCase();
+          if (["pc", "computer", "windows", "mac", "macos", "linux", "client"].includes(token)) return "desktop";
+          if (["phone", "ios", "android", "tablet"].includes(token)) return "mobile";
+          if (["browser"].includes(token)) return "web";
+          return token;
+        });
       }
 
       function deviceLabel(value) {
         const devices = deviceList(value);
-        if (devices.includes("desktop")) return "Masaüstü";
+        if (devices.includes("desktop")) return "Bilgisayar";
         if (devices.includes("mobile")) return "Mobil";
         if (devices.includes("web")) return "Web";
         return devices[0] ? devices[0] : "Bilinmiyor";
@@ -1644,7 +1865,10 @@
         const icon = deviceIconSvg(value);
         node.innerHTML = icon;
         node.classList.toggle("show", Boolean(icon));
-        node.title = icon ? `Aktif cihaz: ${deviceLabel(value)}` : "Aktif cihaz bilinmiyor";
+        const label = deviceLabel(value);
+        node.dataset.label = label;
+        node.title = icon ? label : "Aktif cihaz bilinmiyor";
+        node.tabIndex = icon ? 0 : -1;
       }
 
       function imageFromTag(tag) {
@@ -1704,10 +1928,33 @@
         { flag: 1<<22, hash: "ca30b0e8e01d754b72db2f18528c2971",  label: "Aktif Üye" },
       ];
       const NITRO_HASH = "2ba85e8026a8614b640c2837bcdfe21b";
+      const BOOST_HASH = "51040c70d4f20a921ad6674ff86fc95c";
 
-      function makeBadgeEl(hash, label) {
+      function fmtBadgeDate(value) {
+        if (!value) return "";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return String(value);
+        return d.toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" });
+      }
+
+      function durationLabelFromMonths(value) {
+        const months = Number(value || 0);
+        if (!Number.isFinite(months) || months <= 0) return "";
+        if (months >= 12) {
+          const years = Math.floor(months / 12);
+          const rest = months % 12;
+          return rest ? `${years} yıl ${rest} ay` : `${years} yıl`;
+        }
+        return `${months} ay`;
+      }
+
+      function makeBadgeEl(hash, label, tooltip) {
         const b = document.createElement("div");
-        b.className = "badge"; b.title = label;
+        const text = tooltip || label;
+        b.className = "badge";
+        b.title = text;
+        b.dataset.tooltip = text;
+        b.tabIndex = 0;
         const img = document.createElement("img");
         img.src = /^https?:\/\//i.test(String(hash)) ? hash : `https://cdn.discordapp.com/badge-icons/${hash}.png`;
         img.alt = label; img.loading = "lazy";
@@ -1716,22 +1963,63 @@
         return b;
       }
 
-      function renderBadges(flags, premiumType, extraBadges) {
+      function badgeTooltip(badge, fallback) {
+        if (!badge || typeof badge !== "object") return fallback;
+        const label = badge.name || badge.description || fallback;
+        const rawTooltip = badge.tooltip || badge.title || "";
+        if (rawTooltip && rawTooltip !== label) return rawTooltip;
+        const earnedAt = badge.earned_at || badge.obtained_at || badge.acquired_at || badge.created_at || badge.date;
+        const since = badge.since || badge.started_at || badge.boost_since || badge.premium_since;
+        const months = durationLabelFromMonths(badge.months || badge.durationMonths || badge.subscription_months);
+        const haystack = `${label} ${badge.id || ""} ${badge.type || ""}`.toLowerCase();
+        if (since && /boost|booster|takviye/.test(haystack)) {
+          return `${fmtBadgeDate(since)} tarihinden beri sunucu takviyesi yapıyor`;
+        }
+        if (since && /nitro|premium|abone/.test(haystack)) {
+          return `${fmtBadgeDate(since)} tarihinden beri ${label} abonesi`;
+        }
+        if (earnedAt) {
+          return `${fmtBadgeDate(earnedAt)} tarihinde kazandı${months ? `. ${months}: ${label}` : `: ${label}`}`;
+        }
+        return label;
+      }
+
+      function renderBadges(data) {
         const row = el("badgeRow");
         row.innerHTML = "";
+        const used = new Set();
+        const add = (hash, label, tooltip) => {
+          if (!hash || !label) return;
+          const key = `${hash}|${label}`;
+          if (used.has(key)) return;
+          used.add(key);
+          row.appendChild(makeBadgeEl(hash, label, tooltip || label));
+        };
+        const flags = data.public_flags || 0;
         BADGE_DEFS.forEach(def => {
           if (!(flags & def.flag)) return;
-          row.appendChild(makeBadgeEl(def.hash, def.label));
+          add(def.hash, def.label, def.label);
         });
-        if (premiumType > 0) {
-          row.appendChild(makeBadgeEl(NITRO_HASH, nitroLabel(premiumType)));
+        if ((data.premium_type || 0) > 0 || data.premium_since) {
+          const label = nitroLabel(data.premium_type || 2);
+          const tooltip = data.premium_since ? `${fmtBadgeDate(data.premium_since)} tarihinden beri ${label} abonesi` : label;
+          add(NITRO_HASH, label, tooltip);
         }
+        if (data.boost_since) {
+          add(BOOST_HASH, "Sunucu Takviyesi", `${fmtBadgeDate(data.boost_since)} tarihinden beri sunucu takviyesi yapıyor`);
+        }
+        if (data.legacy_username) {
+          add("6de6d34650760ba5551a79732e98ed60", "Eski Kullanıcı Adı", `Önceden ${data.legacy_username} olarak biliniyordu`);
+        }
+        const extraBadges = data.badges;
         if (Array.isArray(extraBadges)) {
           extraBadges.forEach(badge => {
+            const label = badge?.name || badge?.description || badge?.id || "Badge";
+            const tooltip = badgeTooltip(badge, label);
             if (typeof badge === "object" && badge.hash) {
-              row.appendChild(makeBadgeEl(badge.hash, badge.name || badge.description || "Badge"));
+              add(badge.hash, label, tooltip);
             } else if (typeof badge === "object" && badge.icon) {
-              row.appendChild(makeBadgeEl(badge.icon, badge.name || badge.description || badge.id || "Badge"));
+              add(badge.icon, label, tooltip);
             }
           });
         }
@@ -1744,7 +2032,7 @@
           grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-inner"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/></svg></div><div class="empty-text">Ortak sunucu bulunamadı.</div></div></div>`;
           return;
         }
-        grid.innerHTML = servers.slice(0, 30).map(s => {
+        grid.innerHTML = servers.map(s => {
           const name = s.name || s.guild_name || "Sunucu";
           const gid = s.id || s.guild_id || "";
           const iconUrl = s.icon_url || guildAssetUrl(gid, s.icon || s.guild_icon, "icons", 128);
@@ -1801,6 +2089,9 @@
       // Render simple server list (Bilgiler right panel + Yetkili)
       function renderServerList(servers, containerId, emptyMsg) {
         const list = el(containerId);
+        if (containerId === "serverStatList") {
+          return renderInfoServerList(servers, list, emptyMsg);
+        }
         if (!servers || servers.length === 0) {
           list.innerHTML = `<div class="empty-state" style="min-height:120px"><div class="empty-inner"><div class="empty-text">${emptyMsg}</div></div></div>`;
           return;
@@ -1822,6 +2113,59 @@
             ${s.admin ? '<span class="server-badge">Yönetici</span>' : ''}
           </div>`;
         }).join("");
+      }
+
+      function renderInfoServerList(servers, list, emptyMsg) {
+        if (!servers || servers.length === 0) {
+          list.className = "server-list";
+          list.innerHTML = `<div class="empty-state" style="min-height:120px"><div class="empty-inner"><div class="empty-text">${emptyMsg}</div></div></div>`;
+          return;
+        }
+        list.className = "info-server-list";
+        list.innerHTML = servers.map(s => {
+          const name = s.name || s.guild_name || "Sunucu";
+          const gid = s.id || s.guild_id || "";
+          const iconUrl = s.icon_url || guildAssetUrl(gid, s.icon || s.guild_icon, "icons", 64);
+          const voiceSec = s.voice_time || s.voice_seconds || 0;
+          const msgCount = s.messages || s.message_count || 0;
+          return `<div class="info-server-row">
+            <div class="info-server-icon">${iconUrl ? `<img src="${iconUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : `<span>${escapeHtml(name[0] || "S")}</span>`}</div>
+            <div class="info-server-main">
+              <div class="info-server-name">${escapeHtml(name)}</div>
+              <div class="info-server-meta">
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>${Number(msgCount).toLocaleString("tr-TR")}</span>
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>${fmtVoiceTime(voiceSec)}</span>
+              </div>
+            </div>
+          </div>`;
+        }).join("");
+      }
+
+      function renderInfoRecentVoice(data) {
+        const box = el("infoRecentVoice");
+        if (!box) return;
+        const voice = (data.voice_history || [])[0] || data.activity?.last_voice || null;
+        if (!voice) {
+          box.hidden = true;
+          box.innerHTML = "";
+          return;
+        }
+        const gname = voice.guild_name || voice.server_name || "Sunucu";
+        const gid = voice.guild_id || voice.server_id || "";
+        const iconUrl = voice.guild_icon_url || guildAssetUrl(gid, voice.guild_icon || voice.server_icon, "icons", 64);
+        const channel = voice.channel_name || voice.channel || "";
+        const dur = voice.duration_label || (voice.duration ? fmtVoiceTime(voice.duration) : "");
+        const ts = voice.timestamp || voice.last_seen || voice.created_at || "";
+        const userCount = Array.isArray(voice.users) ? voice.users.length : (voice.member_count || "");
+        box.hidden = false;
+        box.innerHTML = `
+          <div class="recent-voice-avatar">${iconUrl ? `<img src="${iconUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : `<span>${escapeHtml(gname[0] || "S")}</span>`}</div>
+          <div class="recent-voice-main">
+            <div class="recent-voice-title">${userCount ? `<span style="font-size:12px;border:1px solid rgba(255,255,255,.1);padding:3px 7px;border-radius:5px;margin-right:6px;color:#cbd5e1">👥 ${userCount}</span>` : ""}${escapeHtml(dur || "Son Ses")}</div>
+            <div class="recent-voice-sub">${escapeHtml(gname)}${channel ? ` · ${escapeHtml(channel)}` : ""}${ts ? ` · ${fmtDate(ts)}` : ""}</div>
+          </div>
+          <div class="recent-voice-tag">Son Ses</div>
+        `;
       }
 
       // Render activity tab
@@ -2083,11 +2427,17 @@
         const card = el("profileCard");
 
         // Banner
+        currentBannerUrl = data.banner_url ? withCdnSize(data.banner_url, 1024) : "";
         if (data.banner_url) {
           card.classList.add("has-banner");
           const bannerImg = el("heroBannerImg");
-          bannerImg.style.backgroundImage = `url(${data.banner_url})`;
+          bannerImg.style.backgroundImage = `url(${currentBannerUrl})`;
           bannerImg.classList.add("loaded");
+        } else {
+          card.classList.remove("has-banner");
+          const bannerImg = el("heroBannerImg");
+          bannerImg.style.backgroundImage = "";
+          bannerImg.classList.remove("loaded");
         }
 
         // Name + handle
@@ -2103,10 +2453,11 @@
         if (data.created_at) el("createdAt").textContent = createdText;
 
         // Avatar
+        currentAvatarUrl = data.avatar_url ? withCdnSize(data.avatar_url, 1024) : "";
         if (data.avatar_url) {
           const img = document.createElement("img");
           img.alt = ""; img.loading = "eager"; img.referrerPolicy = "no-referrer";
-          img.src = data.avatar_url;
+          img.src = withCdnSize(data.avatar_url, 256);
           const dot = el("statusDot");
           el("avatar").replaceChildren(img, dot);
         }
@@ -2117,19 +2468,20 @@
         // Status dot
         const statusDot = el("statusDot");
         statusDot.className = "status-dot " + statusClass(data.status);
-        statusDot.dataset.label = statusText;
-        statusDot.title = statusText;
+        const statusTooltip = deviceText && deviceText !== "Bilinmiyor" ? deviceText : statusText;
+        statusDot.dataset.label = statusTooltip;
+        statusDot.title = statusTooltip;
         statusDot.tabIndex = 0;
         el("viewCount").textContent = data.view_count != null ? data.view_count : "0";
 
         // Badges
-        renderBadges(data.public_flags || 0, data.premium_type || 0, data.badges);
-        const badgeCount = (Array.isArray(data.badges) ? data.badges.length : 0)
-          + (data.premium_type > 0 ? 1 : 0)
-          + BADGE_DEFS.filter(def => (data.public_flags || 0) & def.flag).length;
+        renderBadges(data);
+        const badgeCount = el("badgeRow").children.length;
 
         // Stats
-        const serverStatsData = data.servers || data.mutual_guilds || [];
+        const serverStatsData = Array.isArray(data.servers) && data.servers.length
+          ? data.servers
+          : (Array.isArray(data.mutual_guilds) ? data.mutual_guilds : []);
         const serverCount = data.server_count != null ? data.server_count : serverStatsData.length;
         const voiceCount = data.voice_friend_count != null ? data.voice_friend_count : (Array.isArray(data.voice_friends) ? data.voice_friends.length : null);
         const punishCount = data.punishment_count != null ? data.punishment_count : (Array.isArray(data.punishments) ? data.punishments.length : 0);
@@ -2166,6 +2518,8 @@
           el("serverStatsCount").textContent = `${serverStatsData.length} Kayıt`;
         }
         renderServerList(serverStatsData, "serverStatList", "Sunucu istatistiği bulunamadı");
+
+        renderInfoRecentVoice(data);
 
         // Sunucular tab
         renderServerCards(serverStatsData);

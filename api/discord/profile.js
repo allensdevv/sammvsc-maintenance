@@ -15,7 +15,7 @@ const CACHE_TTL = 60 * 30;
 const PARTIAL_CACHE_TTL = 60;
 const STALE_CACHE_TTL = 60 * 60 * 12;
 const EXTERNAL_TIMEOUT_MS = 9000;
-const CACHE_VERSION = "v7";
+const CACHE_VERSION = "v8";
 const TRANSIENT_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 
 function sendJson(res, status, payload) {
@@ -62,11 +62,50 @@ function firstArray(...values) {
   return [];
 }
 
+function clientStatusArray(...values) {
+  for (const value of values) {
+    if (Array.isArray(value) && value.length > 0) return value;
+    if (typeof value === "string" && value.trim()) return value.split(/[,\s]+/).filter(Boolean);
+    if (isPlainObject(value)) {
+      const devices = Object.entries(value)
+        .filter(([, state]) => state && String(state).toLowerCase() !== "offline")
+        .map(([device]) => device);
+      if (devices.length > 0) return devices;
+    }
+  }
+  return [];
+}
+
 function firstValue(...values) {
   for (const value of values) {
     if (value !== undefined && value !== null && value !== "") return value;
   }
   return null;
+}
+
+function fillObject(base = {}, incoming = {}) {
+  const merged = { ...(base || {}) };
+  for (const [key, value] of Object.entries(incoming || {})) {
+    if (value !== undefined && value !== null && value !== "") merged[key] = value;
+  }
+  return merged;
+}
+
+function serverKey(server) {
+  return String(firstValue(server?.guild_id, server?.id, server?.GuildID, server?.GuildId, server?.name, server?.guild_name, "") || "").toLowerCase();
+}
+
+function mergeServerArrays(...arrays) {
+  const merged = new Map();
+  for (const list of arrays) {
+    if (!Array.isArray(list)) continue;
+    for (const server of list) {
+      const key = serverKey(server);
+      if (!key) continue;
+      merged.set(key, fillObject(merged.get(key), server));
+    }
+  }
+  return Array.from(merged.values());
 }
 
 function toSeconds(value) {
@@ -258,9 +297,12 @@ function normalizeDcsv(d) {
     banner_url: d.banner_url || buildBannerUrl(uid, bannerHash),
     accent_color: d.accent_color || null,
     status: d.status || "offline",
-    client_status: d.client_status || d.devices || [],
+    client_status: clientStatusArray(d.client_status, d.devices, d.Presence?.Type, d.Presence?.ClientStatus),
     public_flags: d.public_flags || 0,
     premium_type: d.premium_type || (d.is_premium ? 2 : 0),
+    premium_since: toIso(d.premium_since || d.nitro_since),
+    boost_since: toIso(d.boost_since || d.guild_boost_since),
+    legacy_username: d.legacy_username || d.LegacyUserName || null,
     badges: d.badges || [],
     created_at: parseCreatedAt(uid),
     age: d.age || null,
@@ -271,7 +313,7 @@ function normalizeDcsv(d) {
     server_count: d.mutual_guilds?.length ?? d.guild_count ?? d.server_count ?? null,
     voice_friend_count: d.voice_friends?.length ?? d.voice_friend_count ?? null,
     punishment_count: d.punishments?.length ?? d.punishment_count ?? null,
-    servers: d.mutual_guilds || d.guilds || d.servers || [],
+    servers: mergeServerArrays(d.mutual_guilds, d.guilds, d.servers, d.Guilds),
     activity: d.activity || d.activities || null,
     punishments: d.punishments || [],
     admin_servers: d.admin_guilds || d.managed_guilds || [],
@@ -287,7 +329,8 @@ function normalizeDcsv(d) {
 function normalizeFindcord(fc) {
   const user = fc.UserInfo || fc.user || fc.data?.UserInfo || fc;
   const uid = String(firstValue(user.UserID, fc.id, fc.user_id, "") || "");
-  const findcordHasGuilds = Array.isArray(fc.Guilds) || Array.isArray(fc.GuildStats);
+  const findcordHasGuilds = (Array.isArray(fc.Guilds) && fc.Guilds.length > 0)
+    || (Array.isArray(fc.GuildStats) && fc.GuildStats.length > 0);
   const guildStatsById = new Map((fc.GuildStats || []).map(g => [String(g.GuildID || g.guild_id || g.id), g]));
 
   const servers = (fc.Guilds || []).map(g => {
@@ -331,7 +374,7 @@ function normalizeFindcord(fc) {
       voice_seconds: toSeconds(g.VoiceStat)
     }));
 
-  const allServers = servers.length ? servers : statOnlyServers;
+  const allServers = mergeServerArrays(servers, statOnlyServers);
   const hourBuckets = Array.from({ length: 24 }, (_, hour) => ({ hour, messages: 0, voice_seconds: 0, score: 0 }));
   for (const server of allServers) {
     const active = server.active_hours || {};
@@ -351,10 +394,17 @@ function normalizeFindcord(fc) {
   }
 
   const badges = (user.UserBadge || user.badges || []).map(b => ({
-    id: b.id || b.name || b.description || "",
-    hash: b.icon || b.hash || null,
-    name: b.description || b.name || b.id || "Badge",
-    description: b.description || b.name || b.id || ""
+    id: firstValue(b.id, b.name, b.description, b.hash, b.icon, ""),
+    hash: firstValue(b.icon, b.hash, b.BadgeIcon, b.BadgeHash),
+    icon: firstValue(b.icon, b.hash, b.BadgeIcon, b.BadgeHash),
+    name: firstValue(b.description, b.name, b.label, b.id, "Badge"),
+    description: firstValue(b.description, b.name, b.label, b.id, ""),
+    tooltip: firstValue(b.tooltip, b.title, b.description, b.name),
+    type: firstValue(b.type, b.badge_type, b.kind),
+    tier: firstValue(b.tier, b.level, b.rank),
+    months: firstValue(b.months, b.durationMonths, b.subscription_months),
+    earned_at: toIso(firstValue(b.earned_at, b.obtained_at, b.acquired_at, b.created_at, b.createdAt, b.date, b.since, b.timestamp)),
+    since: toIso(firstValue(b.since, b.started_at, b.startDate, b.boost_since, b.premium_since))
   }));
 
   const lastSeen = fc.LastSeen || {};
@@ -400,15 +450,17 @@ function normalizeFindcord(fc) {
     findcord_has_guilds: findcordHasGuilds,
     username: firstValue(user.UserName, user.username, ""),
     global_name: firstValue(user.UserGlobalName, user.display_name, user.UserName, ""),
-    legacy_username: user.LegacyUserName || null,
+    legacy_username: firstValue(user.LegacyUserName, user.legacy_username, user.FormerUsername, user.OldUsername, fc.LegacyUserName, fc.legacy_username, fc.FormerUsername, fc.OldUsername),
     avatar_url: firstValue(user.UserdisplayAvatar, buildAvatarUrl(uid, user.avatar || fc.avatar)),
     banner_url: firstValue(user.UserBanner, buildBannerUrl(uid, user.banner || fc.banner)),
     accent_color: user.accent_color || fc.accent_color || null,
     status: firstValue(user.Presence?.Status, fc.status, "offline"),
-    client_status: firstArray(user.Presence?.Type, fc.client_status, fc.devices),
+    client_status: clientStatusArray(user.Presence?.Type, user.Presence?.ClientStatus, user.Presence?.client_status, fc.client_status, fc.devices),
     guild_tag: user.GuildTag || fc.guild_tag || null,
     public_flags: user.public_flags || fc.public_flags || 0,
-    premium_type: fc.premium_type || 0,
+    premium_type: Number(firstValue(user.UserPremiumType, user.PremiumType, user.premium_type, fc.UserPremiumType, fc.PremiumType, fc.premium_type, 0)) || 0,
+    premium_since: toIso(firstValue(user.PremiumSince, user.PremiumSinceAt, user.UserPremiumSince, user.NitroSince, user.NitroSinceAt, fc.PremiumSince, fc.PremiumSinceAt, fc.UserPremiumSince, fc.nitro_since, fc.premium_since)),
+    boost_since: toIso(firstValue(user.BoostSince, user.BoostSinceAt, user.UserBoostSince, user.GuildBoostSince, fc.BoostSince, fc.BoostSinceAt, fc.UserBoostSince, fc.GuildBoostSince, fc.boost_since)),
     badges,
     created_at: toIso(user.UserCreatedTimestamp) || toIso(user.UserCreated) || parseCreatedAt(uid),
     age: firstValue(fc.TopAge, user.age),
@@ -491,6 +543,7 @@ function hasItems(value) {
 function mergeProfiles(dcsv, findcord) {
   if (!dcsv) return findcord;
   if (!findcord) return dcsv;
+  const mergedServers = mergeServerArrays(dcsv.servers, findcord.servers);
   return {
     ...dcsv,
     ...Object.fromEntries(Object.entries(findcord).filter(([, value]) => value !== null && value !== undefined && value !== "")),
@@ -504,10 +557,13 @@ function mergeProfiles(dcsv, findcord) {
     client_status: hasItems(findcord.client_status) ? findcord.client_status : dcsv.client_status,
     guild_tag: firstValue(findcord.guild_tag, dcsv.guild_tag),
     custom_status: firstValue(findcord.custom_status, dcsv.custom_status),
+    premium_since: firstValue(findcord.premium_since, dcsv.premium_since),
+    boost_since: firstValue(findcord.boost_since, dcsv.boost_since),
+    legacy_username: firstValue(findcord.legacy_username, dcsv.legacy_username),
     badges: hasItems(findcord.badges) ? findcord.badges : dcsv.badges,
     other_names: hasItems(findcord.other_names) ? findcord.other_names : dcsv.other_names,
-    servers: hasItems(findcord.servers) ? findcord.servers : dcsv.servers,
-    server_count: firstValue(findcord.server_count, dcsv.server_count),
+    servers: mergedServers,
+    server_count: Math.max(Number(findcord.server_count || 0), Number(dcsv.server_count || 0), mergedServers.length) || null,
     active_hours: isPlainObject(findcord.active_hours) ? findcord.active_hours : dcsv.active_hours,
     activity: isPlainObject(findcord.activity) ? findcord.activity : dcsv.activity,
     punishments: hasItems(findcord.punishments) ? findcord.punishments : dcsv.punishments,
@@ -536,8 +592,8 @@ function hasMeaningfulActiveHours(profile) {
 function isCompleteProfile(profile) {
   if (!profile?.id || !profile?.username) return false;
   if (profile.findcord_loaded && profile.findcord_has_guilds) return true;
-  if (hasItems(profile.servers) || hasItems(profile.voice_friends) || hasItems(profile.message_friends)) return true;
-  if (hasItems(profile.punishments) || hasMeaningfulActiveHours(profile)) return true;
+  if (profile.findcord_loaded && (hasItems(profile.voice_friends) || hasItems(profile.message_friends))) return true;
+  if (profile.findcord_loaded && (hasItems(profile.punishments) || hasMeaningfulActiveHours(profile))) return true;
   return false;
 }
 
