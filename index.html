@@ -822,6 +822,246 @@
           display: none;
         }
       }
+
+      /* ── Settings ─────────────────────────────────── */
+      .settings-btn {
+        position: fixed;
+        left: 34px;
+        bottom: 34px;
+        z-index: 4;
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(19,19,19,0.9);
+        color: #a78bfa;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        backdrop-filter: blur(14px);
+        box-shadow: 0 18px 50px rgba(0,0,0,0.34);
+        transition: box-shadow 280ms ease, border-color 280ms ease;
+      }
+
+      .settings-btn:hover {
+        border-color: rgba(167,139,250,0.45);
+        box-shadow: 0 18px 50px rgba(0,0,0,0.34), 0 0 28px 6px rgba(139,92,246,0.35);
+      }
+
+      .settings-btn svg {
+        width: 22px;
+        height: 22px;
+        transition: transform 420ms ease;
+      }
+
+      .settings-btn.open svg {
+        transform: rotate(65deg);
+      }
+
+      .settings-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 5;
+        display: none;
+      }
+
+      .settings-overlay.open { display: block; }
+
+      .settings-panel {
+        position: fixed;
+        left: 34px;
+        bottom: calc(34px + 64px + 12px);
+        z-index: 6;
+        width: 340px;
+        border-radius: 20px;
+        background: #111111;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(139,92,246,0.07);
+        overflow: hidden;
+        transform: translateY(14px);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 260ms cubic-bezier(0.34,1.4,0.64,1), opacity 200ms ease;
+      }
+
+      .settings-panel.open {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .settings-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 17px 20px 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        font-size: 15px;
+        font-weight: 700;
+        color: #e4e8f0;
+      }
+
+      .settings-header svg {
+        width: 19px;
+        height: 19px;
+        color: #a78bfa;
+      }
+
+      .settings-body {
+        padding: 18px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .settings-label {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #4a5468;
+        margin-bottom: 10px;
+      }
+
+      .lang-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .lang-opt {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        height: 42px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.03);
+        color: #7a8699;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+      }
+
+      .lang-opt.active {
+        border-color: rgba(139,92,246,0.45);
+        background: rgba(139,92,246,0.12);
+        color: #c4b5fd;
+      }
+
+      .lang-opt .check {
+        width: 13px;
+        height: 13px;
+        color: #a78bfa;
+        flex-shrink: 0;
+      }
+
+      .lang-opt:not(.active) .check { display: none; }
+
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 11px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        cursor: pointer;
+      }
+
+      .toggle-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .toggle-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        font-size: 17px;
+      }
+
+      .toggle-copy { flex: 1; }
+
+      .toggle-copy strong {
+        display: block;
+        font-size: 13.5px;
+        font-weight: 650;
+        color: #d0d8e4;
+      }
+
+      .toggle-copy span {
+        display: block;
+        font-size: 11px;
+        color: #4a5468;
+        margin-top: 2px;
+      }
+
+      .toggle-switch {
+        position: relative;
+        width: 42px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+      }
+
+      .toggle-track {
+        position: absolute;
+        inset: 0;
+        border-radius: 24px;
+        background: rgba(255,255,255,0.1);
+        transition: background 220ms ease;
+        cursor: pointer;
+      }
+
+      .toggle-track::after {
+        content: "";
+        position: absolute;
+        left: 3px;
+        top: 3px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        transition: transform 240ms cubic-bezier(0.34,1.4,0.64,1);
+      }
+
+      .toggle-switch input:checked + .toggle-track { background: #7c3aed; }
+      .toggle-switch input:checked + .toggle-track::after { transform: translateX(18px); }
+
+      .settings-foot {
+        padding: 11px 20px 13px;
+        border-top: 1px solid rgba(255,255,255,0.06);
+        text-align: center;
+        font-size: 11px;
+        color: #30394a;
+        font-weight: 500;
+      }
+
+      @media (max-width: 480px) {
+        .settings-panel {
+          left: 16px;
+          right: 16px;
+          width: auto;
+          bottom: calc(16px + 56px + 10px);
+        }
+        .settings-btn {
+          left: 16px;
+          bottom: 16px;
+          width: 56px;
+          height: 56px;
+          border-radius: 14px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -848,6 +1088,73 @@
       (adsbygoogle = window.adsbygoogle || []).push({});
       (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
+
+    <!-- Settings -->
+    <button class="settings-btn" id="settingsBtn" aria-label="Site Ayarları" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <div class="settings-overlay" id="settingsOverlay"></div>
+    <div class="settings-panel" id="settingsPanel" role="dialog" aria-label="Site Ayarları" aria-modal="true">
+      <div class="settings-header">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Site Ayarları
+      </div>
+
+      <div class="settings-body">
+        <div>
+          <div class="settings-label">DİL SEÇİMİ</div>
+          <div class="lang-grid">
+            <button class="lang-opt active" id="langTr" data-lang="tr" type="button">
+              🇹🇷 Türkçe
+              <svg class="check" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="lang-opt" id="langEn" data-lang="en" type="button">
+              🇺🇸 English
+              <svg class="check" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="settings-label">AYARLAR</div>
+          <label class="toggle-row">
+            <span class="toggle-icon" style="background:rgba(239,68,68,0.14)">🔞</span>
+            <span class="toggle-copy">
+              <strong>+18 İçerik</strong>
+              <span>+18 sunucuları ve içerikleri göster</span>
+            </span>
+            <span class="toggle-switch">
+              <input type="checkbox" id="toggle18">
+              <span class="toggle-track"></span>
+            </span>
+          </label>
+          <label class="toggle-row">
+            <span class="toggle-icon" style="background:rgba(139,92,246,0.14)">✨</span>
+            <span class="toggle-copy">
+              <strong>Lazer Efekti</strong>
+              <span>Mouse imlecini takip eden efekt</span>
+            </span>
+            <span class="toggle-switch">
+              <input type="checkbox" id="toggleLaser">
+              <span class="toggle-track"></span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-foot">IGME v1.0.0 © 2026</div>
+    </div>
 
     <a class="report-button" href="mailto:destek@sammvsc.top?subject=Hata%20Bildirimi" aria-label="Hata bildir">
       <span class="report-icon" aria-hidden="true">
@@ -1141,6 +1448,59 @@
       renderRecent();
     </script>
     <script>
+      /* ── Settings panel ───────────────────────────── */
+      (function () {
+        const btn = document.getElementById('settingsBtn');
+        const panel = document.getElementById('settingsPanel');
+        const overlay = document.getElementById('settingsOverlay');
+        const langTr = document.getElementById('langTr');
+        const langEn = document.getElementById('langEn');
+        const toggle18 = document.getElementById('toggle18');
+        const toggleLaser = document.getElementById('toggleLaser');
+
+        function openPanel() {
+          btn.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+          panel.classList.add('open');
+          overlay.classList.add('open');
+        }
+
+        function closePanel() {
+          btn.classList.remove('open');
+          btn.setAttribute('aria-expanded', 'false');
+          panel.classList.remove('open');
+          overlay.classList.remove('open');
+        }
+
+        btn.addEventListener('click', () => panel.classList.contains('open') ? closePanel() : openPanel());
+        overlay.addEventListener('click', closePanel);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
+
+        /* Language */
+        const savedLang = localStorage.getItem('igme_lang') || 'tr';
+        if (savedLang === 'en') { langEn.classList.add('active'); langTr.classList.remove('active'); }
+        [langTr, langEn].forEach(b => b.addEventListener('click', () => {
+          const lang = b.dataset.lang;
+          localStorage.setItem('igme_lang', lang);
+          langTr.classList.toggle('active', lang === 'tr');
+          langEn.classList.toggle('active', lang === 'en');
+        }));
+
+        /* +18 */
+        toggle18.checked = localStorage.getItem('igme_18') === '1';
+        toggle18.addEventListener('change', () => localStorage.setItem('igme_18', toggle18.checked ? '1' : '0'));
+
+        /* Laser */
+        const laserOn = localStorage.getItem('igme_laser') !== '0';
+        window.__igmeLaserEnabled = laserOn;
+        toggleLaser.checked = laserOn;
+        toggleLaser.addEventListener('change', () => {
+          window.__igmeLaserEnabled = toggleLaser.checked;
+          localStorage.setItem('igme_laser', toggleLaser.checked ? '1' : '0');
+        });
+      })();
+    </script>
+    <script>
       (function () {
         const cv = document.createElement("canvas");
         cv.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:9999;";
@@ -1187,6 +1547,7 @@
         }
 
         document.addEventListener("mousemove", (e) => {
+          if (!window.__igmeLaserEnabled) return;
           trail.push({ x: e.clientX, y: e.clientY });
           if (trail.length > 10) trail.shift();
           if (Math.random() < 0.03 && trail.length > 3) {
