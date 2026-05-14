@@ -549,7 +549,7 @@ body.kvkk-page::before {
   background: rgba(20, 20, 46, 0.92);
   color: #8f98ff;
   font-size: 14px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .kvkk-hero-badge svg {
@@ -562,7 +562,7 @@ body.kvkk-page::before {
   color: #ffffff;
   font-size: clamp(42px, 7vw, 58px);
   line-height: 1;
-  font-weight: 950;
+  font-weight: 900;
 }
 
 .kvkk-hero-block p {
@@ -614,7 +614,7 @@ body.kvkk-page::before {
   color: #2ee77d;
   font-size: 20px;
   line-height: 1.25;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .kvkk-notice h1 span {
@@ -631,7 +631,7 @@ body.kvkk-page::before {
 .kvkk-notice strong,
 .kvkk-section strong {
   color: #ffffff;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .kvkk-card {
@@ -664,7 +664,7 @@ body.kvkk-page::before {
   background: #1b1a46;
   color: #8690ff;
   font-size: 17px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .kvkk-heading h2 {
@@ -672,7 +672,7 @@ body.kvkk-page::before {
   color: #ffffff;
   font-size: 21px;
   line-height: 1.2;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .kvkk-section p {
@@ -699,7 +699,7 @@ body.kvkk-page::before {
   background: #171717;
   color: #f5f8ff;
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 500;
 }
 
 .kvkk-check {
@@ -712,7 +712,7 @@ body.kvkk-page::before {
   background: #8fa0ff;
   color: #11133a;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .kvkk-data-list {
@@ -765,7 +765,7 @@ body.kvkk-page::before {
   color: #ffffff;
   font-size: 16px;
   line-height: 1.25;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .kvkk-data-item div span,
@@ -838,7 +838,7 @@ body.kvkk-page::before {
   background: #5865f2;
   color: #ffffff;
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .kvkk-contact-button svg {
