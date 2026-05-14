@@ -129,9 +129,9 @@ npm run check
 Use these project settings:
 
 ```text
-Framework Preset: Other
+Framework Preset: Next.js
 Install Command: npm install
-Build Command: empty
+Build Command: npm run build
 Output Directory: empty
 Node.js Version: 20.x or newer
 ```

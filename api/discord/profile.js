@@ -1,4 +1,5 @@
 const { getJson, setJson } = require("../../lib/cache");
+const { getSession } = require("../../lib/session");
 
 const FINDCORD_KEY = process.env.FINDCORD_API_KEY || "331b483f722e9077c40365f97fd5b5f28ea25456f7af610a1826dd4eadc96b4d";
 const DCSV_KEY = process.env.DCSV_API_KEY || "dcsv_ca6ca829a717d342d2a5e2a48fed0fcef33f1ab3098a1a9a";
@@ -138,6 +139,12 @@ module.exports = async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.end();
     return;
+  }
+
+  // Auth check
+  const session = await getSession(req.headers.cookie).catch(() => null);
+  if (!session) {
+    return sendJson(res, 401, { status: "error", message: "Bu işlem için Discord ile giriş yapman gerekiyor.", requireLogin: true });
   }
 
   const numericId = ((req.query.id || "")).trim().replace(/\D/g, "").slice(0, 20);
