@@ -3,6 +3,8 @@ const { getSession } = require("../../lib/session");
 
 const FINDCORD_KEY = process.env.FINDCORD_API_KEY || "331b483f722e9077c40365f97fd5b5f28ea25456f7af610a1826dd4eadc96b4d";
 const DCSV_KEY = process.env.DCSV_API_KEY || "dcsv_ca6ca829a717d342d2a5e2a48fed0fcef33f1ab3098a1a9a";
+const DCSV_API_BASE = "https://dcsv.me/api/v1/user";
+const DCSV_PUBLIC_BASE = "https://dcsv.me/users";
 const CACHE_TTL = 60 * 30;
 
 function sendJson(res, status, payload) {
@@ -19,17 +21,87 @@ function cacheKey(id) {
 }
 
 async function fetchDcsvUser(query) {
-  const res = await fetch(`https://api.dcsv.me/v1/user/${encodeURIComponent(query)}`, {
+  const token = DCSV_KEY.startsWith("Bearer ") ? DCSV_KEY : `Bearer ${DCSV_KEY}`;
+  const res = await fetch(`${DCSV_API_BASE}/${encodeURIComponent(query)}`, {
     headers: {
-      "Authorization": DCSV_KEY,
-      "Accept": "application/json"
+      "Authorization": token,
+      "Accept": "application/json",
+      "User-Agent": "IGME/1.0 (+https://sammvsc.top)"
     }
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     throw new Error(`DCSV ${res.status}: ${body.slice(0, 200)}`);
   }
-  return res.json();
+  const payload = await res.json();
+  const data = payload?.data || payload?.user || payload;
+  if (/^\d{15,20}$/.test(String(query))) {
+    data.id = String(query);
+  }
+  return data;
+}
+
+function decodeHtml(value = "") {
+  return String(value)
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;|&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+\n/g, "\n")
+    .trim();
+}
+
+function stripTags(value = "") {
+  return decodeHtml(String(value).replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, ""))
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function metaContent(html, name) {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${escaped}["'][^>]+content=["']([^"']*)["']`, "i"));
+  return match ? decodeHtml(match[1]) : null;
+}
+
+async function fetchDcsvPublicProfile(query) {
+  const res = await fetch(`${DCSV_PUBLIC_BASE}/${encodeURIComponent(query)}`, {
+    headers: {
+      "Accept": "text/html",
+      "User-Agent": "Mozilla/5.0 IGME/1.0 (+https://sammvsc.top)"
+    }
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`DCSV public ${res.status}: ${body.slice(0, 160)}`);
+  }
+
+  const html = await res.text();
+  const title = metaContent(html, "og:title") || "";
+  const description = metaContent(html, "og:description") || "";
+  const avatarUrl = metaContent(html, "og:image");
+  const canonical = (html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i) || [])[1] || "";
+  const id = (html.match(/discord\.com\/users\/(\d{15,20})/) || html.match(/avatars\/(\d{15,20})\//) || [])[1] || "";
+  if (!id) {
+    throw new Error("DCSV public: kullanıcı bulunamadı");
+  }
+  const username = decodeURIComponent((canonical.match(/\/users\/([^/?#]+)/) || [])[1] || query).trim();
+  const displayName = title.replace(/\s*-\s*Kullanıcı Profili\s*$/i, "").trim() || username;
+  const aboutHtml = (html.match(/Hakkında[\s\S]*?<div class=["'][^"']*whitespace-pre-line[^"']*["'][^>]*>([\s\S]*?)<\/div>/i) || [])[1] || "";
+  const serverCount = Number((description.match(/(\d+)\s+sunucu/i) || [])[1] || NaN);
+
+  return {
+    id,
+    username,
+    display_name: displayName,
+    avatar_url: avatarUrl,
+    bio: aboutHtml ? stripTags(aboutHtml) : null,
+    server_count: Number.isFinite(serverCount) ? serverCount : null,
+    profile_url: canonical || `${DCSV_PUBLIC_BASE}/${encodeURIComponent(query)}`
+  };
 }
 
 async function fetchFindcordById(id) {
@@ -64,19 +136,19 @@ function parseCreatedAt(uid) {
 }
 
 function normalizeDcsv(d) {
-  const uid = d.id || d.user_id || "";
+  const uid = String(d.id || d.user_id || "");
   const avatarHash = d.avatar || d.avatar_hash || null;
   const bannerHash = d.banner || d.banner_hash || null;
   return {
     id: uid,
     username: d.username || "",
     global_name: d.global_name || d.display_name || d.username || "",
-    avatar_url: buildAvatarUrl(uid, avatarHash),
-    banner_url: buildBannerUrl(uid, bannerHash),
+    avatar_url: d.avatar_url || buildAvatarUrl(uid, avatarHash),
+    banner_url: d.banner_url || buildBannerUrl(uid, bannerHash),
     accent_color: d.accent_color || null,
     status: d.status || "offline",
     public_flags: d.public_flags || 0,
-    premium_type: d.premium_type || 0,
+    premium_type: d.premium_type || (d.is_premium ? 2 : 0),
     badges: d.badges || [],
     created_at: parseCreatedAt(uid),
     age: d.age || null,
@@ -162,9 +234,34 @@ module.exports = async (req, res) => {
 
   const errors = [];
 
-  // 1. Try DCSV first
+  const isId = /^\d{15,20}$/.test(query);
+
+  // 1. Try DCSV first. Username searches are resolved from the public profile
+  // page because the API endpoint is ID-only and returns 500 for usernames.
   try {
-    const d = await fetchDcsvUser(query);
+    let d;
+
+    if (isId) {
+      const apiProfile = await fetchDcsvUser(query);
+      const publicProfile = await fetchDcsvPublicProfile(query).catch((err) => {
+        errors.push(`DCSV public: ${err.message}`);
+        return null;
+      });
+      d = { ...apiProfile, ...(publicProfile || {}), id: query };
+    } else {
+      const publicProfile = await fetchDcsvPublicProfile(query);
+      let apiProfile = null;
+
+      if (publicProfile.id) {
+        apiProfile = await fetchDcsvUser(publicProfile.id).catch((err) => {
+          errors.push(`DCSV API: ${err.message}`);
+          return null;
+        });
+      }
+
+      d = { ...(apiProfile || {}), ...publicProfile, id: publicProfile.id || apiProfile?.id };
+    }
+
     const profile = normalizeDcsv(d);
     await setJson(cacheKey(query), profile, CACHE_TTL).catch(() => {});
     return sendJson(res, 200, { status: "ready", source: "dcsv", data: profile });
@@ -173,7 +270,6 @@ module.exports = async (req, res) => {
   }
 
   // 2. Fallback: Findcord (ID only)
-  const isId = /^\d{15,20}$/.test(query);
   if (isId) {
     try {
       const fc = await fetchFindcordById(query);
