@@ -285,7 +285,7 @@
   <script>
     const params = new URLSearchParams(location.search);
     const reason = params.get("reason");
-    const next = params.get("next") || "/";
+    const next = params.get("next") || "/?auth=profile";
 
     if (reason) {
       const toast = document.getElementById("toast");
@@ -300,11 +300,8 @@
       setTimeout(() => { toast.style.opacity = "0"; toast.style.transition = "opacity 400ms"; setTimeout(() => toast.remove(), 400); }, 4000);
     }
 
-    // Append ?next= to login button so callback can redirect back
-    if (next && next !== "/") {
-      const btn = document.getElementById("loginBtn");
-      btn.href = `/api/auth/discord?next=${encodeURIComponent(next)}`;
-    }
+    const btn = document.getElementById("loginBtn");
+    btn.href = `/api/auth/discord?next=${encodeURIComponent(next)}`;
   </script>
 </body>
 </html>
