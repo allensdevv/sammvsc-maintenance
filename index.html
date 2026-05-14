@@ -826,7 +826,12 @@
       }
 
       .footer-col a:hover {
-        color: #c8d3e8;
+        color: var(--accent, #c8d3e8);
+      }
+
+      .footer-col a:hover::before {
+        color: var(--accent, #323d52);
+        opacity: 0.7;
       }
 
       .footer-socials {
@@ -1516,7 +1521,7 @@
               </a>
             </div>
           </div>
-          <nav class="footer-col" aria-label="Keşfet">
+          <nav class="footer-col" aria-label="Keşfet" style="--accent:#8b5cf6">
             <strong style="border-left-color:#8b5cf6">
               <span data-i18n="footerExplore">KEŞFET</span>
             </strong>
@@ -1525,7 +1530,7 @@
             <a href="/" data-i18n="navSystemStatus">Sistem Durumu</a>
             <a href="hakkimizda.html" data-i18n="footerAbout">Hakkımızda</a>
           </nav>
-          <nav class="footer-col" aria-label="Kaynaklar">
+          <nav class="footer-col" aria-label="Kaynaklar" style="--accent:#f59e0b">
             <strong style="border-left-color:#f59e0b">
               <span data-i18n="footerResources">KAYNAKLAR</span>
             </strong>
@@ -1533,7 +1538,7 @@
             <a href="mailto:destek@sammvsc.top?subject=Hata%20Bildirimi" data-i18n="reportBug">Hata Bildir</a>
             <a href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer" data-i18n="footerInstagram">Instagram Profilimiz</a>
           </nav>
-          <nav class="footer-col" aria-label="Yasal">
+          <nav class="footer-col" aria-label="Yasal" style="--accent:#10b981">
             <strong style="border-left-color:#10b981">
               <span data-i18n="footerLegal">YASAL</span>
             </strong>
