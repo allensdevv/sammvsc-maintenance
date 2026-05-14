@@ -216,14 +216,6 @@
         min-width: 0;
       }
 
-      .hero-banner-gradient {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to top, rgba(17,17,17,0.85) 0%, transparent 60%);
-        z-index: 1;
-        pointer-events: none;
-      }
-
       .hero-bg {
         position: absolute;
         inset: -12px;
@@ -1047,7 +1039,6 @@
 
           <!-- Banner zone -->
           <div class="hero-banner">
-            <div class="hero-banner-gradient"></div>
             <div class="view-pill">
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
               <span id="viewCount">0</span>
@@ -1646,9 +1637,20 @@
           requestAnimationFrame(draw);
         }
 
+        const CARD_SELECTORS = '.profile-hero, .tabs, .tab-panels, .panel';
+
+        function isOverCard(x, y) {
+          for (const el of document.querySelectorAll(CARD_SELECTORS)) {
+            const r = el.getBoundingClientRect();
+            if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return true;
+          }
+          return false;
+        }
+
         document.addEventListener("mousemove", (e) => {
           trail.push({ x: e.clientX, y: e.clientY });
           if (trail.length > 10) trail.shift();
+          if (isOverCard(e.clientX, e.clientY)) return;
           if (Math.random() < 0.03 && trail.length > 3) {
             const back = trail[Math.max(0, trail.length - 2 - Math.floor(Math.random() * 2))];
             streaks.push({
