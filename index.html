@@ -823,6 +823,10 @@
         }
       }
 
+      /* +18 content gating — elements with [data-adult] are hidden until enabled */
+      [data-adult] { display: none !important; }
+      body.igme-adult [data-adult] { display: revert !important; }
+
       /* ── Settings ─────────────────────────────────── */
       .settings-btn {
         position: fixed;
@@ -1104,12 +1108,12 @@
           <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Site Ayarları
+        <span data-i18n="settingsTitle">Site Ayarları</span>
       </div>
 
       <div class="settings-body">
         <div>
-          <div class="settings-label">DİL SEÇİMİ</div>
+          <div class="settings-label" data-i18n="labelLang">DİL SEÇİMİ</div>
           <div class="lang-grid">
             <button class="lang-opt active" id="langTr" data-lang="tr" type="button">
               🇹🇷 Türkçe
@@ -1127,12 +1131,12 @@
         </div>
 
         <div>
-          <div class="settings-label">AYARLAR</div>
+          <div class="settings-label" data-i18n="labelSettings">AYARLAR</div>
           <label class="toggle-row">
             <span class="toggle-icon" style="background:rgba(239,68,68,0.14)">🔞</span>
             <span class="toggle-copy">
-              <strong>+18 İçerik</strong>
-              <span>+18 sunucuları ve içerikleri göster</span>
+              <strong data-i18n="adult18Title">+18 İçerik</strong>
+              <span data-i18n="adult18Desc">+18 sunucuları ve içerikleri göster</span>
             </span>
             <span class="toggle-switch">
               <input type="checkbox" id="toggle18">
@@ -1142,8 +1146,8 @@
           <label class="toggle-row">
             <span class="toggle-icon" style="background:rgba(139,92,246,0.14)">✨</span>
             <span class="toggle-copy">
-              <strong>Lazer Efekti</strong>
-              <span>Mouse imlecini takip eden efekt</span>
+              <strong data-i18n="laserTitle">Lazer Efekti</strong>
+              <span data-i18n="laserDesc">Mouse imlecini takip eden efekt</span>
             </span>
             <span class="toggle-switch">
               <input type="checkbox" id="toggleLaser">
@@ -1163,7 +1167,7 @@
           <path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
       </span>
-      Hata Bildir
+      <span data-i18n="reportBug">Hata Bildir</span>
     </a>
 
     <div class="page">
@@ -1182,20 +1186,20 @@
               <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M7 7H4a3 3 0 0 0 3 3M17 7h3a3 3 0 0 1-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
-            Bakım
+            <span data-i18n="navMaintenance">Bakım</span>
           </span>
           <span class="nav-link">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M16 11a4 4 0 1 0-8 0M5 21a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
-            Kullanıcı Analizi
+            <span data-i18n="navUserAnalysis">Kullanıcı Analizi</span>
           </span>
           <span class="nav-link">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
               <path d="m15 9-4 2-2 4 4-2 2-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
             </svg>
-            Sistem Durumu
+            <span data-i18n="navSystemStatus">Sistem Durumu</span>
           </span>
         </nav>
 
@@ -1211,10 +1215,10 @@
                 <path d="m16 16 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </span>
-            <h1 id="page-title">Instagram&apos;&#305; <span>Ke&#351;fet</span></h1>
+            <h1 id="page-title" data-i18n-html="heroTitle">Instagram'ı <span>Keşfet</span></h1>
           </div>
 
-          <p class="subtitle">
+          <p class="subtitle" data-i18n="heroSubtitle">
             Instagram profil analiz sistemi kısa süreli bakımda. Veri güvenliği, performans ve yeni analiz ekranları hazırlanıyor.
           </p>
 
@@ -1234,7 +1238,7 @@
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M3 12a9 9 0 1 0 3-6.7M3 4v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                Son Aramalar <span id="recentCount">(0)</span>
+                <span data-i18n="recentTitle">Son Aramalar</span> <span id="recentCount">(0)</span>
               </span>
               <span class="recent-actions">
                 <button class="recent-action icon-only" type="button" id="toggleRecent" aria-label="Son aramaları gizle veya göster">
@@ -1250,7 +1254,7 @@
                     <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
                     <path d="M9 6V4h6v2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
-                  Temizle
+                  <span data-i18n="clearBtn">Temizle</span>
                 </button>
               </span>
             </div>
@@ -1269,7 +1273,7 @@
               </span>
               <span class="brand-word">IG<span class="brand-accent">ME</span></span>
             </a>
-            <p class="footer-text">Instagram profil analiz platformu. Güvenli veri akışı, sade metrikler ve hızlı profil keşfi.</p>
+            <p class="footer-text" data-i18n="footerDesc">Instagram profil analiz platformu. Güvenli veri akışı, sade metrikler ve hızlı profil keşfi.</p>
             <a class="footer-social" href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
               <svg viewBox="0 0 24 24" fill="none" width="17" height="17" aria-hidden="true">
                 <rect x="4" y="4" width="16" height="16" rx="5" stroke="currentColor" stroke-width="1.8"/>
@@ -1283,23 +1287,23 @@
                 <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
                 <path d="M3 12h18M12 3c2.2 2.5 3.2 5.5 3.2 9S14.2 18.5 12 21M12 3c-2.2 2.5-3.2 5.5-3.2 9s1 6.5 3.2 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
               </svg>
-              KEŞFET
+              <span data-i18n="footerExplore">KEŞFET</span>
             </strong>
-            <a href="/">Bakım Modu</a>
-            <a href="/">Kullanıcı Analizi</a>
-            <a href="/">Sistem Durumu</a>
-            <a href="hakkimizda.html">Hakkımızda</a>
+            <a href="/" data-i18n="footerMaintenance">Bakım Modu</a>
+            <a href="/" data-i18n="navUserAnalysis">Kullanıcı Analizi</a>
+            <a href="/" data-i18n="navSystemStatus">Sistem Durumu</a>
+            <a href="hakkimizda.html" data-i18n="footerAbout">Hakkımızda</a>
           </nav>
           <nav class="footer-col" aria-label="Kaynaklar">
             <strong>
               <svg class="footer-heading-icon gold" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M13 2 5 13h6l-1 9 9-13h-6l1-7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
               </svg>
-              KAYNAKLAR
+              <span data-i18n="footerResources">KAYNAKLAR</span>
             </strong>
-            <a href="/">Profil Analizi</a>
-            <a href="mailto:destek@sammvsc.top?subject=Hata%20Bildirimi">Hata Bildir</a>
-            <a href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer">Instagram Profilimiz</a>
+            <a href="/" data-i18n="footerProfileAnalysis">Profil Analizi</a>
+            <a href="mailto:destek@sammvsc.top?subject=Hata%20Bildirimi" data-i18n="reportBug">Hata Bildir</a>
+            <a href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer" data-i18n="footerInstagram">Instagram Profilimiz</a>
           </nav>
           <nav class="footer-col" aria-label="Yasal">
             <strong>
@@ -1307,17 +1311,17 @@
                 <path d="M7 3h7l4 4v14H7V3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
                 <path d="M14 3v5h5M9.5 13h5M9.5 17h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
               </svg>
-              YASAL
+              <span data-i18n="footerLegal">YASAL</span>
             </strong>
             <a href="kvkk-aydinlatma-metni.html">KVKK</a>
-            <a href="gizlilik-politikasi.html">Gizlilik Politikası</a>
-            <a href="kullanim-sartlari.html">Kullanım Şartları</a>
-            <a href="hakkimizda.html">Hakkımızda</a>
+            <a href="gizlilik-politikasi.html" data-i18n="footerPrivacy">Gizlilik Politikası</a>
+            <a href="kullanim-sartlari.html" data-i18n="footerTerms">Kullanım Şartları</a>
+            <a href="hakkimizda.html" data-i18n="footerAbout">Hakkımızda</a>
           </nav>
         </div>
         <div class="footer-bottom">
-          <span>© 2026 IGME. Tüm hakları saklıdır.</span>
-          <span class="footer-status"><span class="status-dot" aria-hidden="true"></span> Tüm sistemler aktif <span class="footer-region">TR</span></span>
+          <span data-i18n="footerCopyright">© 2026 IGME. Tüm hakları saklıdır.</span>
+          <span class="footer-status"><span class="status-dot" aria-hidden="true"></span> <span data-i18n="footerSystemActive">Tüm sistemler aktif</span> <span class="footer-region">TR</span></span>
         </div>
       </footer>
     </div>
@@ -1389,7 +1393,8 @@
         }
 
         if (!items.length) {
-          recentList.innerHTML = `<div class="empty-recent">Henüz arama yapılmadı.</div>`;
+          const emptyText = (IGME_TRANSLATIONS[window.__igmeLang] || IGME_TRANSLATIONS.tr).emptyRecent;
+          recentList.innerHTML = `<div class="empty-recent">${emptyText}</div>`;
           return;
         }
 
@@ -1448,7 +1453,99 @@
       renderRecent();
     </script>
     <script>
-      /* ── Settings panel ───────────────────────────── */
+      /* ── i18n + Settings ─────────────────────────── */
+      const IGME_TRANSLATIONS = {
+        tr: {
+          pageTitle: 'IGME | Bakım Modu',
+          settingsTitle: 'Site Ayarları',
+          labelLang: 'DİL SEÇİMİ',
+          labelSettings: 'AYARLAR',
+          adult18Title: '+18 İçerik',
+          adult18Desc: '+18 sunucuları ve içerikleri göster',
+          laserTitle: 'Lazer Efekti',
+          laserDesc: 'Mouse imlecini takip eden efekt',
+          reportBug: 'Hata Bildir',
+          navMaintenance: 'Bakım',
+          navUserAnalysis: 'Kullanıcı Analizi',
+          navSystemStatus: 'Sistem Durumu',
+          heroTitle: 'Instagram\'ı <span>Keşfet</span>',
+          heroSubtitle: 'Instagram profil analiz sistemi kısa süreli bakımda. Veri güvenliği, performans ve yeni analiz ekranları hazırlanıyor.',
+          searchPlaceholder: 'Instagram kullanıcı adı girin...',
+          recentTitle: 'Son Aramalar',
+          clearBtn: 'Temizle',
+          footerDesc: 'Instagram profil analiz platformu. Güvenli veri akışı, sade metrikler ve hızlı profil keşfi.',
+          footerExplore: 'KEŞFET',
+          footerResources: 'KAYNAKLAR',
+          footerLegal: 'YASAL',
+          footerMaintenance: 'Bakım Modu',
+          footerAbout: 'Hakkımızda',
+          footerProfileAnalysis: 'Profil Analizi',
+          footerInstagram: 'Instagram Profilimiz',
+          footerPrivacy: 'Gizlilik Politikası',
+          footerTerms: 'Kullanım Şartları',
+          footerCopyright: '© 2026 IGME. Tüm hakları saklıdır.',
+          footerSystemActive: 'Tüm sistemler aktif',
+          emptyRecent: 'Henüz arama yapılmadı.',
+        },
+        en: {
+          pageTitle: 'IGME | Maintenance Mode',
+          settingsTitle: 'Site Settings',
+          labelLang: 'LANGUAGE',
+          labelSettings: 'SETTINGS',
+          adult18Title: '+18 Content',
+          adult18Desc: 'Show +18 servers and content',
+          laserTitle: 'Laser Effect',
+          laserDesc: 'Effect that follows mouse cursor',
+          reportBug: 'Report Bug',
+          navMaintenance: 'Maintenance',
+          navUserAnalysis: 'User Analysis',
+          navSystemStatus: 'System Status',
+          heroTitle: 'Explore <span>Instagram</span>',
+          heroSubtitle: 'Instagram profile analytics is briefly under maintenance. Data security, performance and new analysis screens are being prepared.',
+          searchPlaceholder: 'Enter Instagram username...',
+          recentTitle: 'Recent Searches',
+          clearBtn: 'Clear',
+          footerDesc: 'Instagram profile analytics platform. Secure data flow, clean metrics and fast profile discovery.',
+          footerExplore: 'EXPLORE',
+          footerResources: 'RESOURCES',
+          footerLegal: 'LEGAL',
+          footerMaintenance: 'Maintenance Mode',
+          footerAbout: 'About Us',
+          footerProfileAnalysis: 'Profile Analysis',
+          footerInstagram: 'Our Instagram',
+          footerPrivacy: 'Privacy Policy',
+          footerTerms: 'Terms of Use',
+          footerCopyright: '© 2026 IGME. All rights reserved.',
+          footerSystemActive: 'All systems active',
+          emptyRecent: 'No searches yet.',
+        }
+      };
+
+      window.__igmeLang = localStorage.getItem('igme_lang') || 'tr';
+
+      function applyLang(lang) {
+        window.__igmeLang = lang;
+        const t = IGME_TRANSLATIONS[lang] || IGME_TRANSLATIONS.tr;
+        document.title = t.pageTitle;
+        document.documentElement.lang = lang;
+
+        /* text content */
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.dataset.i18n;
+          if (t[key] !== undefined) el.textContent = t[key];
+        });
+
+        /* innerHTML (for elements with nested tags like h1 > span) */
+        document.querySelectorAll('[data-i18n-html]').forEach(el => {
+          const key = el.dataset.i18nHtml;
+          if (t[key] !== undefined) el.innerHTML = t[key];
+        });
+
+        /* placeholder */
+        const inp = document.getElementById('usernameInput');
+        if (inp) inp.placeholder = t.searchPlaceholder;
+      }
+
       (function () {
         const btn = document.getElementById('settingsBtn');
         const panel = document.getElementById('settingsPanel');
@@ -1477,18 +1574,29 @@
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
 
         /* Language */
-        const savedLang = localStorage.getItem('igme_lang') || 'tr';
-        if (savedLang === 'en') { langEn.classList.add('active'); langTr.classList.remove('active'); }
+        const savedLang = window.__igmeLang;
+        langTr.classList.toggle('active', savedLang === 'tr');
+        langEn.classList.toggle('active', savedLang === 'en');
+        applyLang(savedLang);
+
         [langTr, langEn].forEach(b => b.addEventListener('click', () => {
           const lang = b.dataset.lang;
           localStorage.setItem('igme_lang', lang);
           langTr.classList.toggle('active', lang === 'tr');
           langEn.classList.toggle('active', lang === 'en');
+          applyLang(lang);
+          if (typeof renderRecent === 'function') renderRecent();
         }));
 
-        /* +18 */
-        toggle18.checked = localStorage.getItem('igme_18') === '1';
-        toggle18.addEventListener('change', () => localStorage.setItem('igme_18', toggle18.checked ? '1' : '0'));
+        /* +18 — controls body class; [data-adult] elements hidden when off */
+        const adult18On = localStorage.getItem('igme_18') === '1';
+        toggle18.checked = adult18On;
+        document.body.classList.toggle('igme-adult', adult18On);
+        toggle18.addEventListener('change', () => {
+          const on = toggle18.checked;
+          localStorage.setItem('igme_18', on ? '1' : '0');
+          document.body.classList.toggle('igme-adult', on);
+        });
 
         /* Laser */
         const laserOn = localStorage.getItem('igme_laser') !== '0';
