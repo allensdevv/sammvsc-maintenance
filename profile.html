@@ -189,13 +189,15 @@
       .profile-hero {
         position: relative;
         border: 1px solid var(--line);
-        border-radius: 13px;
-        background: rgba(17, 17, 17, 0.92);
+        border-radius: 16px;
+        background: rgba(17, 17, 17, 0.85);
         overflow: hidden;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
       }
 
       .hero-banner {
-        height: 130px;
+        height: 85px;
         position: relative;
       }
 
@@ -206,12 +208,20 @@
         align-items: flex-end;
         justify-content: space-between;
         gap: 24px;
-        padding: 54px 28px 26px;
+        padding: 66px 28px 28px;
       }
 
       .hero-info {
         flex: 1 1 auto;
         min-width: 0;
+      }
+
+      .hero-banner-gradient {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(17,17,17,0.85) 0%, transparent 60%);
+        z-index: 1;
+        pointer-events: none;
       }
 
       .hero-bg {
@@ -325,7 +335,7 @@
       .view-pill {
         position: absolute;
         right: 14px;
-        top: 14px;
+        top: 10px;
         z-index: 4;
         display: inline-flex;
         align-items: center;
@@ -368,23 +378,24 @@
       }
 
       .avatar {
-        width: 92px;
-        height: 92px;
+        width: 120px;
+        height: 120px;
         display: grid;
         place-items: center;
         position: absolute;
         left: 28px;
-        top: -46px;
+        top: -60px;
         z-index: 3;
-        border: 3px solid #111111;
+        border: 4px solid #111111;
         border-radius: 50%;
         background: linear-gradient(135deg, #151b2a, #263b66);
         color: #fff;
-        font-size: 38px;
-        font-weight: 780;
+        font-size: 44px;
+        font-weight: 700;
         text-transform: uppercase;
         overflow: hidden;
         flex-shrink: 0;
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.07);
       }
 
       .avatar img {
@@ -399,10 +410,10 @@
         gap: 8px;
         margin: 0;
         color: #fff;
-        font-size: 32px;
-        line-height: 1.08;
-        font-weight: 760;
-        letter-spacing: 0;
+        font-size: 26px;
+        line-height: 1.1;
+        font-weight: 700;
+        letter-spacing: -0.01em;
       }
 
       .verified-profile-icon {
@@ -466,20 +477,20 @@
       }
 
       .meta {
-        margin-top: 8px;
-        color: #687386;
-        font-size: 14px;
-        font-weight: 440;
+        margin-top: 6px;
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 400;
       }
 
       .handle-row {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        margin-top: 8px;
-        color: #687386;
-        font-size: 14px;
-        font-weight: 440;
+        margin-top: 6px;
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 400;
       }
 
       .copy-handle {
@@ -520,57 +531,64 @@
       .stat strong {
         display: block;
         text-align: center;
-        font-size: 28px;
-        font-weight: 760;
+        font-size: 24px;
+        font-weight: 700;
         color: #fff;
       }
 
       .stat span {
         display: block;
         text-align: center;
-        color: #8a94a4;
-        font-size: 13px;
-        font-weight: 450;
+        color: #6b7280;
+        font-size: 12px;
+        font-weight: 400;
       }
 
       .tabs {
-        min-height: 60px;
+        min-height: 56px;
         display: grid;
         grid-template-columns: repeat(6, 1fr);
-        gap: 12px;
-        margin-top: 24px;
-        padding: 8px;
+        gap: 4px;
+        margin-top: 20px;
+        padding: 6px;
         border: 1px solid var(--line);
-        border-radius: 10px;
-        background: rgba(17, 17, 17, 0.94);
+        border-radius: 12px;
+        background: rgba(17, 17, 17, 0.96);
       }
 
       .tab {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 9px;
-        min-height: 42px;
-        padding: 0 12px;
+        gap: 7px;
+        min-height: 40px;
+        padding: 0 10px;
         border: 1px solid transparent;
         border-radius: 8px;
         background: transparent;
-        color: #8f98a8;
+        color: #6b7280;
         font: inherit;
-        font-weight: 650;
-        font-size: 14px;
+        font-weight: 500;
+        font-size: 13px;
         cursor: pointer;
+        transition: color 140ms ease, background 140ms ease;
+      }
+
+      .tab:hover:not(.active) {
+        color: #c4cdd8;
+        background: rgba(255,255,255,0.035);
       }
 
       .tab.active {
-        border-color: rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.045);
-        color: #fff;
+        border-color: rgba(139, 92, 246, 0.3);
+        background: rgba(109, 59, 231, 0.2);
+        color: #c4b5fd;
       }
 
       .tab svg {
-        width: 17px;
-        height: 17px;
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
       }
 
       .tab-panels {
@@ -587,25 +605,27 @@
 
       .panel {
         min-height: 374px;
-        padding: 20px 24px;
-        border: 1px solid var(--line);
-        border-radius: 13px;
-        background: rgba(17, 17, 17, 0.94);
+        padding: 22px 24px;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        background: rgba(17, 17, 17, 0.9);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
       }
 
       .panel-title {
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        margin-bottom: 26px;
+        gap: 9px;
+        margin-bottom: 22px;
         color: #fff;
-        font-size: 20px;
-        font-weight: 760;
+        font-size: 17px;
+        font-weight: 600;
       }
 
       .panel-title svg {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
       }
 
       .info-row {
@@ -613,24 +633,31 @@
         grid-template-columns: 1fr auto;
         gap: 18px;
         min-height: 36px;
-        color: #9aa3b1;
-        font-size: 14px;
-        font-weight: 430;
+        align-items: center;
+        color: #6b7280;
+        font-size: 13.5px;
+        font-weight: 400;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+      }
+
+      .info-row:last-of-type {
+        border-bottom: none;
       }
 
       .info-row strong {
-        color: #f2f5fb;
-        font-weight: 650;
+        color: #e8ecf4;
+        font-weight: 600;
       }
 
       .note-box {
-        margin-top: 12px;
-        padding: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 9px;
-        background: rgba(255, 255, 255, 0.035);
-        color: #d4dae5;
-        line-height: 1.5;
+        margin-top: 14px;
+        padding: 14px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.025);
+        color: #c8d0de;
+        font-size: 13.5px;
+        line-height: 1.55;
       }
 
       .empty-state {
@@ -706,7 +733,7 @@
         left: 0;
         right: 0;
         top: 0;
-        height: 130px;
+        height: 85px;
         border-radius: 0;
         background: rgba(255, 255, 255, 0.04);
       }
@@ -714,9 +741,9 @@
       .skeleton-avatar {
         position: absolute;
         left: 28px;
-        top: 84px;
-        width: 92px;
-        height: 92px;
+        top: 25px;
+        width: 120px;
+        height: 120px;
         border-radius: 50%;
         background: rgba(255, 255, 255, 0.045);
       }
@@ -725,16 +752,16 @@
         position: absolute;
         left: 28px;
         bottom: 72px;
-        width: 160px;
-        height: 28px;
+        width: 150px;
+        height: 24px;
       }
 
       .skeleton-handle {
         position: absolute;
         left: 28px;
-        bottom: 44px;
-        width: 110px;
-        height: 16px;
+        bottom: 46px;
+        width: 100px;
+        height: 14px;
       }
 
       .skeleton-stats {
@@ -930,6 +957,16 @@
 
         .hero-body {
           flex-wrap: wrap;
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+
+        .avatar {
+          left: 20px;
+          width: 96px;
+          height: 96px;
+          top: -48px;
+          font-size: 36px;
         }
 
         .hero-stats {
@@ -938,11 +975,11 @@
         }
 
         .tabs {
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(3, 1fr);
         }
 
         .profile-loading .tabs-skeleton {
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(3, 1fr);
         }
 
         .skeleton-stats {
@@ -1010,12 +1047,13 @@
 
           <!-- Banner zone -->
           <div class="hero-banner">
+            <div class="hero-banner-gradient"></div>
             <div class="view-pill">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.8"/></svg>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
               <span id="viewCount">0</span>
             </div>
             <button class="hero-view-btn" id="heroViewBtn" type="button" hidden>
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.8"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
               Görüntülemek için tıkla
             </button>
           </div>
@@ -1081,12 +1119,12 @@
             <span class="skeleton-shape"></span>
             <span class="skeleton-shape"></span>
           </div>
-          <button class="tab active" type="button" data-tab="bilgiler"><svg viewBox="0 0 24 24" fill="none"><path d="M16 11a4 4 0 1 0-8 0M5 21a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Bilgiler</button>
-          <button class="tab" type="button" data-tab="medya"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Medya</button>
-          <button class="tab" type="button" data-tab="saatler"><svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/></svg>Saatler</button>
-          <button class="tab" type="button" data-tab="insights"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M9 19v-8M14 19V9M19 19V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Insights</button>
-          <button class="tab" type="button" data-tab="gizlilik"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7v5c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V7l8-4Z" stroke="currentColor" stroke-width="2"/></svg>Gizlilik</button>
-          <button class="tab" type="button" data-tab="yorum"><svg viewBox="0 0 24 24" fill="none"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z" stroke="currentColor" stroke-width="2"/></svg>Yorum</button>
+          <button class="tab active" type="button" data-tab="bilgiler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Bilgiler</button>
+          <button class="tab" type="button" data-tab="medya"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m9 8 6 4-6 4V8Z"/></svg>Medya</button>
+          <button class="tab" type="button" data-tab="saatler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Saatler</button>
+          <button class="tab" type="button" data-tab="insights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>Insights</button>
+          <button class="tab" type="button" data-tab="gizlilik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 20 6v6c0 5.5-3.8 10.7-8 12-4.2-1.3-8-6.5-8-12V6l8-4Z"/></svg>Gizlilik</button>
+          <button class="tab" type="button" data-tab="yorum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>Yorum</button>
         </nav>
 
         <section class="tab-panels">
@@ -1113,7 +1151,7 @@
               </div>
             </div>
             <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M16 11a4 4 0 1 0-8 0M5 21a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               Kullanıcı Bilgileri
             </div>
             <div class="info-row"><span>Kullanıcı Adı</span><strong id="infoUsername">bilinmiyor</strong></div>
@@ -1131,7 +1169,7 @@
           <!-- Medya -->
           <div class="panel tab-panel" id="panel-medya">
             <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m9 8 6 4-6 4V8Z"/></svg>
               Medya
             </div>
             <div class="info-row"><span>Toplam Gönderi</span><strong id="mediaPosts">--</strong></div>
@@ -1142,7 +1180,7 @@
           <!-- Saatler -->
           <div class="panel tab-panel" id="panel-saatler">
             <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
               En İyi Paylaşım Saatleri
             </div>
             <div class="empty-state">Hesabın en aktif saatlerini analiz eden sistem yakında aktif olacak.</div>
@@ -1151,7 +1189,7 @@
           <!-- Insights -->
           <div class="panel tab-panel" id="panel-insights">
             <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M8 19v-6M12 19V9M16 19v-9M20 19V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
               Instagram İstatistikleri
             </div>
             <div class="empty-state" id="insightsState">API bağlantısı bekleniyor. Yetkili hesap bağlandığında erişim, gösterim, etkileşim ve medya metrikleri burada görünecek.</div>
@@ -1160,7 +1198,7 @@
           <!-- Gizlilik -->
           <div class="panel tab-panel" id="panel-gizlilik">
             <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7v5c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V7l8-4Z" stroke="currentColor" stroke-width="2"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 20 6v6c0 5.5-3.8 10.7-8 12-4.2-1.3-8-6.5-8-12V6l8-4Z"/></svg>
               Gizlilik &amp; Güvenlik
             </div>
             <div class="info-row"><span>Gizli Hesap</span><strong id="gizliPrivate">bilinmiyor</strong></div>
@@ -1175,7 +1213,7 @@
           <!-- Yorum -->
           <div class="panel tab-panel" id="panel-yorum">
             <div class="panel-title">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z" stroke="currentColor" stroke-width="2"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>
               Yorum Analizi
             </div>
             <div class="empty-state">Yorum kalıpları ve etkileşim analizi yakında burada görünecek.</div>
