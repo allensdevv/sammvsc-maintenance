@@ -489,76 +489,136 @@
       }
 
       .site-footer {
-        width: min(1200px, 100%);
+        width: 100vw;
+        margin: 104px 0 0 calc(50% - 50vw);
+        padding: 0 max(24px, calc((100vw - 1490px) / 2));
+        border-top: 1px solid transparent;
+        border-image: linear-gradient(90deg, rgba(109, 93, 245, 0.65), rgba(28, 211, 205, 0.56), rgba(239, 184, 66, 0.44)) 1;
+        background: rgba(14, 15, 22, 0.98);
+        color: #667392;
+      }
+
+      .footer-main {
         display: grid;
-        grid-template-columns: 1.35fr 1fr 1fr 1fr;
-        gap: 54px;
-        padding: 48px 0 34px;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
-        color: #6d7788;
+        grid-template-columns: minmax(260px, 1.55fr) minmax(150px, 0.8fr) minmax(150px, 0.8fr) minmax(180px, 0.85fr);
+        gap: clamp(48px, 8vw, 136px);
+        padding: 56px 0 66px;
       }
 
       .footer-brand {
         display: inline-flex;
         align-items: center;
-        gap: 10px;
+        gap: 11px;
         color: #f4f7ff;
-        font-size: 19px;
+        font-size: 25px;
         font-weight: 900;
+        text-decoration: none;
+        letter-spacing: 0;
+      }
+
+      .footer-brand .brand-icon {
+        width: 34px;
+        height: 34px;
       }
 
       .footer-text {
-        max-width: 310px;
-        margin: 22px 0 0;
-        color: #7b8597;
-        font-size: 14px;
-        line-height: 1.7;
+        max-width: 300px;
+        margin: 18px 0 0;
+        color: #7f8dad;
+        font-size: 15px;
+        line-height: 1.65;
       }
 
       .footer-social {
-        width: 38px;
-        height: 38px;
+        width: 34px;
+        height: 34px;
         display: grid;
         place-items: center;
-        margin-top: 24px;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.06);
-        color: #a9b3c5;
+        margin-top: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.045);
+        color: #7f8dad;
+        transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+      }
+
+      .footer-social:hover {
+        border-color: rgba(167, 139, 250, 0.28);
+        background: rgba(139, 92, 246, 0.13);
+        color: #d8d2ff;
       }
 
       .footer-col strong {
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        gap: 9px;
-        color: #f4f7ff;
-        font-size: 15px;
-        margin-bottom: 18px;
+        gap: 8px;
+        color: #cfd8ee;
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0;
+        margin-bottom: 20px;
+      }
+
+      .footer-heading-icon {
+        width: 14px;
+        height: 14px;
+        color: #8ba5ff;
+      }
+
+      .footer-heading-icon.gold {
+        color: #f2b705;
+      }
+
+      .footer-heading-icon.green {
+        color: #00d39c;
       }
 
       .footer-col a,
       .footer-col span {
         display: flex;
         align-items: center;
-        gap: 9px;
-        margin-top: 13px;
-        color: #7b8597;
-        font-size: 14px;
+        min-height: 24px;
+        margin-top: 9px;
+        color: #7382a3;
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 1.45;
+        text-decoration: none;
+        transition: color 160ms ease, transform 160ms ease;
+      }
+
+      .footer-col a:hover {
+        color: #dfe6ff;
+        transform: translateX(2px);
       }
 
       .footer-bottom {
-        grid-column: 1 / -1;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 20px;
-        margin-top: 28px;
-        padding-top: 28px;
-        border-top: 1px solid rgba(255, 255, 255, 0.07);
+        min-height: 68px;
+        border-top: 1px solid rgba(255, 255, 255, 0.055);
+        color: #536382;
         font-size: 13px;
       }
 
-      .footer-bottom b {
-        color: #a78bfa;
+      .footer-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: #00d39c;
+        box-shadow: 0 0 14px rgba(0, 211, 156, 0.56);
+      }
+
+      .footer-region {
+        color: #7582a0;
       }
 
       .report-button {
@@ -709,12 +769,21 @@
         }
 
         .site-footer {
+          margin-top: 80px;
+          padding-inline: 24px;
+        }
+
+        .footer-main {
           grid-template-columns: 1fr;
+          gap: 30px;
+          padding: 40px 0 38px;
         }
 
         .footer-bottom {
           align-items: flex-start;
           flex-direction: column;
+          justify-content: center;
+          min-height: 92px;
         }
 
         .report-button {
@@ -860,41 +929,63 @@
       </main>
 
       <footer class="site-footer">
-        <div>
-          <div class="footer-brand">
-            <span class="brand-icon" aria-hidden="true">
-              <img class="brand-logo" src="assets/si.png" alt="">
-            </span>
-            <span class="brand-word">IG<span class="brand-accent">ME</span></span>
+        <div class="footer-main">
+          <div>
+            <a class="footer-brand" href="/" aria-label="IGME ana sayfa">
+              <span class="brand-icon" aria-hidden="true">
+                <img class="brand-logo" src="assets/si.png" alt="">
+              </span>
+              <span class="brand-word">IG<span class="brand-accent">ME</span></span>
+            </a>
+            <p class="footer-text">Instagram profil analiz platformu. Güvenli veri akışı, sade metrikler ve hızlı profil keşfi.</p>
+            <a class="footer-social" href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" fill="none" width="17" height="17" aria-hidden="true">
+                <rect x="4" y="4" width="16" height="16" rx="5" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="12" cy="12" r="3.3" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+            </a>
           </div>
-          <p class="footer-text">Instagram profil analiz platformu. Yetkili metrikler, güvenli veri akışı ve profesyonel raporlama.</p>
-          <a class="footer-social" href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-            <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-              <rect x="4" y="4" width="16" height="16" rx="5" stroke="currentColor" stroke-width="1.8"/>
-              <circle cx="12" cy="12" r="3.3" stroke="currentColor" stroke-width="1.8"/>
-            </svg>
-          </a>
-        </div>
-        <div class="footer-col">
-          <strong>Sayfalar</strong>
-          <a href="/">Bakım Modu</a>
-          <a href="/">Kullanıcı Analizi</a>
-          <a href="/">Sistem Durumu</a>
-        </div>
-        <div class="footer-col">
-          <strong>Yasal</strong>
-          <a href="gizlilik-politikasi.html">Gizlilik Politikası</a>
-          <a href="kvkk-aydinlatma-metni.html">KVKK Aydınlatma Metni</a>
-          <a href="kullanim-sartlari.html">Kullanım Şartları</a>
-        </div>
-        <div class="footer-col">
-          <strong>Topluluk</strong>
-          <a href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer">Instagram Profilimiz</a>
-          <a href="hakkimizda.html">Hakkımızda</a>
+          <nav class="footer-col" aria-label="Keşfet">
+            <strong>
+              <svg class="footer-heading-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M3 12h18M12 3c2.2 2.5 3.2 5.5 3.2 9S14.2 18.5 12 21M12 3c-2.2 2.5-3.2 5.5-3.2 9s1 6.5 3.2 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              KEŞFET
+            </strong>
+            <a href="/">Bakım Modu</a>
+            <a href="/">Kullanıcı Analizi</a>
+            <a href="/">Sistem Durumu</a>
+            <a href="hakkimizda.html">Hakkımızda</a>
+          </nav>
+          <nav class="footer-col" aria-label="Kaynaklar">
+            <strong>
+              <svg class="footer-heading-icon gold" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M13 2 5 13h6l-1 9 9-13h-6l1-7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+              KAYNAKLAR
+            </strong>
+            <a href="/">Profil Analizi</a>
+            <a href="mailto:destek@sammvsc.top?subject=Hata%20Bildirimi">Hata Bildir</a>
+            <a href="https://instagram.com/kenanalperr" target="_blank" rel="noopener noreferrer">Instagram Profilimiz</a>
+          </nav>
+          <nav class="footer-col" aria-label="Yasal">
+            <strong>
+              <svg class="footer-heading-icon green" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M7 3h7l4 4v14H7V3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M14 3v5h5M9.5 13h5M9.5 17h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              YASAL
+            </strong>
+            <a href="kvkk-aydinlatma-metni.html">KVKK</a>
+            <a href="gizlilik-politikasi.html">Gizlilik Politikası</a>
+            <a href="kullanim-sartlari.html">Kullanım Şartları</a>
+            <a href="hakkimizda.html">Hakkımızda</a>
+          </nav>
         </div>
         <div class="footer-bottom">
           <span>© 2026 IGME. Tüm hakları saklıdır.</span>
-          <span>Meta veya Instagram ile bağlantılı değildir. <b>sammvsc.top</b></span>
+          <span class="footer-status"><span class="status-dot" aria-hidden="true"></span> Tüm sistemler aktif <span class="footer-region">TR</span></span>
         </div>
       </footer>
     </div>
