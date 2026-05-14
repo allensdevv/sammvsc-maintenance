@@ -84,7 +84,7 @@
         border-radius: 12px;
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
-        overflow: hidden;
+        overflow: visible;
       }
 
       /* Banner area */
@@ -93,11 +93,35 @@
         height: 48px; /* no-banner default */
         background: transparent;
         overflow: hidden;
+        border-radius: 12px 12px 0 0;
         transition: height 300ms ease;
       }
-      .profile-card.has-banner .hero-banner {
+      .profile-card.has-banner .hero-banner,
+      .profile-card.no-banner .hero-banner {
         height: 224px;
         cursor: zoom-in;
+      }
+      .profile-card.no-banner .hero-banner {
+        background:
+          radial-gradient(circle at 18% 20%, rgba(255,255,255,0.06), transparent 28%),
+          #0b0b0b;
+      }
+      .profile-card.no-banner .hero-banner::before {
+        content: "NO\A BANNER";
+        position: absolute;
+        left: 50%;
+        top: 49%;
+        transform: translate(-50%, -50%);
+        white-space: pre;
+        text-align: center;
+        color: #f7f7f7;
+        font-size: clamp(42px, 8.5vw, 112px);
+        font-weight: 900;
+        line-height: 0.82;
+        letter-spacing: 0.04em;
+        text-shadow: 0 16px 34px rgba(0,0,0,0.82);
+        opacity: 0.95;
+        pointer-events: none;
       }
       .hero-banner-img {
         position: absolute; inset: 0;
@@ -109,8 +133,9 @@
         position: absolute; inset: 0;
         background: linear-gradient(to top, rgba(17,17,17,0.7) 0%, transparent 50%);
       }
-      .profile-card.has-banner .hero-banner-overlay { display: block; }
-      .profile-card:not(.has-banner) .hero-banner-overlay { display: none; }
+      .profile-card.has-banner .hero-banner-overlay,
+      .profile-card.no-banner .hero-banner-overlay { display: block; }
+      .profile-card:not(.has-banner):not(.no-banner) .hero-banner-overlay { display: none; }
       .hero-banner-view {
         position: absolute;
         inset: 0;
@@ -125,8 +150,11 @@
         opacity: 0;
         transition: opacity 160ms ease;
       }
-      .profile-card.has-banner .hero-banner-view { display: flex; }
-      .profile-card.has-banner .hero-banner:hover .hero-banner-view { opacity: 1; }
+      .profile-card.has-banner .hero-banner-view,
+      .profile-card.no-banner .hero-banner-view { display: flex; }
+      .profile-card.has-banner .hero-banner:hover .hero-banner-view,
+      .profile-card.no-banner .hero-banner:hover .hero-banner-view { opacity: 1; }
+      .profile-card.no-banner .hero-banner-view { opacity: 0.95; }
 
       /* View pill */
       .view-pill {
@@ -149,7 +177,8 @@
         display: flex; flex-wrap: wrap; gap: 2px; justify-content: flex-end;
         max-width: 100px;
       }
-      .profile-card.has-banner .badge-row { top: 236px; right: 24px; }
+      .profile-card.has-banner .badge-row,
+      .profile-card.no-banner .badge-row { top: 236px; right: 24px; }
       .badge {
         width: 16px; height: 16px;
         display: grid; place-items: center;
@@ -163,10 +192,12 @@
       .badge::after {
         content: attr(data-tooltip);
         position: absolute;
-        left: 50%;
+        left: auto;
+        right: 0;
         bottom: calc(100% + 10px);
-        transform: translateX(-50%) translateY(4px);
-        max-width: min(330px, 72vw);
+        transform: translateY(4px);
+        width: max-content;
+        max-width: min(360px, calc(100vw - 32px));
         padding: 8px 10px;
         border-radius: 8px;
         border: 1px solid rgba(255,255,255,0.12);
@@ -175,16 +206,18 @@
         font-size: 12px;
         font-weight: 700;
         line-height: 1.35;
-        white-space: nowrap;
+        white-space: normal;
+        text-align: left;
         box-shadow: 0 14px 34px rgba(0,0,0,0.42);
         opacity: 0;
         pointer-events: none;
         transition: opacity 140ms ease, transform 140ms ease;
+        z-index: 20;
       }
       .badge:hover::after,
       .badge:focus-visible::after {
         opacity: 1;
-        transform: translateX(-50%) translateY(0);
+        transform: translateY(0);
       }
 
       /* ── HERO CONTENT ── */
@@ -197,7 +230,8 @@
       .hero-content {
         padding: 16px 24px 24px;
       }
-      .profile-card.has-banner .hero-content {
+      .profile-card.has-banner .hero-content,
+      .profile-card.no-banner .hero-content {
         padding-top: 78px;
         position: relative;
       }
@@ -208,7 +242,8 @@
         display: inline-block;
         margin-bottom: 10px; /* avatar altında isim gelir */
       }
-      .profile-card.has-banner .avatar-wrapper {
+      .profile-card.has-banner .avatar-wrapper,
+      .profile-card.no-banner .avatar-wrapper {
         position: absolute;
         top: -76px; left: 24px;
         margin-bottom: 0;
@@ -232,7 +267,8 @@
       }
       .avatar:hover img { opacity: 0.72; }
 
-      .profile-card.has-banner .avatar {
+      .profile-card.has-banner .avatar,
+      .profile-card.no-banner .avatar {
         width: 136px; height: 136px;
         border-width: 4px;
         font-size: 44px;
@@ -250,7 +286,8 @@
         cursor: default;
         box-shadow: 0 8px 18px rgba(0,0,0,0.35);
       }
-      .profile-card.has-banner .status-dot {
+      .profile-card.has-banner .status-dot,
+      .profile-card.no-banner .status-dot {
         bottom: 5px; right: 5px;
         width: 22px; height: 22px;
         border-width: 4px;
@@ -278,6 +315,7 @@
         opacity: 0;
         pointer-events: none;
         transition: opacity 140ms ease, transform 140ms ease;
+        z-index: 20;
       }
       .status-dot:hover::after,
       .status-dot:focus-visible::after {
@@ -1145,20 +1183,25 @@
         .badge { width: 24px; height: 24px; }
         .badge img, .badge svg { width: 22px; height: 22px; }
         .panel-grid-2 { grid-template-columns: 1fr 1fr; }
-        h1 { font-size: 28px; }
+        h1 { font-size: 32px; }
         /* md+: isim solda, stat sağda */
         .hero-info-row { flex-direction: row; align-items: flex-end; justify-content: space-between; }
         .avatar { width: 128px; height: 128px; font-size: 48px; }
       }
       @media (min-width: 1024px) {
         .avatar { width: 144px; height: 144px; font-size: 56px; }
+        h1 { font-size: 34px; }
+        .handle-text { font-size: 14px; }
+        .meta-row { font-size: 12px; }
       }
       @media (min-width: 1024px) {
         .badge-row { max-width: none; gap: 5px; right: 24px; }
         .badge { width: 28px; height: 28px; }
         .badge img, .badge svg { width: 26px; height: 26px; }
-        .profile-card.has-banner .badge-row { top: 236px; }
-        .profile-card.has-banner .avatar { width: 144px; height: 144px; }
+        .profile-card.has-banner .badge-row,
+        .profile-card.no-banner .badge-row { top: 236px; }
+        .profile-card.has-banner .avatar,
+        .profile-card.no-banner .avatar { width: 144px; height: 144px; }
       }
       @media (min-width: 1280px) {
         .tab-label { display: inline; }
@@ -1667,6 +1710,7 @@
 
       let currentAvatarUrl = "";
       let currentBannerUrl = "";
+      let currentViewer = null;
 
       const el = id => document.getElementById(id);
       const setText = (id, value) => {
@@ -1815,26 +1859,62 @@
         return "Yok";
       }
 
-      function statusLabel(s) {
+      function statusLabel(s, clientStatus) {
+        s = normalizeStatus(s, clientStatus);
         if (s === "online") return "Çevrimiçi";
         if (s === "idle") return "Boşta";
         if (s === "dnd") return "Rahatsız Etme";
         return "Çevrimdışı";
       }
 
-      function statusClass(s) {
-        return ["online", "idle", "dnd"].includes(s) ? s : "offline";
-      }
-
       function deviceList(value) {
         const source = Array.isArray(value) ? value : (value ? String(value).split(/[,\s]+/) : []);
+        const ignored = new Set(["offline", "invisible", "online", "idle", "dnd", "cevrimici", "bosta", "rahatsiz", "etme", "active", "aktif"]);
         return source.filter(Boolean).map(v => {
           const token = String(v).toLowerCase();
           if (["pc", "computer", "windows", "mac", "macos", "linux", "client"].includes(token)) return "desktop";
           if (["phone", "ios", "android", "tablet"].includes(token)) return "mobile";
           if (["browser"].includes(token)) return "web";
           return token;
-        });
+        }).filter(token => token && !ignored.has(token));
+      }
+
+      function normalizeStatus(value, clientStatus) {
+        const raw = String(value ?? "").trim().toLowerCase();
+        const plain = raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (["online", "cevrimici", "active", "aktif"].includes(plain)) return "online";
+        if (["idle", "bosta", "away"].includes(plain)) return "idle";
+        if (["dnd", "rahatsiz etme", "busy"].includes(plain)) return "dnd";
+        if (deviceList(clientStatus).length > 0) return "online";
+        return "offline";
+      }
+
+      function effectiveClientStatus(value, status) {
+        const devices = deviceList(value);
+        if (devices.length > 0) return devices;
+        return normalizeStatus(status) !== "offline" ? ["desktop"] : [];
+      }
+
+      function browserDeviceFallback() {
+        const ua = navigator.userAgent || "";
+        return /Android|iPhone|iPad|iPod|Mobile/i.test(ua) ? ["mobile"] : ["desktop"];
+      }
+
+      function applyViewerPresenceFallback(data) {
+        if (!data || !currentViewer?.discord_id || String(data.id || "") !== String(currentViewer.discord_id)) return data;
+        const status = normalizeStatus(data.status, data.client_status);
+        const devices = deviceList(data.client_status);
+        if (status !== "offline" && devices.length > 0) return data;
+        return {
+          ...data,
+          status: status === "offline" ? "online" : status,
+          client_status: devices.length > 0 ? devices : browserDeviceFallback()
+        };
+      }
+
+      function statusClass(s, clientStatus) {
+        const status = normalizeStatus(s, clientStatus);
+        return ["online", "idle", "dnd"].includes(status) ? status : "offline";
       }
 
       function deviceLabel(value) {
@@ -2424,17 +2504,20 @@
       }
 
       function applyProfile(data) {
+        data = applyViewerPresenceFallback(data || {});
         const card = el("profileCard");
 
         // Banner
         currentBannerUrl = data.banner_url ? withCdnSize(data.banner_url, 1024) : "";
         if (data.banner_url) {
           card.classList.add("has-banner");
+          card.classList.remove("no-banner");
           const bannerImg = el("heroBannerImg");
           bannerImg.style.backgroundImage = `url(${currentBannerUrl})`;
           bannerImg.classList.add("loaded");
         } else {
           card.classList.remove("has-banner");
+          card.classList.add("no-banner");
           const bannerImg = el("heroBannerImg");
           bannerImg.style.backgroundImage = "";
           bannerImg.classList.remove("loaded");
@@ -2444,8 +2527,10 @@
         el("displayName").textContent = data.global_name || data.username || "—";
         el("handleText").textContent = `@${data.username || ""}`;
         el("handle").textContent = data.id || "";
-        renderDeviceIcon(data.client_status);
-        el("deviceIcon").className = "device-icon " + statusClass(data.status) + (deviceIconSvg(data.client_status) ? " show" : "");
+        const profileStatus = normalizeStatus(data.status, data.client_status);
+        const profileDevices = effectiveClientStatus(data.client_status, profileStatus);
+        renderDeviceIcon(profileDevices);
+        el("deviceIcon").className = "device-icon " + statusClass(profileStatus, profileDevices) + (deviceIconSvg(profileDevices) ? " show" : "");
         renderIdentityTag(data.guild_tag);
 
         // Created at
@@ -2462,13 +2547,14 @@
           el("avatar").replaceChildren(img, dot);
         }
 
-        const statusText = data.custom_status || statusLabel(data.status);
-        const deviceText = deviceLabel(data.client_status);
+        const presenceText = statusLabel(profileStatus, profileDevices);
+        const customStatusText = data.custom_status || "—";
+        const deviceText = deviceLabel(profileDevices);
 
         // Status dot
         const statusDot = el("statusDot");
-        statusDot.className = "status-dot " + statusClass(data.status);
-        const statusTooltip = deviceText && deviceText !== "Bilinmiyor" ? deviceText : statusText;
+        statusDot.className = "status-dot " + statusClass(profileStatus, profileDevices);
+        const statusTooltip = deviceText && deviceText !== "Bilinmiyor" ? deviceText : presenceText;
         statusDot.dataset.label = statusTooltip;
         statusDot.title = statusTooltip;
         statusDot.tabIndex = 0;
@@ -2491,7 +2577,7 @@
 
         // Bilgiler panel
         setText("miniCreated", data.created_at ? fmtRelative(data.created_at) : "Bilinmiyor");
-        setText("miniStatus", statusText);
+        setText("miniStatus", presenceText);
         setText("miniDevice", deviceText);
         setText("miniBadges", String(badgeCount));
         setText("infoUsername", data.username || "—");
@@ -2502,7 +2588,7 @@
         setText("infoPronouns", data.pronouns || "—");
         setText("infoAge", data.age != null ? data.age : "bilinmiyor");
         setText("infoGender", data.gender || "bilinmiyor");
-        setText("infoStatus", statusText);
+        setText("infoStatus", customStatusText);
         setText("bio", data.bio || "Biyografi bulunamadı.");
 
         // Other names
@@ -2566,6 +2652,7 @@
           const authRes = await fetch("/api/auth/me", { cache: "no-store" });
           const authData = await authRes.json();
           if (!authData.loggedIn) { window.location.href = loginUrl(); return; }
+          currentViewer = authData.user || null;
         } catch { window.location.href = loginUrl(); return; }
 
         if (!discordQuery) {

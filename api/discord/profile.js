@@ -15,7 +15,7 @@ const CACHE_TTL = 60 * 30;
 const PARTIAL_CACHE_TTL = 60;
 const STALE_CACHE_TTL = 60 * 60 * 12;
 const EXTERNAL_TIMEOUT_MS = 9000;
-const CACHE_VERSION = "v8";
+const CACHE_VERSION = "v10";
 const TRANSIENT_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 
 function sendJson(res, status, payload) {
@@ -63,17 +63,64 @@ function firstArray(...values) {
 }
 
 function clientStatusArray(...values) {
+  const ignored = new Set(["offline", "invisible", "online", "idle", "dnd", "cevrimici", "bosta", "rahatsiz", "etme", "active", "aktif"]);
+  const normalizeDevice = value => {
+    const token = String(value || "").trim().toLowerCase();
+    if (["pc", "computer", "windows", "mac", "macos", "linux", "client"].includes(token)) return "desktop";
+    if (["phone", "ios", "android", "tablet"].includes(token)) return "mobile";
+    if (token === "browser") return "web";
+    return token;
+  };
   for (const value of values) {
-    if (Array.isArray(value) && value.length > 0) return value;
-    if (typeof value === "string" && value.trim()) return value.split(/[,\s]+/).filter(Boolean);
+    if (Array.isArray(value) && value.length > 0) {
+      const devices = value.map(normalizeDevice).filter(token => token && !ignored.has(token));
+      if (devices.length > 0) return devices;
+    }
+    if (typeof value === "string" && value.trim()) {
+      const devices = value.split(/[,\s]+/).map(normalizeDevice).filter(token => token && !ignored.has(token));
+      if (devices.length > 0) return devices;
+    }
     if (isPlainObject(value)) {
       const devices = Object.entries(value)
         .filter(([, state]) => state && String(state).toLowerCase() !== "offline")
-        .map(([device]) => device);
+        .map(([device]) => normalizeDevice(device))
+        .filter(token => token && !ignored.has(token));
       if (devices.length > 0) return devices;
     }
   }
   return [];
+}
+
+function normalizeStatus(value, clientStatus = []) {
+  let rawValue = value;
+  if (isPlainObject(value)) {
+    rawValue = firstValue(value.Status, value.status, value.State, value.state, value.presence, ...Object.values(value));
+  }
+  const raw = String(rawValue || "").trim().toLowerCase();
+  const plain = raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (["online", "cevrimici", "active", "aktif"].includes(plain)) return "online";
+  if (["idle", "bosta", "away"].includes(plain)) return "idle";
+  if (["dnd", "rahatsiz etme", "busy"].includes(plain)) return "dnd";
+  if (clientStatusArray(clientStatus).length > 0) return "online";
+  return "offline";
+}
+
+function effectiveClientStatus(status, ...values) {
+  const devices = clientStatusArray(...values);
+  if (devices.length > 0) return devices;
+  return normalizeStatus(status) !== "offline" ? ["desktop"] : [];
+}
+
+function applySessionPresenceFallback(profile, session) {
+  if (!profile || !session?.discord_id || String(profile.id) !== String(session.discord_id)) return profile;
+  const status = normalizeStatus(profile.status, profile.client_status);
+  const devices = clientStatusArray(profile.client_status);
+  if (status !== "offline" && devices.length > 0) return profile;
+  return {
+    ...profile,
+    status: status === "offline" ? "online" : status,
+    client_status: devices.length > 0 ? devices : ["desktop"]
+  };
 }
 
 function firstValue(...values) {
@@ -289,6 +336,35 @@ function normalizeDcsv(d) {
   const uid = String(d.id || d.user_id || "");
   const avatarHash = d.avatar || d.avatar_hash || null;
   const bannerHash = d.banner || d.banner_hash || null;
+  const rawStatus = firstValue(
+    d.status,
+    d.Status,
+    d.presence_status,
+    d.PresenceStatus,
+    d.DiscordStatus,
+    d.Presence?.Status,
+    d.Presence?.status,
+    d.presence?.Status,
+    d.presence?.status,
+    d.online === true ? "online" : null,
+    d.is_online === true ? "online" : null,
+    d.isOnline === true ? "online" : null,
+    "offline"
+  );
+  const clientStatus = effectiveClientStatus(
+    rawStatus,
+    d.client_status,
+    d.clientStatus,
+    d.devices,
+    d.device,
+    d.Presence?.Type,
+    d.Presence?.ClientStatus,
+    d.Presence?.client_status,
+    d.presence?.Type,
+    d.presence?.ClientStatus,
+    d.presence?.client_status
+  );
+  const status = normalizeStatus(rawStatus, clientStatus);
   return {
     id: uid,
     username: d.username || "",
@@ -296,8 +372,8 @@ function normalizeDcsv(d) {
     avatar_url: d.avatar_url || buildAvatarUrl(uid, avatarHash),
     banner_url: d.banner_url || buildBannerUrl(uid, bannerHash),
     accent_color: d.accent_color || null,
-    status: d.status || "offline",
-    client_status: clientStatusArray(d.client_status, d.devices, d.Presence?.Type, d.Presence?.ClientStatus),
+    status,
+    client_status: clientStatus,
     public_flags: d.public_flags || 0,
     premium_type: d.premium_type || (d.is_premium ? 2 : 0),
     premium_since: toIso(d.premium_since || d.nitro_since),
@@ -443,6 +519,42 @@ function normalizeFindcord(fc) {
     ? rawActiveSummary
     : (topHours ? `En aktif saatler: ${topHours}` : rawActiveSummary);
   const views = fc.LastViewing?.views;
+  const rawStatus = firstValue(
+    user.Presence?.Status,
+    user.Presence?.status,
+    user.Status,
+    user.status,
+    user.presence_status,
+    user.PresenceStatus,
+    fc.status,
+    fc.Status,
+    fc.presence_status,
+    fc.PresenceStatus,
+    fc.Presence?.Status,
+    fc.Presence?.status,
+    fc.online === true ? "online" : null,
+    fc.is_online === true ? "online" : null,
+    fc.isOnline === true ? "online" : null,
+    "offline"
+  );
+  const clientStatus = effectiveClientStatus(
+    rawStatus,
+    user.Presence?.Type,
+    user.Presence?.ClientStatus,
+    user.Presence?.client_status,
+    user.ClientStatus,
+    user.clientStatus,
+    user.devices,
+    user.device,
+    fc.client_status,
+    fc.clientStatus,
+    fc.devices,
+    fc.device,
+    fc.Presence?.Type,
+    fc.Presence?.ClientStatus,
+    fc.Presence?.client_status
+  );
+  const status = normalizeStatus(rawStatus, clientStatus);
 
   return {
     id: uid,
@@ -454,8 +566,8 @@ function normalizeFindcord(fc) {
     avatar_url: firstValue(user.UserdisplayAvatar, buildAvatarUrl(uid, user.avatar || fc.avatar)),
     banner_url: firstValue(user.UserBanner, buildBannerUrl(uid, user.banner || fc.banner)),
     accent_color: user.accent_color || fc.accent_color || null,
-    status: firstValue(user.Presence?.Status, fc.status, "offline"),
-    client_status: clientStatusArray(user.Presence?.Type, user.Presence?.ClientStatus, user.Presence?.client_status, fc.client_status, fc.devices),
+    status,
+    client_status: clientStatus,
     guild_tag: user.GuildTag || fc.guild_tag || null,
     public_flags: user.public_flags || fc.public_flags || 0,
     premium_type: Number(firstValue(user.UserPremiumType, user.PremiumType, user.premium_type, fc.UserPremiumType, fc.PremiumType, fc.premium_type, 0)) || 0,
@@ -544,6 +656,11 @@ function mergeProfiles(dcsv, findcord) {
   if (!dcsv) return findcord;
   if (!findcord) return dcsv;
   const mergedServers = mergeServerArrays(dcsv.servers, findcord.servers);
+  const mergedClientStatus = hasItems(findcord.client_status) ? findcord.client_status : dcsv.client_status;
+  const preferredStatus = normalizeStatus(findcord.status, mergedClientStatus);
+  const fallbackStatus = normalizeStatus(dcsv.status, mergedClientStatus);
+  const mergedStatus = preferredStatus !== "offline" ? preferredStatus : fallbackStatus;
+  const finalClientStatus = effectiveClientStatus(mergedStatus, mergedClientStatus);
   return {
     ...dcsv,
     ...Object.fromEntries(Object.entries(findcord).filter(([, value]) => value !== null && value !== undefined && value !== "")),
@@ -553,8 +670,8 @@ function mergeProfiles(dcsv, findcord) {
     avatar_url: firstValue(findcord.avatar_url, dcsv.avatar_url),
     banner_url: firstValue(findcord.banner_url, dcsv.banner_url),
     bio: firstValue(findcord.bio, dcsv.bio),
-    status: firstValue(findcord.status, dcsv.status, "offline"),
-    client_status: hasItems(findcord.client_status) ? findcord.client_status : dcsv.client_status,
+    status: mergedStatus,
+    client_status: finalClientStatus,
     guild_tag: firstValue(findcord.guild_tag, dcsv.guild_tag),
     custom_status: firstValue(findcord.custom_status, dcsv.custom_status),
     premium_since: firstValue(findcord.premium_since, dcsv.premium_since),
@@ -692,7 +809,7 @@ module.exports = async (req, res) => {
 
   const liveProfile = mergeProfiles(dcsvProfile, findcordProfile);
   const cachedBase = isCompleteProfile(cachedProfile) ? cachedProfile : staleProfile;
-  const profile = mergeProfiles(cachedBase, liveProfile) || cachedProfile || liveProfile;
+  const profile = applySessionPresenceFallback(mergeProfiles(cachedBase, liveProfile) || cachedProfile || liveProfile, session);
   if (profile) {
     const source = isCompleteProfile(liveProfile)
       ? (liveProfile.source || (findcordProfile ? "findcord" : "dcsv"))
