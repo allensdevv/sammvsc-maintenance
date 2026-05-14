@@ -1,0 +1,1060 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#050505">
+    <title>IGME | Discord Profil Analizi</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #050505;
+        --panel: #111111;
+        --line: rgba(255,255,255,0.08);
+        --ink: #f7f9ff;
+        --muted: #6b7280;
+        --blue: #5865f2;
+        --purple: #a78bfa;
+        --gold: #facc15;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at 50% 30%, rgba(88,101,242,0.1), transparent 26rem), #050505;
+        color: var(--ink);
+      }
+      a { color: inherit; text-decoration: none; }
+
+      /* ── PAGE ── */
+      .page {
+        width: min(1220px, calc(100% - 32px));
+        margin: 0 auto;
+        padding-bottom: 56px;
+      }
+
+      /* ── TOPBAR ── */
+      .topbar {
+        min-height: 70px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+      }
+      .brand { display: flex; align-items: center; gap: 10px; justify-self: start; font-size: 24px; font-weight: 900; white-space: nowrap; line-height: 1; }
+      .brand-word { color: #fff; font-weight: 900; }
+      .brand-accent { color: #a99cff; }
+      .brand-beta { min-height: 19px; display: inline-grid; place-items: center; padding: 0 7px; border: 1px solid rgba(139,92,246,0.5); border-radius: 5px; background: rgba(104,71,220,0.24); color: #c9c0ff; font-size: 10px; font-weight: 900; line-height: 1; }
+      .brand-logo { width: 42px; height: 42px; object-fit: contain; filter: drop-shadow(0 0 12px rgba(167,139,250,0.28)); }
+      .nav { justify-self: center; display: flex; align-items: center; gap: clamp(18px,4vw,42px); color: #b8c0ce; font-size: 14px; font-weight: 650; }
+      .nav-link { display: flex; align-items: center; gap: 8px; }
+      .nav-gold { color: var(--gold); }
+
+      /* ── PLATFORM BADGE ── */
+      .platform-badge {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 4px 12px; border-radius: 8px;
+        background: rgba(88,101,242,0.15); border: 1px solid rgba(88,101,242,0.35);
+        color: #7289da; font-size: 12px; font-weight: 700;
+        justify-self: end;
+      }
+      .platform-badge svg { width: 14px; height: 14px; }
+
+      /* ── HERO ── */
+      main { padding-top: 38px; }
+
+      .profile-hero {
+        position: relative;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(17,17,17,0.85);
+        overflow: hidden;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+      .hero-banner {
+        height: 140px;
+        position: relative;
+        background: linear-gradient(135deg, #1e1433 0%, #0d0d1a 100%);
+        overflow: hidden;
+      }
+      .hero-banner-img {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        opacity: 0;
+        transition: opacity 400ms ease;
+      }
+      .hero-banner-img.loaded { opacity: 1; }
+      .hero-banner-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(17,17,17,0.7) 0%, transparent 50%);
+        z-index: 1;
+      }
+
+      .hero-body {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 66px 28px 28px;
+      }
+      .hero-info { flex: 1 1 auto; min-width: 0; }
+
+      /* Avatar */
+      .avatar {
+        width: 120px; height: 120px;
+        display: grid; place-items: center;
+        position: absolute;
+        left: 28px; top: -60px;
+        z-index: 3;
+        border: 4px solid #111111;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1e1433, #2c2060);
+        color: #fff;
+        font-size: 44px; font-weight: 700;
+        text-transform: uppercase;
+        overflow: hidden;
+        flex-shrink: 0;
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.07);
+        cursor: pointer;
+      }
+      .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+      /* Status dot */
+      .status-dot {
+        position: absolute;
+        bottom: 4px; right: 4px;
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        border: 3px solid #111111;
+        background: #747f8d;
+        z-index: 4;
+      }
+      .status-dot.online { background: #3ba55c; }
+      .status-dot.idle { background: #faa61a; }
+      .status-dot.dnd { background: #ed4245; }
+      .status-dot.offline { background: #747f8d; }
+
+      /* Badges */
+      .badges {
+        position: absolute;
+        right: 18px; top: 150px;
+        display: flex; flex-wrap: wrap; gap: 6px;
+        justify-content: flex-end;
+        max-width: 280px;
+        z-index: 3;
+      }
+      .badge {
+        width: 26px; height: 26px;
+        display: grid; place-items: center;
+        border-radius: 6px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: transform 120ms ease;
+        cursor: default;
+      }
+      .badge:hover { transform: scale(1.15); }
+      .badge svg { width: 16px; height: 16px; }
+
+      /* Name */
+      h1 {
+        display: flex; align-items: center; gap: 8px;
+        margin: 0;
+        color: #fff;
+        font-size: 26px; line-height: 1.1;
+        font-weight: 700; letter-spacing: -0.01em;
+      }
+      .handle-row {
+        display: flex; align-items: center; gap: 8px;
+        margin-top: 6px;
+        color: #6b7280; font-size: 13px; font-weight: 400;
+      }
+      .copy-btn {
+        width: 22px; height: 22px;
+        display: inline-grid; place-items: center;
+        border: 0; border-radius: 6px;
+        background: transparent; color: #7f8da2;
+        cursor: pointer;
+        transition: background 160ms, color 160ms;
+      }
+      .copy-btn:hover, .copy-btn.copied { background: rgba(88,101,242,0.15); color: #7289da; }
+      .copy-btn svg { width: 14px; height: 14px; }
+
+      .created-at { margin-top: 5px; color: #4b5563; font-size: 12px; }
+
+      /* Stats */
+      .hero-stats { display: flex; gap: 28px; flex-shrink: 0; align-items: flex-end; }
+      .stat strong { display: block; text-align: center; font-size: 24px; font-weight: 700; color: #fff; }
+      .stat span { display: block; text-align: center; color: #6b7280; font-size: 12px; font-weight: 400; }
+
+      /* View pill */
+      .view-pill {
+        position: absolute;
+        right: 14px; top: 10px;
+        z-index: 4;
+        display: inline-flex; align-items: center; gap: 7px;
+        min-height: 32px; padding: 0 11px;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 9px;
+        background: rgba(255,255,255,0.05);
+        color: #d7deea; font-size: 13px; font-weight: 700;
+        cursor: default;
+      }
+
+      /* ── TABS ── */
+      .tabs {
+        min-height: 56px;
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 4px;
+        margin-top: 20px; padding: 6px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(17,17,17,0.96);
+      }
+      .tab {
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        min-height: 40px; padding: 0 8px;
+        border: 1px solid transparent; border-radius: 8px;
+        background: transparent; color: #6b7280;
+        font: inherit; font-weight: 500; font-size: 12px;
+        cursor: pointer; transition: color 140ms, background 140ms;
+        white-space: nowrap;
+      }
+      .tab:hover:not(.active) { color: #c4cdd8; background: rgba(255,255,255,0.035); }
+      .tab.active { border-color: rgba(88,101,242,0.35); background: rgba(88,101,242,0.18); color: #818cf8; }
+      .tab svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+      /* ── PANELS ── */
+      .tab-panels { margin-top: 20px; }
+      .tab-panel { display: none; }
+      .tab-panel.active { display: block; }
+
+      .panel {
+        min-height: 340px;
+        padding: 22px 24px;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        background: rgba(17,17,17,0.9);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+      }
+      .panel-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+      .panel-title {
+        display: inline-flex; align-items: center; gap: 9px;
+        margin-bottom: 20px; color: #fff;
+        font-size: 16px; font-weight: 600;
+      }
+      .panel-title svg { width: 17px; height: 17px; color: #818cf8; }
+
+      /* Info rows */
+      .info-row {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 16px; min-height: 36px; padding: 2px 0;
+        color: #6b7280; font-size: 13.5px; font-weight: 400;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+      }
+      .info-row:last-of-type { border-bottom: none; }
+      .info-row strong { color: #e8ecf4; font-weight: 600; text-align: right; }
+
+      .note-box {
+        margin-top: 14px; padding: 14px 16px;
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 10px; background: rgba(255,255,255,0.025);
+        color: #c8d0de; font-size: 13.5px; line-height: 1.55;
+      }
+      .note-box-label { color: #4b5563; font-size: 12px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+      .note-box-label svg { width: 13px; height: 13px; }
+
+      /* Tag pills */
+      .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+      .tag {
+        padding: 4px 12px; border-radius: 999px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #c4cdd8; font-size: 12.5px;
+        max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      }
+
+      /* Server list */
+      .server-list { display: flex; flex-direction: column; gap: 10px; }
+      .server-row {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 14px;
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 10px; background: rgba(255,255,255,0.025);
+        transition: background 140ms;
+      }
+      .server-row:hover { background: rgba(255,255,255,0.05); }
+      .server-icon {
+        width: 38px; height: 38px;
+        border-radius: 10px; overflow: hidden;
+        background: rgba(255,255,255,0.07);
+        display: grid; place-items: center;
+        font-size: 16px; font-weight: 700; color: #fff;
+        flex-shrink: 0;
+      }
+      .server-icon img { width: 100%; height: 100%; object-fit: cover; }
+      .server-name { font-size: 14px; font-weight: 600; color: #e8ecf4; flex: 1; min-width: 0; }
+      .server-name small { display: block; color: #6b7280; font-size: 12px; font-weight: 400; }
+      .server-badge {
+        padding: 2px 8px; border-radius: 5px;
+        background: rgba(88,101,242,0.15); border: 1px solid rgba(88,101,242,0.3);
+        color: #818cf8; font-size: 11px; font-weight: 700;
+        white-space: nowrap;
+      }
+
+      /* Activity */
+      .activity-card {
+        padding: 14px 16px;
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 12px; background: rgba(255,255,255,0.025);
+        display: flex; align-items: center; gap: 14px;
+      }
+      .activity-icon {
+        width: 48px; height: 48px; border-radius: 8px;
+        overflow: hidden; background: rgba(255,255,255,0.07);
+        display: grid; place-items: center; flex-shrink: 0;
+      }
+      .activity-icon svg { width: 24px; height: 24px; color: #818cf8; }
+      .activity-name { font-size: 14px; font-weight: 600; color: #e8ecf4; }
+      .activity-detail { font-size: 12.5px; color: #6b7280; margin-top: 3px; }
+
+      /* Punishment rows */
+      .punishment-row {
+        padding: 12px 16px;
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 10px; background: rgba(255,255,255,0.025);
+        display: flex; align-items: flex-start; gap: 12px;
+        margin-bottom: 10px;
+      }
+      .punishment-icon {
+        width: 32px; height: 32px; border-radius: 8px;
+        display: grid; place-items: center; flex-shrink: 0;
+      }
+      .punishment-icon.warn { background: rgba(250,204,21,0.15); color: #facc15; }
+      .punishment-icon.ban { background: rgba(237,66,69,0.15); color: #ed4245; }
+      .punishment-icon.mute { background: rgba(250,166,26,0.15); color: #faa61a; }
+      .punishment-icon svg { width: 16px; height: 16px; }
+      .punishment-type { font-size: 13px; font-weight: 600; color: #e8ecf4; }
+      .punishment-server { font-size: 12px; color: #6b7280; margin-top: 2px; }
+      .punishment-date { font-size: 11px; color: #4b5563; margin-left: auto; white-space: nowrap; }
+
+      /* Empty state */
+      .empty-state {
+        min-height: 200px; display: grid; place-items: center;
+        color: #4b5563; text-align: center; font-weight: 400;
+      }
+      .empty-state svg { width: 32px; height: 32px; margin-bottom: 10px; opacity: 0.4; }
+
+      /* Skeleton */
+      .skeleton-shape {
+        display: block; border-radius: 7px;
+        background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.07), rgba(255,255,255,0.04));
+        background-size: 220% 100%;
+        animation: skPulse 1.7s ease-in-out infinite;
+      }
+      @keyframes skPulse {
+        0% { background-position: 120% 0; opacity:.72; }
+        50% { opacity: 1; }
+        100% { background-position: -120% 0; opacity:.72; }
+      }
+
+      /* Report button */
+      .report-button {
+        position: fixed; right: 34px; bottom: 34px; z-index: 4;
+        display: inline-flex; align-items: center; gap: 12px;
+        min-height: 64px; padding: 0 24px 0 18px;
+        border: 1px solid rgba(255,255,255,0.1); border-radius: 18px;
+        background: rgba(19,19,19,0.9); color: #f4f7fc;
+        font-size: 15px; font-weight: 650;
+        box-shadow: 0 18px 50px rgba(0,0,0,0.34);
+        transition: box-shadow 280ms ease, border-color 280ms ease;
+      }
+      .report-button:hover {
+        border-color: rgba(88,101,242,0.45);
+        box-shadow: 0 18px 50px rgba(0,0,0,0.34), 0 0 28px 6px rgba(88,101,242,0.3);
+      }
+      .report-icon {
+        width: 36px; height: 36px; display: grid; place-items: center;
+        border: 1px solid rgba(88,101,242,0.34);
+        border-radius: 12px; background: rgba(88,101,242,0.15);
+        color: #7289da;
+      }
+      .report-icon svg { width: 19px; height: 19px; }
+
+      /* Lightbox */
+      .lightbox { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; }
+      .lightbox[hidden] { display: none; }
+      .lightbox-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.88); cursor: zoom-out; }
+      .lightbox-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+      .lightbox-img { max-width: min(420px,88vw); max-height: 78vh; border-radius: 50%; object-fit: cover; border: 3px solid rgba(88,101,242,0.42); box-shadow: 0 0 60px rgba(0,0,0,0.7); display: block; }
+      .lightbox-close { position: absolute; top: -14px; right: -14px; width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,0.14); border-radius: 50%; background: rgba(18,18,18,0.92); color: #d0d7e2; font-size: 20px; line-height: 1; cursor: pointer; transition: background 140ms, color 140ms; }
+      .lightbox-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+      /* Responsive */
+      @media (max-width: 820px) {
+        .topbar { grid-template-columns: 1fr auto; }
+        .nav { display: none; }
+        .hero-body { flex-wrap: wrap; padding-left: 20px; padding-right: 20px; }
+        .avatar { left: 20px; width: 96px; height: 96px; top: -48px; font-size: 36px; }
+        .badges { top: 128px; right: 12px; max-width: 180px; }
+        .hero-stats { width: 100%; justify-content: flex-start; }
+        .tabs { grid-template-columns: repeat(4, 1fr); }
+        .panel-two-col { grid-template-columns: 1fr; }
+        .report-button { right: 16px; bottom: 16px; }
+      }
+      @media (max-width: 500px) {
+        .tabs { grid-template-columns: repeat(4, 1fr); }
+        h1 { font-size: 20px; }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="report-button" href="mailto:destek@sammvsc.top?subject=Hata%20Bildirimi" aria-label="Hata bildir">
+      <span class="report-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>
+      </span>
+      Hata Bildir
+    </a>
+
+    <div class="page">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="IGME ana sayfa">
+          <img class="brand-logo" src="assets/si.png" alt="">
+          <span class="brand-word">IG<span class="brand-accent">ME</span></span>
+          <span class="brand-beta">BETA</span>
+        </a>
+        <nav class="nav" aria-label="Menü">
+          <span class="nav-link nav-gold">Beta</span>
+          <span class="nav-link">Kullanıcı Analizi</span>
+          <span class="nav-link">Sistem Durumu</span>
+        </nav>
+        <span class="platform-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.031.053a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03Z"/></svg>
+          Discord
+        </span>
+      </header>
+
+      <main>
+        <section class="profile-hero" id="profileHero">
+          <!-- Banner -->
+          <div class="hero-banner" id="heroBanner">
+            <div class="hero-banner-img" id="heroBannerImg"></div>
+            <div class="hero-banner-overlay"></div>
+            <div class="view-pill">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+              <span id="viewCount">0</span>
+            </div>
+          </div>
+
+          <!-- Badges (top right, below banner) -->
+          <div class="badges" id="badgeRow"></div>
+
+          <!-- Body -->
+          <div class="hero-body">
+            <div class="avatar" id="avatar" title="Görüntülemek için tıkla">
+              D
+              <span class="status-dot offline" id="statusDot"></span>
+            </div>
+            <div class="hero-info">
+              <h1>
+                <span id="displayName">Discord Profili</span>
+              </h1>
+              <div class="handle-row">
+                <span id="handle">@username</span>
+                <button class="copy-btn" id="copyHandle" type="button" title="Kopyala" aria-label="ID kopyala">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="10" height="10" rx="2"/><path d="M6 16H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+                <span class="created-at" id="createdAt"></span>
+              </div>
+            </div>
+            <div class="hero-stats">
+              <div class="stat"><strong id="statServers">--</strong><span>Sunucu</span></div>
+              <div class="stat"><strong id="statVoice">--</strong><span>Ses Arkadaşı</span></div>
+              <div class="stat"><strong id="statPunish">--</strong><span>Ceza</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tabs -->
+        <nav class="tabs" aria-label="Discord profil sekmeleri" id="tabNav">
+          <button class="tab active" type="button" data-tab="bilgiler">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Bilgiler
+          </button>
+          <button class="tab" type="button" data-tab="sunucular">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>Sunucular
+          </button>
+          <button class="tab" type="button" data-tab="saatler">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Saatler
+          </button>
+          <button class="tab" type="button" data-tab="aktivite">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Aktivite
+          </button>
+          <button class="tab" type="button" data-tab="siciller">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>Siciller
+          </button>
+          <button class="tab" type="button" data-tab="yetkili">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 20 6v6c0 5.5-3.8 10.7-8 12-4.2-1.3-8-6.5-8-12V6l8-4Z"/></svg>Yetkili
+          </button>
+          <button class="tab" type="button" data-tab="ses">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>Ses
+          </button>
+          <button class="tab" type="button" data-tab="mesaj">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>Mesaj
+          </button>
+        </nav>
+
+        <!-- Panels -->
+        <section class="tab-panels">
+
+          <!-- Bilgiler -->
+          <div class="panel tab-panel active" id="panel-bilgiler">
+            <div class="panel-two-col">
+              <div>
+                <div class="panel-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  Kullanıcı Bilgileri
+                </div>
+                <div class="info-row"><span>Kullanıcı Adı</span><strong id="infoUsername">—</strong></div>
+                <div class="info-row"><span>Görünen Ad</span><strong id="infoGlobalName">—</strong></div>
+                <div class="info-row"><span>Discord ID</span><strong id="infoId">—</strong></div>
+                <div class="info-row"><span>Hesap Yaşı</span><strong id="infoAge">—</strong></div>
+                <div class="info-row"><span>Cinsiyet</span><strong id="infoGender">bilinmiyor</strong></div>
+                <div class="info-row"><span>Özel Durum</span><strong id="infoStatus">—</strong></div>
+                <div class="info-row"><span>Nitro</span><strong id="infoNitro">—</strong></div>
+                <div class="note-box" id="bioBx">
+                  <div class="note-box-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg>
+                    Hakkımda
+                  </div>
+                  <div id="bio">—</div>
+                </div>
+              </div>
+              <div>
+                <div class="panel-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+                  Diğer İsimler
+                </div>
+                <div class="tag-list" id="otherNames">
+                  <span style="color:#4b5563;font-size:13px;">Kayıt bulunamadı</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sunucular -->
+          <div class="panel tab-panel" id="panel-sunucular">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
+              Ortak Sunucular
+            </div>
+            <div class="server-list" id="serverList">
+              <div class="empty-state">
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/></svg>
+                  <div>Sunucu bilgisi yükleniyor...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Saatler -->
+          <div class="panel tab-panel" id="panel-saatler">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+              Aktif Saatler
+            </div>
+            <div class="empty-state" id="saatlerState">
+              <div>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                <div>Aktif saat verisi yakında eklenecek.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aktivite -->
+          <div class="panel tab-panel" id="panel-aktivite">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              Aktivite
+            </div>
+            <div id="aktiviteContent">
+              <div class="empty-state">
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                  <div>Aktivite verisi yükleniyor...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Siciller -->
+          <div class="panel tab-panel" id="panel-siciller">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              Sicil Kayıtları
+            </div>
+            <div id="sicilList">
+              <div class="empty-state">
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg>
+                  <div>Sicil verisi yükleniyor...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Yetkili -->
+          <div class="panel tab-panel" id="panel-yetkili">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 20 6v6c0 5.5-3.8 10.7-8 12-4.2-1.3-8-6.5-8-12V6l8-4Z"/></svg>
+              Yetkili Olduğu Sunucular
+            </div>
+            <div class="server-list" id="adminServerList">
+              <div class="empty-state">
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2 20 6v6c0 5.5-3.8 10.7-8 12-4.2-1.3-8-6.5-8-12V6l8-4Z"/></svg>
+                  <div>Yetkili sunucu verisi yükleniyor...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ses -->
+          <div class="panel tab-panel" id="panel-ses">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+              Ses Geçmişi
+            </div>
+            <div class="empty-state">
+              <div>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                <div>Ses kanalı geçmişi yakında eklenecek.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mesaj -->
+          <div class="panel tab-panel" id="panel-mesaj">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>
+              Mesaj Arkadaşları
+            </div>
+            <div class="server-list" id="friendList">
+              <div class="empty-state">
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>
+                  <div>Mesaj arkadaşları yükleniyor...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </section>
+      </main>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" hidden>
+      <div class="lightbox-backdrop" id="lightboxBackdrop"></div>
+      <div class="lightbox-inner">
+        <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Kapat">×</button>
+        <img class="lightbox-img" id="lightboxImg" alt="" referrerpolicy="no-referrer">
+      </div>
+    </div>
+
+    <script>
+      const DISCORD_API = ["sammvsc.top","www.sammvsc.top"].includes(location.hostname)
+        ? "https://www.sammvsc.top/api/discord/profile"
+        : "/api/discord/profile";
+
+      const params = new URLSearchParams(location.search);
+      const rawId = (params.get("id") || params.get("u") || "").trim().replace(/\D/g,"").slice(0,20);
+
+      const el = id => document.getElementById(id);
+
+      // Lightbox
+      el("lightboxClose").onclick = el("lightboxBackdrop").onclick = () => { el("lightbox").hidden = true; el("lightboxImg").src = ""; };
+      document.addEventListener("keydown", e => { if (e.key === "Escape") { el("lightbox").hidden = true; } });
+
+      function openLightbox(src) {
+        if (!src) return;
+        el("lightboxImg").src = src;
+        el("lightbox").hidden = false;
+      }
+
+      // Tab switching
+      document.querySelectorAll(".tab[data-tab]").forEach(tab => {
+        tab.addEventListener("click", () => {
+          document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+          document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+          tab.classList.add("active");
+          const panel = el(`panel-${tab.dataset.tab}`);
+          if (panel) panel.classList.add("active");
+        });
+      });
+
+      // Copy handle
+      el("copyHandle").addEventListener("click", async () => {
+        const val = el("handle").textContent.trim();
+        try { await navigator.clipboard.writeText(val); } catch {}
+        el("copyHandle").classList.add("copied");
+        setTimeout(() => el("copyHandle").classList.remove("copied"), 900);
+      });
+
+      // Click avatar → lightbox
+      el("avatar").addEventListener("click", () => {
+        const img = el("avatar").querySelector("img");
+        if (img) openLightbox(img.src);
+      });
+
+      function fmtDate(iso) {
+        if (!iso) return null;
+        const d = new Date(iso);
+        return d.toLocaleDateString("tr-TR", { day:"2-digit", month:"2-digit", year:"numeric" })
+          + " " + d.toLocaleTimeString("tr-TR", { hour:"2-digit", minute:"2-digit" });
+      }
+
+      function accountAge(iso) {
+        if (!iso) return "bilinmiyor";
+        const ms = Date.now() - new Date(iso).getTime();
+        const days = Math.floor(ms / 86400000);
+        if (days < 30) return `${days} gün`;
+        if (days < 365) return `${Math.floor(days/30)} ay`;
+        return `${Math.floor(days/365)} yıl ${Math.floor((days%365)/30)} ay`;
+      }
+
+      function nitroLabel(type) {
+        if (type === 1) return "Nitro Classic";
+        if (type === 2) return "Nitro";
+        if (type === 3) return "Nitro Basic";
+        return "Yok";
+      }
+
+      function statusLabel(s) {
+        if (s === "online") return "Çevrimiçi";
+        if (s === "idle") return "Boşta";
+        if (s === "dnd") return "Rahatsız Etme";
+        return "Çevrimdışı";
+      }
+
+      // Discord badge flags
+      const BADGE_DEFS = [
+        { flag: 1 << 0,  label: "Discord Çalışanı",       color: "#5865f2" },
+        { flag: 1 << 1,  label: "Partner",                 color: "#5865f2" },
+        { flag: 1 << 2,  label: "HypeSquad Events",        color: "#f47fff" },
+        { flag: 1 << 3,  label: "Bug Hunter Lvl 1",        color: "#3ba55c" },
+        { flag: 1 << 6,  label: "HypeSquad Bravery",       color: "#9c59fe" },
+        { flag: 1 << 7,  label: "HypeSquad Brilliance",    color: "#f47fff" },
+        { flag: 1 << 8,  label: "HypeSquad Balance",       color: "#45ddc0" },
+        { flag: 1 << 9,  label: "Early Supporter",         color: "#7289da" },
+        { flag: 1 << 14, label: "Bug Hunter Lvl 2",        color: "#3ba55c" },
+        { flag: 1 << 17, label: "Erken Doğrulanmış Bot",   color: "#5865f2" },
+        { flag: 1 << 18, label: "Aktif Geliştirici",       color: "#3ba55c" },
+        { flag: 1 << 22, label: "Aktif Üye",               color: "#7289da" },
+      ];
+
+      function renderBadges(flags, premiumType, badges) {
+        const row = el("badgeRow");
+        row.innerHTML = "";
+        // From public_flags
+        BADGE_DEFS.forEach(def => {
+          if (!(flags & def.flag)) return;
+          const b = document.createElement("div");
+          b.className = "badge";
+          b.title = def.label;
+          b.style.color = def.color;
+          b.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>`;
+          row.appendChild(b);
+        });
+        // Nitro
+        if (premiumType > 0) {
+          const b = document.createElement("div");
+          b.className = "badge";
+          b.title = nitroLabel(premiumType);
+          b.style.color = "#f47fff";
+          b.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`;
+          row.appendChild(b);
+        }
+        // Extra badges from API
+        if (Array.isArray(badges)) {
+          badges.forEach(badge => {
+            if (typeof badge === "string") {
+              const b = document.createElement("div");
+              b.className = "badge";
+              b.title = badge;
+              b.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" style="color:#818cf8"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>`;
+              row.appendChild(b);
+            }
+          });
+        }
+      }
+
+      function renderServers(servers, containerId, emptyMsg) {
+        const list = el(containerId);
+        if (!servers || servers.length === 0) {
+          list.innerHTML = `<div class="empty-state"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/></svg><div>${emptyMsg}</div></div></div>`;
+          return;
+        }
+        list.innerHTML = servers.slice(0, 20).map(s => {
+          const name = s.name || s.guild_name || "Sunucu";
+          const id = s.id || s.guild_id || "";
+          const icon = s.icon ? `https://cdn.discordapp.com/icons/${id}/${s.icon}.png?size=64` : "";
+          const members = s.member_count ? `${Number(s.member_count).toLocaleString("tr-TR")} üye` : "";
+          const iconHtml = icon
+            ? `<img src="${icon}" alt="" loading="lazy" onerror="this.style.display='none'">`
+            : `<span>${name[0]}</span>`;
+          return `<div class="server-row">
+            <div class="server-icon">${iconHtml}</div>
+            <div class="server-name">${name}<small>${members}</small></div>
+            ${s.owner ? '<span class="server-badge">Sahip</span>' : ''}
+            ${s.admin ? '<span class="server-badge">Yönetici</span>' : ''}
+          </div>`;
+        }).join("");
+      }
+
+      function renderActivity(activity) {
+        const box = el("aktiviteContent");
+        if (!activity || (Array.isArray(activity) && activity.length === 0)) {
+          box.innerHTML = `<div class="empty-state"><div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <div>Şu an aktif bir aktivite yok.</div>
+          </div></div>`;
+          return;
+        }
+        const activities = Array.isArray(activity) ? activity : [activity];
+        box.innerHTML = activities.map(a => {
+          const name = a.name || a.game || a.song || "Aktivite";
+          const detail = a.details || a.artist || a.state || "";
+          const isMusic = a.type === 2 || a.spotify || a.song;
+          const iconSvg = isMusic
+            ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 17V9l8 2v8M9 13l8 2"/></svg>`
+            : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`;
+          return `<div class="activity-card">
+            <div class="activity-icon">${iconSvg}</div>
+            <div>
+              <div class="activity-name">${name}</div>
+              ${detail ? `<div class="activity-detail">${detail}</div>` : ""}
+            </div>
+          </div>`;
+        }).join("");
+      }
+
+      function renderPunishments(punishments) {
+        const box = el("sicilList");
+        if (!punishments || punishments.length === 0) {
+          box.innerHTML = `<div class="empty-state"><div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg>
+            <div>Sicil kaydı bulunamadı.</div>
+          </div></div>`;
+          return;
+        }
+        box.innerHTML = punishments.map(p => {
+          const type = (p.type || "").toLowerCase();
+          const isBan = type.includes("ban");
+          const isMute = type.includes("mute") || type.includes("sustur");
+          const cls = isBan ? "ban" : isMute ? "mute" : "warn";
+          const label = isBan ? "Ban" : isMute ? "Susturma" : "Uyarı";
+          const iconSvg = isBan
+            ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" x2="19.07" y1="4.93" y2="19.07"/></svg>`
+            : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>`;
+          return `<div class="punishment-row">
+            <div class="punishment-icon ${cls}">${iconSvg}</div>
+            <div>
+              <div class="punishment-type">${p.guild_name || p.server || "Sunucu"} — ${label}</div>
+              <div class="punishment-server">${p.reason || "Sebep belirtilmemiş"}</div>
+            </div>
+            <div class="punishment-date">${p.date || p.created_at ? fmtDate(p.date || p.created_at) : ""}</div>
+          </div>`;
+        }).join("");
+      }
+
+      function applyProfile(data) {
+        // Name + handle
+        el("displayName").textContent = data.global_name || data.username || "—";
+        el("handle").textContent = `@${data.username || ""}  •  ${data.id}`;
+
+        // Created at
+        if (data.created_at) {
+          el("createdAt").textContent = fmtDate(data.created_at);
+        }
+
+        // Avatar
+        if (data.avatar_url) {
+          const img = document.createElement("img");
+          img.alt = "";
+          img.loading = "eager";
+          img.referrerPolicy = "no-referrer";
+          img.src = data.avatar_url;
+          const dot = el("statusDot");
+          el("avatar").replaceChildren(img, dot);
+        }
+
+        // Banner
+        if (data.banner_url) {
+          const bannerEl = el("heroBannerImg");
+          bannerEl.style.backgroundImage = `url(${data.banner_url})`;
+          bannerEl.classList.add("loaded");
+        }
+
+        // Status dot
+        const dot = el("statusDot");
+        dot.className = "status-dot " + (data.status || "offline");
+
+        // Badges
+        renderBadges(data.public_flags || 0, data.premium_type || 0, data.badges);
+
+        // Stats
+        el("statServers").textContent = data.server_count != null ? data.server_count : "—";
+        el("statVoice").textContent = data.voice_friend_count != null ? data.voice_friend_count : "—";
+        el("statPunish").textContent = data.punishment_count != null ? data.punishment_count : "0";
+
+        // Bilgiler panel
+        el("infoUsername").textContent = data.username || "—";
+        el("infoGlobalName").textContent = data.global_name || "—";
+        el("infoId").textContent = data.id || "—";
+        el("infoAge").textContent = accountAge(data.created_at);
+        if (data.gender) el("infoGender").textContent = data.gender;
+        el("infoStatus").textContent = statusLabel(data.status);
+        el("infoNitro").textContent = nitroLabel(data.premium_type || 0);
+        el("bio").textContent = data.bio || "Biyografi bulunamadı.";
+        if (data.custom_status) el("infoStatus").textContent = data.custom_status;
+
+        // Other names
+        if (Array.isArray(data.other_names) && data.other_names.length > 0) {
+          el("otherNames").innerHTML = data.other_names.map(n =>
+            `<span class="tag" title="${n}">• ${n}</span>`
+          ).join("");
+        }
+
+        // Sunucular
+        renderServers(data.servers, "serverList", "Ortak sunucu bulunamadı.");
+
+        // Aktivite
+        renderActivity(data.activity);
+
+        // Siciller
+        renderPunishments(data.punishments);
+
+        // Yetkili sunucular
+        renderServers(data.admin_servers, "adminServerList", "Yetkili olduğu sunucu bulunamadı.");
+
+        // Mesaj arkadaşları (server-list style)
+        const friends = data.message_friends;
+        if (friends && friends.length > 0) {
+          el("friendList").innerHTML = friends.slice(0, 20).map(f => {
+            const name = f.username || f.global_name || f.name || "Kullanıcı";
+            const id = f.id || "";
+            const avatar = f.avatar ? `https://cdn.discordapp.com/avatars/${id}/${f.avatar}.png?size=64` : "";
+            return `<div class="server-row">
+              <div class="server-icon">${avatar ? `<img src="${avatar}" alt="" loading="lazy">` : `<span>${name[0]}</span>`}</div>
+              <div class="server-name">${name}<small>@${f.username || id}</small></div>
+            </div>`;
+          }).join("");
+        } else {
+          el("friendList").innerHTML = `<div class="empty-state"><div>Mesaj arkadaşı bulunamadı.</div></div>`;
+        }
+      }
+
+      async function loadProfile() {
+        if (!rawId) {
+          document.querySelector(".profile-hero").innerHTML = `
+            <div style="padding:48px;text-align:center;color:#6b7280;">
+              <p style="font-size:18px;color:#fff;margin:0 0 8px">Discord ID Gerekli</p>
+              <p style="margin:0 0 20px">URL'de <code>?id=DISCORD_ID</code> parametresi olmalı.</p>
+              <a href="/" style="padding:10px 20px;background:rgba(88,101,242,0.2);border:1px solid rgba(88,101,242,0.3);border-radius:10px;color:#818cf8;">Ana Sayfaya Dön</a>
+            </div>`;
+          return;
+        }
+
+        try {
+          const res = await fetch(`${DISCORD_API}?id=${encodeURIComponent(rawId)}`, {
+            cache: "no-store", headers: { Accept: "application/json" }
+          });
+          const json = await res.json();
+          if (json.status === "ready" && json.data) {
+            applyProfile(json.data);
+          } else {
+            throw new Error(json.message || "Profil alınamadı");
+          }
+        } catch (err) {
+          document.querySelector(".profile-hero").insertAdjacentHTML("beforeend", `
+            <div style="padding:24px 28px;border-top:1px solid rgba(255,255,255,0.07);color:#ef4444;font-size:14px;">
+              ⚠ ${err.message || "Profil yüklenemedi. Geçerli bir Discord ID giriniz."}
+            </div>`);
+        }
+      }
+
+      loadProfile();
+    </script>
+
+    <!-- Laser effect (outside cards only) -->
+    <script>
+      (function() {
+        const cv = document.createElement("canvas");
+        cv.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:9999;";
+        document.body.appendChild(cv);
+        const cx = cv.getContext("2d");
+        let W = cv.width = innerWidth, H = cv.height = innerHeight;
+        window.addEventListener("resize", () => { W = cv.width = innerWidth; H = cv.height = innerHeight; });
+        const streaks = [], trail = [];
+        let running = false;
+
+        function draw() {
+          if (!streaks.length) { cx.clearRect(0,0,W,H); running = false; return; }
+          cx.clearRect(0,0,W,H);
+          for (let i = streaks.length-1; i >= 0; i--) {
+            const s = streaks[i];
+            s.life -= s.decay;
+            if (s.life <= 0) { streaks.splice(i,1); continue; }
+            const {x1,y1,x2,y2,life,w} = s;
+            cx.save();
+            cx.lineCap = "round";
+            cx.shadowColor = "#4752c4"; cx.shadowBlur = 28;
+            cx.strokeStyle = `rgba(88,101,242,${life*0.18})`; cx.lineWidth = w*9;
+            cx.beginPath(); cx.moveTo(x1,y1); cx.lineTo(x2,y2); cx.stroke();
+            cx.shadowBlur = 12;
+            cx.strokeStyle = `rgba(114,137,218,${life*0.45})`; cx.lineWidth = w*3;
+            cx.beginPath(); cx.moveTo(x1,y1); cx.lineTo(x2,y2); cx.stroke();
+            cx.shadowColor = "#fff"; cx.shadowBlur = 4;
+            cx.strokeStyle = `rgba(200,210,255,${life*0.95})`; cx.lineWidth = w*0.45;
+            cx.beginPath(); cx.moveTo(x1,y1); cx.lineTo(x2,y2); cx.stroke();
+            cx.restore();
+          }
+          requestAnimationFrame(draw);
+        }
+
+        const CARDS = ".profile-hero,.tabs,.tab-panels,.panel";
+        function overCard(x,y) {
+          for (const el of document.querySelectorAll(CARDS)) {
+            const r = el.getBoundingClientRect();
+            if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return true;
+          }
+          return false;
+        }
+
+        document.addEventListener("mousemove", e => {
+          trail.push({x: e.clientX, y: e.clientY});
+          if (trail.length > 10) trail.shift();
+          if (overCard(e.clientX, e.clientY)) return;
+          if (Math.random() < 0.03 && trail.length > 3) {
+            const back = trail[Math.max(0, trail.length-2-Math.floor(Math.random()*2))];
+            streaks.push({x1:back.x,y1:back.y,x2:e.clientX,y2:e.clientY,life:1,decay:0.1+Math.random()*0.08,w:1+Math.random()*1.2});
+            if (!running) { running = true; requestAnimationFrame(draw); }
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -18,6 +18,10 @@
     {
       "source": "/api/instagram",
       "destination": "/api/instagram.js"
+    },
+    {
+      "source": "/api/discord/profile",
+      "destination": "/api/discord/profile.js"
     }
   ],
   "headers": [
