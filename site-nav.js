@@ -46,6 +46,82 @@
     }
   }
 
+  function renderSharedSponsor() {
+    if (document.getElementById("igmeMiniSponsor")) return;
+
+    document.body.insertAdjacentHTML("beforeend", `
+      <div class="igme-mini-sponsor" id="igmeMiniSponsor">
+        <a class="igme-mini-sponsor-link" href="https://discord.gg/7TaeVxPU" target="_blank" rel="noopener noreferrer" aria-label="Sponsor Discord sunucusuna katıl">
+          <span class="igme-mini-sponsor-avatar" aria-hidden="true">
+            <img src="assets/sunucu.gif" alt="">
+          </span>
+          <span class="igme-mini-sponsor-copy">
+            <strong class="igme-mini-sponsor-name">IGME</strong>
+            <span class="igme-mini-sponsor-meta">
+              <span><i class="igme-mini-sponsor-dot" aria-hidden="true"></i><b id="igmeMiniSponsorOnline">--</b></span>
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.7"/>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.74" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                </svg>
+                <b id="igmeMiniSponsorMembers">--</b>
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 3 21 12 12 21 3 12 12 3Z" fill="#f472d0"/>
+                  <path d="M3 12h18M8 3l4 18 4-18" stroke="rgba(255,255,255,0.45)" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+                <b id="igmeMiniSponsorBoosts">--</b>
+              </span>
+            </span>
+          </span>
+          <span class="igme-mini-sponsor-chip" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="m12 3 2.7 5.47 6.03.88-4.36 4.25 1.03 6-5.4-2.84-5.4 2.84 1.03-6-4.36-4.25 6.03-.88L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>
+            SPONSOR
+          </span>
+        </a>
+        <button class="igme-mini-sponsor-close" id="igmeMiniSponsorClose" type="button" aria-label="Sponsor kutusunu kapat">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    `);
+  }
+
+  const sponsorNumber = new Intl.NumberFormat("tr-TR");
+
+  function writeSponsorValue(id, value) {
+    const element = document.getElementById(id);
+    if (!element) return;
+    element.textContent = Number.isFinite(Number(value)) ? sponsorNumber.format(Number(value)) : "--";
+  }
+
+  async function loadSharedSponsorStats() {
+    const sponsor = document.getElementById("igmeMiniSponsor");
+    if (!sponsor) return;
+
+    try {
+      const response = await fetch("/api/discord/invite?code=7TaeVxPU", {
+        headers: { Accept: "application/json" }
+      });
+      const payload = await response.json();
+      if (!response.ok || payload.status !== "ready") throw new Error(payload.message || "Sponsor stats unavailable");
+
+      const data = payload.data || {};
+      const name = document.querySelector(".igme-mini-sponsor-name");
+      if (name && data.name) name.textContent = data.name;
+      writeSponsorValue("igmeMiniSponsorOnline", data.online_count);
+      writeSponsorValue("igmeMiniSponsorMembers", data.member_count);
+      writeSponsorValue("igmeMiniSponsorBoosts", data.boost_count);
+    } catch (error) {
+      console.warn("[IGME] Sponsor bilgileri alınamadı:", error.message);
+    }
+  }
+
   function getDiscordAvatar(session) {
     return session?.avatar
       ? `https://cdn.discordapp.com/avatars/${session.discord_id}/${session.avatar}.png?size=64`
@@ -456,6 +532,13 @@
   });
 
   document.addEventListener("click", event => {
+    const sponsorClose = event.target.closest("#igmeMiniSponsorClose");
+    if (sponsorClose) {
+      event.preventDefault();
+      document.getElementById("igmeMiniSponsor")?.remove();
+      return;
+    }
+
     if (!event.target.closest("#sharedNav")) closeNavMenus();
   });
 
@@ -473,6 +556,7 @@
   window.IGME_OPEN_AUTH_PANEL = openAuthPanel;
 
   renderShell();
+  renderSharedSponsor();
   initSettingsState();
   const cachedSession = readCachedSession();
   if (cachedSession) {
@@ -481,6 +565,7 @@
   }
   renderAuth();
   refreshSession();
+  loadSharedSponsorStats();
   syncHomeAuthQuery();
 
   document.getElementById("igmeAuthOverlay")?.addEventListener("click", closeAuthPanel);

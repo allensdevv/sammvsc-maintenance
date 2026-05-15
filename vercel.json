@@ -104,6 +104,10 @@
     {
       "source": "/api/discord/invite",
       "destination": "/api/discord/invite.js"
+    },
+    {
+      "source": "/api/discord/guild",
+      "destination": "/api/discord/guild.js"
     }
   ],
   "headers": [

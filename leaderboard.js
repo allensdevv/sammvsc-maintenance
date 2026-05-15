@@ -55,6 +55,9 @@
     {
       name: "† Dark Paradise",
       icon: "DP",
+      guildId: "727881213406347282",
+      iconHash: "a_90c2e3e9ac481b8353b8bd11063dbd95",
+      bannerHash: "16cbf3af25c4879ac7549317e9173d06",
       rankStyle: "crown-gold",
       members: 191282,
       boosts: 768,
@@ -65,11 +68,14 @@
       bots: 111,
       stream: 32,
       camera: 9,
-      bg: "linear-gradient(90deg, rgba(0, 0, 0, .94), rgba(0, 0, 0, .86) 44%, rgba(0, 0, 0, .74)), url('assets/leaderboard/dark-paradise.webp') center/cover no-repeat, linear-gradient(120deg, #11142a, #050505)"
+      bgFallback: "linear-gradient(120deg, #11142a, #050505)"
     },
     {
       name: "M E Y H A N E",
       icon: "MY",
+      guildId: "934422079418302495",
+      iconHash: "a_fcc3ecd6c3256eb80485181324f7a61a",
+      bannerHash: "3ec500b340f55154ac43edb29aaa69a0",
       rankStyle: "crown-white",
       members: 101293,
       boosts: 567,
@@ -80,11 +86,14 @@
       bots: 99,
       stream: 22,
       camera: 11,
-      bg: "linear-gradient(90deg, rgba(0, 0, 0, .94), rgba(0, 0, 0, .84) 44%, rgba(0, 0, 0, .7)), url('assets/leaderboard/meyhane.webp') center/cover no-repeat, linear-gradient(115deg, #351414, #050505)"
+      bgFallback: "linear-gradient(115deg, #351414, #050505)"
     },
     {
       name: "R E F E R A N S #DGKO CRASH",
       icon: "RF",
+      guildId: "1431624433386393612",
+      iconHash: "a_03c2720c1facfaaadba1dacc9eca3f6b",
+      bannerHash: "281272cf9aefe18690b394db0c3bcbf7",
       rankStyle: "crown-orange",
       members: 11193,
       boosts: 43,
@@ -95,11 +104,14 @@
       bots: 33,
       stream: 10,
       camera: 2,
-      bg: "linear-gradient(90deg, rgba(0, 0, 0, .94), rgba(0, 0, 0, .84) 44%, rgba(0, 0, 0, .7)), url('assets/leaderboard/referans.webp') center/cover no-repeat, linear-gradient(110deg, #0b1b22, #050505)"
+      bgFallback: "linear-gradient(110deg, #0b1b22, #050505)"
     },
     {
       name: "☆ S H A N N A R A",
       icon: "SH",
+      guildId: "634437923500195853",
+      iconHash: "a_55194b0e89e3e06050c19a191919564d",
+      bannerHash: "a_082428c16f30f6de70a1dd88a3e68b4f",
       rankStyle: "rank-number",
       members: 154164,
       boosts: 354,
@@ -110,11 +122,14 @@
       bots: 0,
       stream: 15,
       camera: 16,
-      bg: "linear-gradient(90deg, rgba(0, 0, 0, .94), rgba(0, 0, 0, .84) 44%, rgba(0, 0, 0, .7)), url('assets/leaderboard/shannara.webp') center/cover no-repeat, linear-gradient(120deg, #071723, #050505)"
+      bgFallback: "linear-gradient(120deg, #071723, #050505)"
     },
     {
       name: "† M O N A R C H",
       icon: "MN",
+      guildId: "904188905736253500",
+      iconHash: "a_61918bdb3e417a94e29dfb0f153a4141",
+      bannerHash: "496baf7c3164755b0a3e7ae34ab84c59",
       rankStyle: "rank-number",
       members: 93900,
       boosts: 308,
@@ -125,11 +140,14 @@
       bots: 53,
       stream: 14,
       camera: 2,
-      bg: "linear-gradient(90deg, rgba(0, 0, 0, .94), rgba(0, 0, 0, .84) 44%, rgba(0, 0, 0, .7)), url('assets/leaderboard/monarch.webp') center/cover no-repeat, linear-gradient(125deg, #181818, #050505)"
+      bgFallback: "linear-gradient(125deg, #181818, #050505)"
     },
     {
       name: "A L E N O R #ENLER",
       icon: "AL",
+      guildId: "815535767282516028",
+      iconHash: "a_755ee6c6cd6c1da8a4bb60bdc74bbce6",
+      bannerHash: "a_3fa3bd2eff5becd7a33c2add8145876d",
       rankStyle: "rank-number",
       members: 86420,
       boosts: 242,
@@ -140,7 +158,7 @@
       bots: 41,
       stream: 8,
       camera: 4,
-      bg: "linear-gradient(90deg, rgba(0, 0, 0, .94), rgba(0, 0, 0, .84) 44%, rgba(0, 0, 0, .7)), url('assets/leaderboard/alenor.webp') center/cover no-repeat, linear-gradient(120deg, #1e1710, #050505)"
+      bgFallback: "linear-gradient(120deg, #1e1710, #050505)"
     }
   ];
 
@@ -162,6 +180,7 @@
   };
 
   let activeMetric = "realVoice";
+  const guildHydration = new Map();
 
   function formatNumber(value) {
     return new Intl.NumberFormat("tr-TR").format(value || 0);
@@ -169,6 +188,69 @@
 
   function metricById(id) {
     return metrics.find(metric => metric.id === id) || metrics[0];
+  }
+
+  function discordGuildAsset(kind, server, hash, size) {
+    const guildId = String(server.guildId || "").trim();
+    const assetHash = String(hash || "").trim();
+    if (!guildId || !assetHash) return "";
+    const extension = assetHash.startsWith("a_") ? "gif" : "webp";
+    return `https://cdn.discordapp.com/${kind}/${guildId}/${assetHash}.${extension}?size=${size}`;
+  }
+
+  function guildIconUrl(server) {
+    return server.liveIconUrl || discordGuildAsset("icons", server, server.iconHash, 128);
+  }
+
+  function guildBannerUrl(server) {
+    return server.liveBannerUrl || discordGuildAsset("banners", server, server.bannerHash, 1024);
+  }
+
+  function rowBackground(server) {
+    const banner = guildBannerUrl(server);
+    const fallback = server.bgFallback || "linear-gradient(120deg, #111111, #050505)";
+    if (!banner) return `linear-gradient(90deg, rgba(0, 0, 0, .94), rgba(0, 0, 0, .84) 44%, rgba(0, 0, 0, .72)), ${fallback}`;
+    return `linear-gradient(90deg, rgba(0, 0, 0, .94), rgba(0, 0, 0, .84) 44%, rgba(0, 0, 0, .7)), url('${banner}') center/cover no-repeat, ${fallback}`;
+  }
+
+  async function hydrateGuildAssets() {
+    const jobs = servers
+      .filter(server => server.guildId && !guildHydration.has(server.guildId))
+      .map(async server => {
+        guildHydration.set(server.guildId, "pending");
+
+        try {
+          const response = await fetch(`/api/discord/guild?id=${encodeURIComponent(server.guildId)}`, {
+            headers: { Accept: "application/json" }
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || payload.status !== "ready") throw new Error(payload.message || "Guild unavailable");
+
+          const data = payload.data || {};
+          let changed = false;
+          if (data.icon_url && data.icon_url !== server.liveIconUrl) {
+            server.liveIconUrl = data.icon_url;
+            changed = true;
+          }
+          if (data.banner_url && data.banner_url !== server.liveBannerUrl) {
+            server.liveBannerUrl = data.banner_url;
+            changed = true;
+          }
+          if (Number.isFinite(Number(data.member_count)) && Number(data.member_count) > 0 && Number(data.member_count) !== Number(server.members)) {
+            server.members = Number(data.member_count);
+            changed = true;
+          }
+
+          guildHydration.set(server.guildId, changed ? "ready" : "fallback");
+          return changed;
+        } catch (error) {
+          guildHydration.set(server.guildId, "fallback");
+          return false;
+        }
+      });
+
+    const changed = (await Promise.all(jobs)).some(Boolean);
+    if (changed) renderRows();
   }
 
   function renderMetricButtons() {
@@ -198,13 +280,22 @@
   }
 
   function rowTemplate(server, rank, metric) {
+    const avatarUrl = guildIconUrl(server);
+    const avatar = `
+      <span class="leader-icon-fallback">${server.icon}</span>
+      ${avatarUrl ? `<img src="${avatarUrl}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
+    `;
+
     return `
-      <article class="leader-row" style="--row-bg:${server.bg}; --metric-color:${metric.accent}">
+      <article class="leader-row" style="--row-bg:${rowBackground(server)}; --metric-color:${metric.accent}">
         <a class="leader-row-link" href="/discord-profile?q=${encodeURIComponent(server.name)}" aria-label="${server.name} profilini ac">
           <div class="leader-row-bg"></div>
           <div class="leader-row-main">
             <div class="leader-rank">${rankTemplate(rank, server)}</div>
-            <div class="leader-icon">${server.icon}</div>
+            <div class="leader-avatar-wrap">
+              <span class="leader-rank-chip">#${rank}</span>
+              <div class="leader-icon">${avatar}</div>
+            </div>
             <div class="leader-info">
               <div class="leader-name-line">
                 <h2>${server.name}</h2>
@@ -252,15 +343,9 @@
     }, 1000);
   }
 
-  function wireSponsor() {
-    document.getElementById("leaderSponsorClose")?.addEventListener("click", () => {
-      document.querySelector(".leader-sponsor")?.classList.add("hidden");
-    });
-  }
-
   renderMetricButtons();
   renderRows();
+  hydrateGuildAssets();
   wireFilters();
   startCountdown();
-  wireSponsor();
 })();
