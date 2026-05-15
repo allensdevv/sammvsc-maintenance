@@ -13,6 +13,34 @@ Choose one provider and add the matching variables in Vercel Project Settings > 
 The frontend calls `/api/instagram/profile` first, then falls back to `/api/instagram`.
 Provider keys stay private on the backend.
 
+## Discord profile statistics
+
+Discord identity/profile data comes from the existing Discord, DCSV, and Findcord fallback flow.
+Server activity statistics can be enriched with Statbot when a guild has Statbot API access.
+
+Statbot keys are guild scoped. Add either a JSON map:
+
+```env
+STATBOT_GUILD_KEYS={"123456789012345678":"statbot_api_key_for_that_guild"}
+```
+
+or comma/newline separated pairs:
+
+```env
+STATBOT_GUILD_KEYS=123456789012345678=statbot_api_key,987654321098765432=another_key
+```
+
+Optional Statbot settings:
+
+```env
+STATBOT_API_BASE=https://api.statbot.net
+STATBOT_CACHE_TTL=600
+STATBOT_MAX_GUILDS=8
+```
+
+Statbot results are cached per guild and user. If Statbot is not configured or a guild does not have a key,
+the profile still renders with Discord/DCSV/Findcord data and soft placeholders instead of hard failures.
+
 ## Fast profile API
 
 The fast path uses `instagram-private-api` from a Vercel Serverless Function.

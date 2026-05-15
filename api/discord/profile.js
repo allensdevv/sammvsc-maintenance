@@ -14,11 +14,15 @@ const DCSV_PUBLIC_BASE = "https://dcsv.me/users";
 const CACHE_TTL = 60 * 30;
 const PARTIAL_CACHE_TTL = 60;
 const STALE_CACHE_TTL = 60 * 60 * 12;
+const STATBOT_CACHE_TTL = Number(process.env.STATBOT_CACHE_TTL || 60 * 10);
+const STATBOT_MAX_GUILDS = Number(process.env.STATBOT_MAX_GUILDS || 8);
+const STATBOT_API_BASE = String(process.env.STATBOT_API_BASE || "https://api.statbot.net").replace(/\/+$/, "");
 const EXTERNAL_TIMEOUT_MS = 9000;
 const CACHE_VERSION = "v14";
 const LEGACY_CACHE_VERSIONS = ["v13", "v12", "v11"];
 const DISCORD_PROFILE_PAUSED = false;
 const TRANSIENT_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
+const STATBOT_GUILD_KEYS = parseStatbotGuildKeys();
 
 function sendJson(res, status, payload) {
   res.statusCode = status;
@@ -44,6 +48,42 @@ function cacheKey(id) {
 
 function staleCacheKey(id) {
   return staleCacheKeyForVersion(CACHE_VERSION, id);
+}
+
+function statbotCacheKey(guildId, userId) {
+  return `statbot:guild:${String(guildId).toLowerCase()}:user:${String(userId).toLowerCase()}:v1`;
+}
+
+function parseStatbotGuildKeys() {
+  const map = new Map();
+  const add = (guildId, key) => {
+    const gid = String(guildId || "").trim();
+    const token = String(key || "").trim();
+    if (/^\d{15,22}$/.test(gid) && token) map.set(gid, token);
+  };
+
+  const raw = process.env.STATBOT_GUILD_KEYS || process.env.STATBOT_GUILDS || "";
+  if (raw.trim()) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        parsed.forEach(item => add(item.guild_id || item.guildId || item.id, item.key || item.token || item.api_key || item.apiKey));
+      } else if (isPlainObject(parsed)) {
+        Object.entries(parsed).forEach(([guildId, key]) => add(guildId, key));
+      }
+    } catch {
+      raw.split(/[\n,]+/).forEach(pair => {
+        const clean = pair.trim();
+        if (!clean) return;
+        const idx = clean.includes("=") ? clean.indexOf("=") : clean.indexOf(":");
+        if (idx <= 0) return;
+        add(clean.slice(0, idx), clean.slice(idx + 1));
+      });
+    }
+  }
+
+  add(process.env.STATBOT_GUILD_ID, process.env.STATBOT_API_KEY || process.env.STATBOT_KEY);
+  return map;
 }
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = EXTERNAL_TIMEOUT_MS) {
@@ -527,6 +567,287 @@ async function fetchFindcordById(id) {
     }
   }
   throw new Error(`Findcord ${errors.join(" | ")}`);
+}
+
+function statbotApiRoot() {
+  return STATBOT_API_BASE.endsWith("/v1") ? STATBOT_API_BASE : `${STATBOT_API_BASE}/v1`;
+}
+
+async function fetchStatbotJson(guildId, token, path, params = {}, attempt = 0) {
+  const url = new URL(`${statbotApiRoot()}/guilds/${encodeURIComponent(guildId)}/${path.replace(/^\/+/, "")}`);
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
+  });
+
+  const auth = String(token || "").startsWith("Bearer ") ? String(token) : `Bearer ${token}`;
+  const res = await fetchWithTimeout(url.toString(), {
+    headers: {
+      "Authorization": auth,
+      "Accept": "application/json",
+      "User-Agent": "IGME/1.0 (+https://sammvsc.top)"
+    }
+  });
+
+  if (res.status === 429 && attempt === 0) {
+    const waitMs = Math.min(1500, Math.max(250, Number(res.headers.get("retry-after") || 1) * 1000));
+    await sleep(waitMs);
+    return fetchStatbotJson(guildId, token, path, params, attempt + 1);
+  }
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Statbot ${path} ${res.status}: ${body.slice(0, 120)}`);
+  }
+  return res.json();
+}
+
+function statbotItemsFrom(payload, bucket = null) {
+  if (!payload) return [];
+  if (Array.isArray(payload)) return payload.flatMap(item => statbotItemsFrom(item, bucket));
+  if (!isPlainObject(payload)) return bucket ? [{ bucket, value: payload }] : [{ value: payload }];
+
+  const directKeys = ["memberId", "member_id", "userId", "user_id", "count", "value", "total", "messages", "voice", "voiceTime", "duration", "time", "timestamp", "date", "hour"];
+  if (directKeys.some(key => payload[key] !== undefined)) {
+    return [{ ...(bucket ? { bucket } : {}), ...payload }];
+  }
+
+  for (const key of ["data", "items", "series", "result", "results", "values", "rows", "records"]) {
+    if (payload[key]) return statbotItemsFrom(payload[key], bucket);
+  }
+
+  const out = [];
+  for (const [key, value] of Object.entries(payload)) {
+    if (Array.isArray(value)) {
+      out.push(...value.flatMap(item => statbotItemsFrom(item, key)));
+    } else if (isPlainObject(value)) {
+      const nestedLooksLikeMemberMap = Object.keys(value).some(innerKey => /^\d{15,22}$/.test(innerKey));
+      if (nestedLooksLikeMemberMap) {
+        for (const [memberId, memberValue] of Object.entries(value)) {
+          if (isPlainObject(memberValue)) out.push({ bucket: key, memberId, ...memberValue });
+          else out.push({ bucket: key, memberId, value: memberValue });
+        }
+      } else {
+        out.push(...statbotItemsFrom(value, key));
+      }
+    } else {
+      out.push({ bucket: key, value });
+    }
+  }
+  return out;
+}
+
+function statbotMemberId(item) {
+  return String(firstValue(
+    item.memberId,
+    item.member_id,
+    item.MemberID,
+    item.member?.id,
+    item.userId,
+    item.user_id,
+    item.UserID,
+    item.user?.id,
+    ""
+  ) || "");
+}
+
+function statbotHour(item) {
+  const direct = Number(firstValue(item.hour, item.Hour));
+  if (Number.isInteger(direct) && direct >= 0 && direct <= 23) return direct;
+
+  const raw = firstValue(item.bucket, item.time, item.timestamp, item.date, item.datetime, item.start, item.startTime, item.createdAt);
+  if (typeof raw === "string" && /^\d{1,2}$/.test(raw)) {
+    const hour = Number(raw);
+    if (hour >= 0 && hour <= 23) return hour;
+  }
+  const date = raw ? new Date(raw) : null;
+  return date && !Number.isNaN(date.getTime()) ? date.getHours() : null;
+}
+
+function statbotValue(item, kind) {
+  if (!isPlainObject(item)) return Number(item) || 0;
+  const value = firstValue(
+    kind === "voice" ? item.voiceSeconds : null,
+    kind === "voice" ? item.voice_seconds : null,
+    kind === "voice" ? item.voiceTime : null,
+    kind === "voice" ? item.voice_time : null,
+    kind === "voice" ? item.duration : null,
+    kind === "voice" ? item.seconds : null,
+    kind === "voice" ? item.time : null,
+    kind === "messages" ? item.messages : null,
+    kind === "messages" ? item.message_count : null,
+    kind === "messages" ? item.messageCount : null,
+    item.count,
+    item.value,
+    item.total,
+    item.sum,
+    item.amount
+  );
+  return kind === "voice" ? toSeconds(value) : Math.max(0, Math.round(Number(value || 0)));
+}
+
+function summarizeStatbotSeries(payload, userId, kind) {
+  const items = statbotItemsFrom(payload);
+  const hasMemberField = items.some(item => statbotMemberId(item));
+  const scoped = hasMemberField ? items.filter(item => statbotMemberId(item) === String(userId)) : items;
+  const hourly = Array.from({ length: 24 }, () => 0);
+  let total = 0;
+
+  if (!hasMemberField && items.length > 0) {
+    return { total: 0, hourly, scoped: false, rows: items.length };
+  }
+
+  for (const item of scoped) {
+    const value = statbotValue(item, kind);
+    if (!Number.isFinite(value) || value <= 0) continue;
+    total += value;
+    const hour = statbotHour(item);
+    if (hour !== null) hourly[hour] += value;
+  }
+
+  return { total, hourly, scoped: scoped.length > 0, rows: scoped.length };
+}
+
+function activeHoursFromStatbot(messageSummary, voiceSummary) {
+  const detailed = Array.from({ length: 24 }, (_, hour) => {
+    const messages = messageSummary.hourly[hour] || 0;
+    const voiceSeconds = voiceSummary.hourly[hour] || 0;
+    return {
+      hour,
+      messages,
+      voice_seconds: voiceSeconds,
+      score: messages + Math.max(0, Math.round(voiceSeconds / 60))
+    };
+  });
+  const total = detailed.reduce((sum, item) => sum + item.voice_seconds, 0);
+  const top = [...detailed]
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(item => `${String(item.hour).padStart(2, "0")}:00`);
+
+  return {
+    total,
+    summary: top.length ? `Statbot'a gore en aktif: ${top.join(", ")}` : "",
+    ranges: [],
+    detailed,
+    source: "statbot"
+  };
+}
+
+async function fetchStatbotGuildUserStats(server, userId) {
+  const guildId = String(firstValue(server.guild_id, server.id, server.GuildID, server.GuildId, "") || "");
+  const token = STATBOT_GUILD_KEYS.get(guildId);
+  if (!guildId || !token) return null;
+
+  const cached = await getJson(statbotCacheKey(guildId, userId)).catch(() => null);
+  if (cached) return cached;
+
+  const params = { by_member: "true" };
+  const [messagesResult, voiceResult] = await Promise.allSettled([
+    fetchStatbotJson(guildId, token, "messages/series", params),
+    fetchStatbotJson(guildId, token, "voice/series", params)
+  ]);
+
+  const errors = [];
+  if (messagesResult.status === "rejected") errors.push(messagesResult.reason?.message || "messages failed");
+  if (voiceResult.status === "rejected") errors.push(voiceResult.reason?.message || "voice failed");
+
+  const messageSummary = messagesResult.status === "fulfilled"
+    ? summarizeStatbotSeries(messagesResult.value, userId, "messages")
+    : { total: 0, hourly: Array(24).fill(0), scoped: false, rows: 0 };
+  const voiceSummary = voiceResult.status === "fulfilled"
+    ? summarizeStatbotSeries(voiceResult.value, userId, "voice")
+    : { total: 0, hourly: Array(24).fill(0), scoped: false, rows: 0 };
+
+  if (errors.length === 2) throw new Error(errors.join(" | "));
+
+  const activeHours = activeHoursFromStatbot(messageSummary, voiceSummary);
+  const statServer = {
+    id: guildId,
+    guild_id: guildId,
+    name: firstValue(server.name, server.guild_name, server.GuildName, "Sunucu"),
+    guild_name: firstValue(server.guild_name, server.name, server.GuildName, "Sunucu"),
+    icon_url: firstValue(server.icon_url, server.guild_icon_url, server.icon, server.guild_icon),
+    banner_url: firstValue(server.banner_url, server.guild_banner_url, server.banner, server.guild_banner),
+    statbot_loaded: true,
+    statbot_scoped: Boolean(messageSummary.scoped || voiceSummary.scoped),
+    statbot_rows: (messageSummary.rows || 0) + (voiceSummary.rows || 0),
+    statbot_errors: errors.slice(0, 2)
+  };
+
+  if (messageSummary.total > 0) {
+    statServer.messages = messageSummary.total;
+    statServer.message_count = messageSummary.total;
+  }
+  if (voiceSummary.total > 0) {
+    statServer.voice_time = voiceSummary.total;
+    statServer.voice_seconds = voiceSummary.total;
+  }
+  if (activeHours.detailed.some(item => item.score > 0)) {
+    statServer.active_hours = activeHours;
+  }
+
+  await setJson(statbotCacheKey(guildId, userId), statServer, STATBOT_CACHE_TTL).catch(() => {});
+  return statServer;
+}
+
+function aggregateStatbotActiveHours(servers) {
+  const detailed = Array.from({ length: 24 }, (_, hour) => ({ hour, messages: 0, voice_seconds: 0, score: 0 }));
+  for (const server of servers || []) {
+    if (server?.active_hours?.source !== "statbot") continue;
+    for (const item of server.active_hours.detailed || []) {
+      const hour = Number(item?.hour);
+      if (!Number.isInteger(hour) || hour < 0 || hour > 23) continue;
+      detailed[hour].messages += Number(item.messages || 0);
+      detailed[hour].voice_seconds += Number(item.voice_seconds || 0);
+      detailed[hour].score += Number(item.score || 0);
+    }
+  }
+  if (!detailed.some(item => item.score > 0)) return null;
+  const top = [...detailed]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(item => `${String(item.hour).padStart(2, "0")}:00`);
+  return {
+    total: detailed.reduce((sum, item) => sum + item.voice_seconds, 0),
+    summary: `Statbot'a gore en aktif: ${top.join(", ")}`,
+    ranges: [],
+    detailed,
+    source: "statbot"
+  };
+}
+
+async function enrichProfileWithStatbot(profile) {
+  if (!profile?.id || STATBOT_GUILD_KEYS.size === 0) return profile;
+
+  const servers = Array.isArray(profile.servers) ? profile.servers : [];
+  const maxGuilds = Number.isFinite(STATBOT_MAX_GUILDS) && STATBOT_MAX_GUILDS > 0 ? STATBOT_MAX_GUILDS : 8;
+  const candidates = servers
+    .filter(server => STATBOT_GUILD_KEYS.has(String(firstValue(server.guild_id, server.id, server.GuildID, server.GuildId, "") || "")))
+    .slice(0, maxGuilds);
+
+  if (candidates.length === 0) return profile;
+
+  const results = await Promise.allSettled(candidates.map(server => fetchStatbotGuildUserStats(server, profile.id)));
+  const statbotServers = [];
+  const errors = [];
+  for (const result of results) {
+    if (result.status === "fulfilled" && result.value) statbotServers.push(result.value);
+    if (result.status === "rejected") errors.push(result.reason?.message || "Statbot failed");
+  }
+
+  const mergedServers = mergeServerArrays(servers, statbotServers);
+  const statbotActiveHours = aggregateStatbotActiveHours(statbotServers);
+  return {
+    ...profile,
+    servers: mergedServers,
+    server_count: Math.max(Number(profile.server_count || 0), mergedServers.length) || profile.server_count,
+    active_hours: statbotActiveHours || profile.active_hours,
+    statbot_loaded: statbotServers.length > 0,
+    statbot_guild_count: statbotServers.length,
+    statbot_configured_guild_count: candidates.length,
+    statbot_errors: errors.slice(0, 4)
+  };
 }
 
 function buildAvatarUrl(uid, hash) {
@@ -1146,6 +1467,7 @@ function isCompleteProfile(profile) {
   if (hasItems(profile.voice_friends) || hasItems(profile.message_friends)) return true;
   if (hasItems(profile.voice_history) || hasItems(profile.message_history)) return true;
   if (hasItems(profile.punishments) || hasMeaningfulActiveHours(profile)) return true;
+  if (profile.statbot_loaded && hasItems(profile.servers)) return true;
   if (profile.findcord_loaded && profile.findcord_has_guilds) return true;
   if (profile.findcord_loaded && (hasItems(profile.voice_friends) || hasItems(profile.message_friends))) return true;
   if (profile.findcord_loaded && (hasItems(profile.punishments) || hasMeaningfulActiveHours(profile))) return true;
@@ -1183,6 +1505,8 @@ function profileCompletenessScore(profile) {
   if (profile.boost_since) score += 4;
   if (profile.findcord_loaded) score += 12;
   if (profile.findcord_has_guilds) score += 24;
+  if (profile.statbot_loaded) score += 24;
+  if (profile.statbot_guild_count) score += Math.min(Number(profile.statbot_guild_count || 0), 20) * 3;
 
   score += servers ? 35 + Math.min(servers, 30) * 3 : Math.min(serverCount, 30);
   score += voiceFriends ? 18 + Math.min(voiceFriends, 20) : 0;
@@ -1247,7 +1571,8 @@ async function cacheProfileAliases(query, profile) {
 }
 
 async function sendCachedProfile(res, query, profile, source = "cache", session = null) {
-  const marked = markProfile(applySessionPresenceFallback(profile, session), source);
+  const enriched = await enrichProfileWithStatbot(profile).catch(() => profile);
+  const marked = markProfile(applySessionPresenceFallback(enriched, session), source);
   await cacheProfileAliases(query, marked);
   return sendJson(res, 200, { status: "ready", source, partial: marked.partial, data: marked });
 }
@@ -1344,7 +1669,8 @@ module.exports = async (req, res) => {
     const source = isCompleteProfile(liveProfile)
       ? (liveProfile.source || (findcordProfile ? "findcord" : "dcsv"))
       : (cachedBase ? "stale+live" : (liveProfile?.source || "partial"));
-    const marked = markProfile(profile, source);
+    const enrichedProfile = await enrichProfileWithStatbot(profile).catch(() => profile);
+    const marked = markProfile(enrichedProfile, source);
     await cacheProfileAliases(query, marked);
     return sendJson(res, 200, { status: "ready", source, partial: marked.partial, data: marked });
   }
