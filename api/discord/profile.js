@@ -15,7 +15,7 @@ const CACHE_TTL = 60 * 30;
 const PARTIAL_CACHE_TTL = 60;
 const STALE_CACHE_TTL = 60 * 60 * 12;
 const EXTERNAL_TIMEOUT_MS = 9000;
-const CACHE_VERSION = "v13";
+const CACHE_VERSION = "v14";
 const DISCORD_PROFILE_PAUSED = false;
 const TRANSIENT_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 
@@ -148,6 +148,7 @@ function activityListFrom(value) {
 
   const directKeys = [
     "name", "Name", "details", "Details", "state", "State", "type", "Type", "emoji", "Emoji",
+    "emoji_id", "emojiId", "EmojiId", "EmojiID", "emojiID", "emoji_name", "emojiName", "EmojiName",
     "title", "Title", "song", "Song", "track", "Track", "artist", "Artist", "artists", "Artists",
     "game", "Game", "application_name", "applicationName", "ApplicationName"
   ];
@@ -199,18 +200,73 @@ function activityImageUrl(activity) {
   return null;
 }
 
+function activityEmojiInfo(activity) {
+  const emojiObject = firstObject(activity.emoji, activity.Emoji);
+  const plainEmoji = firstValue(activity.emoji, activity.Emoji);
+  const id = firstValue(
+    emojiObject.id,
+    emojiObject.ID,
+    emojiObject.emoji_id,
+    emojiObject.emojiId,
+    emojiObject.EmojiId,
+    emojiObject.EmojiID,
+    emojiObject.emojiID,
+    activity.emoji_id,
+    activity.emojiId,
+    activity.EmojiId,
+    activity.EmojiID,
+    activity.emojiID
+  );
+  const name = firstValue(
+    emojiObject.name,
+    emojiObject.Name,
+    activity.emoji_name,
+    activity.emojiName,
+    activity.EmojiName,
+    isPlainObject(plainEmoji) ? null : plainEmoji
+  );
+  const animated = Boolean(firstValue(
+    emojiObject.animated,
+    emojiObject.Animated,
+    activity.emoji_animated,
+    activity.emojiAnimated,
+    activity.EmojiAnimated,
+    false
+  ));
+  const url = id
+    ? `https://cdn.discordapp.com/emojis/${id}.${animated ? "gif" : "png"}?size=32&quality=lossless`
+    : null;
+  return {
+    name: name || null,
+    id: id ? String(id) : null,
+    animated,
+    url
+  };
+}
+
 function normalizePresenceActivities(...values) {
   const raw = values.flatMap(activityListFrom);
   const seen = new Set();
   return raw.map(activity => {
     if (!isPlainObject(activity)) return null;
     let type = normalizeActivityType(firstValue(activity.type, activity.Type, activity.activity_type, activity.ActivityType, activity.kind, activity.Kind));
-    const emoji = isPlainObject(activity.emoji)
-      ? firstValue(activity.emoji.name, activity.emoji.Name)
-      : firstValue(activity.emoji, activity.Emoji);
+    const emojiInfo = activityEmojiInfo(activity);
+    const emoji = emojiInfo.name;
     const name = firstValue(activity.name, activity.Name, activity.application_name, activity.applicationName, activity.ApplicationName, activity.game, activity.Game, activity.title, activity.Title);
     const details = firstValue(activity.details, activity.Details, activity.detail, activity.song, activity.track, activity.title);
-    const state = firstValue(activity.state, activity.State, activity.artist, activity.artists, activity.subtitle, activity.custom_status);
+    const state = firstValue(
+      activity.state,
+      activity.State,
+      activity.status,
+      activity.Status,
+      activity.status_text,
+      activity.statusText,
+      activity.custom_status,
+      activity.customStatus,
+      activity.artist,
+      activity.artists,
+      activity.subtitle
+    );
     const url = firstValue(activity.url, activity.Url, activity.spotify_track_url, activity.track_url, activity.link);
     const startedAt = toIso(firstValue(activity.created_at, activity.createdAt, activity.started_at, activity.startedAt, activity.timestamps?.start, activity.Timestamps?.Start));
     const endedAt = toIso(firstValue(activity.ended_at, activity.endedAt, activity.timestamps?.end, activity.Timestamps?.End));
@@ -228,6 +284,10 @@ function normalizePresenceActivities(...values) {
       details: details || null,
       state: state || null,
       emoji: emoji || null,
+      emoji_name: emojiInfo.name,
+      emoji_id: emojiInfo.id,
+      emoji_animated: emojiInfo.animated,
+      emoji_url: emojiInfo.url,
       url: url || null,
       image_url: activityImageUrl(activity),
       started_at: startedAt,

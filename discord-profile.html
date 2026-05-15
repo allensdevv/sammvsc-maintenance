@@ -405,11 +405,26 @@
       }
       .presence-kind {
         color: #fff;
-        display: block;
+        display: flex;
+        align-items: center;
+        gap: 5px;
         max-width: 100%;
         overflow: hidden;
         font-size: 12px;
         line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .presence-emoji {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 auto;
+        object-fit: contain;
+      }
+      .presence-emoji-text { flex: 0 0 auto; }
+      .presence-kind > span:last-child {
+        min-width: 0;
+        overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
@@ -2014,9 +2029,25 @@
       }
 
       function activityEmoji(activity) {
-        const emoji = activity?.emoji;
-        if (!emoji) return "";
-        return typeof emoji === "object" ? firstActivityText(emoji.name, emoji.Name) : String(emoji);
+        return firstActivityText(activity?.emoji, activity?.emoji_name, activity?.emojiName);
+      }
+
+      function isGenericCustomStatus(value) {
+        const text = firstActivityText(value).toLowerCase();
+        return text === "custom status" || text === "custom_status" || text === "özel durum" || text === "ozel durum";
+      }
+
+      function activityEmojiHtml(activity) {
+        const url = firstActivityText(activity?.emoji_url, activity?.emojiUrl);
+        const emojiId = firstActivityText(activity?.emoji_id, activity?.emojiId);
+        const animated = activity?.emoji_animated || activity?.emojiAnimated;
+        const emojiName = activityEmoji(activity);
+        const src = url || (emojiId ? `https://cdn.discordapp.com/emojis/${emojiId}.${animated ? "gif" : "png"}?size=32&quality=lossless` : "");
+        if (src) {
+          return `<img class="presence-emoji" src="${escapeHtml(src)}" alt="${escapeHtml(emojiName || "")}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`;
+        }
+        if (!emojiName || /^[\w-]+$/i.test(emojiName)) return "";
+        return `<span class="presence-emoji-text">${escapeHtml(emojiName)}</span>`;
       }
 
       function activityKind(activity) {
@@ -2025,21 +2056,22 @@
         const hasSpotifyFields = ["song", "track", "artist", "artists", "album_image_url", "albumImageUrl", "spotify_track_id", "spotifyTrackId"]
           .some(key => activity?.[key]);
         if (raw === "2" || raw === "listening" || raw === "spotify" || name.includes("spotify") || hasSpotifyFields) return "spotify";
-        if (raw === "4" || raw === "custom" || raw === "custom_status") return "custom";
+        if (raw === "4" || raw === "custom" || raw === "custom_status" || isGenericCustomStatus(name)) return "custom";
         if (raw === "1" || raw === "streaming") return "streaming";
         if (raw === "3" || raw === "watching") return "watching";
         return "playing";
       }
 
       function formatActivityBubbleText(kind, activity) {
-        const playingTitle = firstActivityText(activity?.name, activity?.game, activity?.details);
+        const name = firstActivityText(activity?.name, activity?.game);
+        const playingTitle = isGenericCustomStatus(name) ? firstActivityText(activity?.details, activity?.state) : firstActivityText(name, activity?.details);
         const mediaTitle = firstActivityText(activity?.details, activity?.song, activity?.track, activity?.name);
         if (kind === "spotify") return mediaTitle ? `${mediaTitle} Spotify Dinliyor.` : "Spotify Dinliyor.";
         if (kind === "streaming") return playingTitle ? `${playingTitle} Yayın Yapıyor.` : "Yayın Yapıyor.";
         if (kind === "watching") return playingTitle ? `${playingTitle} İzliyor.` : "İzliyor.";
         if (kind === "custom") {
-          const text = [activityEmoji(activity), firstActivityText(activity?.state, activity?.details, activity?.name)].filter(Boolean).join(" ");
-          return text || "Durum.";
+          const text = firstActivityText(activity?.state, activity?.details, isGenericCustomStatus(activity?.name) ? "" : activity?.name);
+          return text || "";
         }
         return playingTitle ? `${playingTitle} Oynuyor.` : "Oynuyor.";
       }
@@ -2109,11 +2141,17 @@
         }
         const kind = activityKind(activity);
         const text = formatActivityBubbleText(kind, activity);
+        const emojiHtml = kind === "custom" ? activityEmojiHtml(activity) : "";
+        if (!text && !emojiHtml) {
+          box.hidden = true;
+          box.innerHTML = "";
+          return;
+        }
         box.className = `presence-bubble ${kind}`;
         box.hidden = false;
         box.innerHTML = `
           <span class="presence-main">
-            <span class="presence-kind">${escapeHtml(text)}</span>
+            <span class="presence-kind">${emojiHtml}<span>${escapeHtml(text)}</span></span>
           </span>
         `;
       }
