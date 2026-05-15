@@ -2240,7 +2240,8 @@
       }
 
       function badgeHref(label, badge = {}) {
-        const haystack = `${label || ""} ${badge.id || ""} ${badge.type || ""}`.toLowerCase();
+        const item = badge && typeof badge === "object" ? badge : {};
+        const haystack = `${label || ""} ${item.id || ""} ${item.type || ""}`.toLowerCase();
         if (/boost|booster|takviye/.test(haystack)) return BOOST_URL;
         if (/nitro|premium|abone/.test(haystack)) return NITRO_URL;
         return "";
@@ -2840,7 +2841,12 @@
         el("viewCount").textContent = data.view_count != null ? data.view_count : "0";
 
         // Badges
-        renderBadges(data);
+        try {
+          renderBadges(data);
+        } catch (err) {
+          console.warn("badge_render_failed", err);
+          el("badgeRow").innerHTML = "";
+        }
         const badgeCount = el("badgeRow").children.length;
 
         // Stats
