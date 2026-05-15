@@ -66,6 +66,36 @@
     return `igme_discord_login_notice_read:${session?.discord_id || "guest"}`;
   }
 
+  function readCachedSession() {
+    try {
+      const cached = JSON.parse(localStorage.getItem("igme_discord_cached_session") || "null");
+      if (!cached || !cached.discord_id) return null;
+      if (Date.now() - Number(cached.cached_at || 0) > 86400000) return null;
+      return cached;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeCachedSession(session) {
+    try {
+      if (!session?.discord_id) return;
+      localStorage.setItem("igme_discord_cached_session", JSON.stringify({
+        discord_id: session.discord_id,
+        username: session.username || "",
+        global_name: session.global_name || "",
+        avatar: session.avatar || "",
+        cached_at: Date.now()
+      }));
+    } catch {}
+  }
+
+  function clearCachedSession() {
+    try {
+      localStorage.removeItem("igme_discord_cached_session");
+    } catch {}
+  }
+
   function isLoginNoticeRead(session = discordSession) {
     try {
       return localStorage.getItem(loginNoticeReadKey(session)) === "1";
@@ -226,6 +256,21 @@
     `;
   }
 
+  function renderAuthPending() {
+    const authArea = document.getElementById("igmeNavAuthArea");
+    if (!authArea) return;
+    authArea.innerHTML = `
+      <div class="igme-nav-session-actions igme-nav-auth-pending" aria-hidden="true">
+        <span class="igme-nav-icon-btn">${icons.bell}</span>
+        <span class="igme-nav-profile-btn">
+          <span class="igme-nav-user-avatar"></span>
+          <span class="igme-nav-user-name">Profil</span>
+          ${icons.chevron}
+        </span>
+      </div>
+    `;
+  }
+
   function renderLoggedIn(session) {
     const authArea = document.getElementById("igmeNavAuthArea");
     if (!authArea) return;
@@ -274,7 +319,11 @@
   }
 
   function renderAuth() {
-    if (!authChecked || !discordSession) {
+    if (!authChecked) {
+      renderAuthPending();
+      return;
+    }
+    if (!discordSession) {
       renderLoggedOut();
       return;
     }
@@ -287,9 +336,12 @@
       const data = await res.json().catch(() => ({}));
       authChecked = true;
       discordSession = data?.loggedIn ? data.user : null;
+      if (discordSession) writeCachedSession(discordSession);
+      else clearCachedSession();
     } catch {
       authChecked = true;
       discordSession = null;
+      clearCachedSession();
     }
     renderAuth();
   }
@@ -324,6 +376,11 @@
   }
 
   mount.addEventListener("click", event => {
+    if (event.target.closest('a[href="/api/auth/logout"]')) {
+      clearCachedSession();
+      return;
+    }
+
     const authTrigger = event.target.closest("[data-auth-open]");
     if (authTrigger) {
       event.preventDefault();
@@ -417,6 +474,11 @@
 
   renderShell();
   initSettingsState();
+  const cachedSession = readCachedSession();
+  if (cachedSession) {
+    discordSession = cachedSession;
+    authChecked = true;
+  }
   renderAuth();
   refreshSession();
   syncHomeAuthQuery();

@@ -222,14 +222,22 @@
 
       @media (min-width: 761px) {
         .nav-right {
-          min-width: 188px;
+          width: 244px;
+          min-width: 244px;
           justify-content: flex-end;
         }
 
         #navAuthArea {
-          min-width: 138px;
+          width: 200px;
+          min-width: 200px;
           justify-content: flex-end;
         }
+      }
+
+      .nav-auth-pending {
+        opacity: 0.42;
+        pointer-events: none;
+        user-select: none;
       }
 
       .nav-login-btn {
@@ -369,6 +377,7 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
+        min-width: 118px;
         height: 40px;
         padding: 0 10px 0 8px;
         border-radius: 9px;
@@ -2656,6 +2665,10 @@
       authOverlay?.addEventListener("click", closeAuthPanel);
       authBackBtn?.addEventListener("click", closeAuthPanel);
       document.addEventListener("click", (event) => {
+        if (event.target.closest('a[href="/api/auth/logout"]')) {
+          clearCachedNavSession();
+          return;
+        }
         const trigger = event.target.closest("[data-auth-open]");
         if (!trigger) return;
         event.preventDefault();
@@ -2702,6 +2715,36 @@
       function markLoginNoticeRead(session = discordSession) {
         try {
           window.localStorage.setItem(loginNoticeReadKey(session), "1");
+        } catch {}
+      }
+
+      function readCachedNavSession() {
+        try {
+          const cached = JSON.parse(window.localStorage.getItem("igme_discord_cached_session") || "null");
+          if (!cached || !cached.discord_id) return null;
+          if (Date.now() - Number(cached.cached_at || 0) > 86400000) return null;
+          return cached;
+        } catch {
+          return null;
+        }
+      }
+
+      function writeCachedNavSession(session) {
+        try {
+          if (!session?.discord_id) return;
+          window.localStorage.setItem("igme_discord_cached_session", JSON.stringify({
+            discord_id: session.discord_id,
+            username: session.username || "",
+            global_name: session.global_name || "",
+            avatar: session.avatar || "",
+            cached_at: Date.now()
+          }));
+        } catch {}
+      }
+
+      function clearCachedNavSession() {
+        try {
+          window.localStorage.removeItem("igme_discord_cached_session");
         } catch {}
       }
 
@@ -2828,16 +2871,42 @@
         }
       }
 
+      function renderNavAuthPending() {
+        if (!navAuthArea) return;
+        navAuthArea.innerHTML = `
+          <div class="nav-session-actions nav-auth-pending" aria-hidden="true">
+            <span class="nav-icon-btn">${icon("bell")}</span>
+            <span class="nav-profile-btn">
+              <span class="nav-user-avatar"></span>
+              <span class="nav-user-name">Profil</span>
+              ${icon("chevron")}
+            </span>
+          </div>
+        `;
+      }
+
       (async () => {
         if (DISCORD_AUTH_PAUSED) {
           renderNavAuth();
           return;
         }
+        const cachedSession = readCachedNavSession();
+        if (cachedSession) {
+          discordSession = cachedSession;
+          renderNavAuth();
+        } else {
+          renderNavAuthPending();
+        }
         try {
           const r = await fetch("/api/auth/me", { cache: "no-store" });
           const data = await r.json();
-          if (data.loggedIn) discordSession = data.user;
-        } catch {}
+          discordSession = data.loggedIn ? data.user : null;
+          if (discordSession) writeCachedNavSession(discordSession);
+          else clearCachedNavSession();
+        } catch {
+          discordSession = null;
+          clearCachedNavSession();
+        }
         renderNavAuth();
       })();
 
