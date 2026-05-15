@@ -397,70 +397,38 @@
       .identity-tag img { width: 16px; height: 16px; object-fit: contain; }
       .presence-bubble {
         position: absolute;
-        left: 168px;
-        top: 28px;
-        max-width: min(360px, calc(100% - 210px));
-        min-height: 44px;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 12px 8px 9px;
-        border: 1px solid rgba(255,255,255,0.11);
-        border-radius: 12px;
-        background: rgba(18,18,18,0.9);
+        left: 154px;
+        top: 12px;
+        max-width: min(220px, calc(100% - 190px));
+        min-width: 148px;
+        min-height: 48px;
+        display: block;
+        padding: 9px 12px 10px;
+        border: 1px solid rgba(255,255,255,0.13);
+        border-radius: 10px;
+        background: rgba(22,22,24,0.94);
         color: #f8fafc;
-        box-shadow: 0 16px 40px rgba(0,0,0,0.34);
+        box-shadow: 0 14px 32px rgba(0,0,0,0.36);
         backdrop-filter: blur(16px);
         z-index: 8;
       }
       .presence-bubble[hidden] { display: none; }
-      .presence-icon {
-        width: 28px;
-        height: 28px;
-        display: grid;
-        place-items: center;
-        flex: 0 0 auto;
-        border-radius: 8px;
-        background: rgba(88,101,242,0.14);
-        color: #a78bfa;
-      }
-      .presence-bubble.spotify .presence-icon {
-        background: rgba(34,197,94,0.14);
-        color: #22c55e;
-      }
-      .presence-bubble.playing .presence-icon {
-        background: rgba(139,92,246,0.15);
-        color: #c4b5fd;
-      }
-      .presence-bubble.custom .presence-icon {
-        background: rgba(244,114,182,0.13);
-        color: #f9a8d4;
-      }
-      .presence-icon svg { width: 16px; height: 16px; }
-      .presence-image + .presence-icon { display: none; }
-      .presence-image {
-        width: 28px;
-        height: 28px;
-        border-radius: 8px;
-        object-fit: cover;
-        flex: 0 0 auto;
-      }
       .presence-main {
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 3px;
       }
       .presence-kind {
         color: #7f8da3;
-        font-size: 10.5px;
+        font-size: 11px;
         line-height: 1.1;
       }
       .presence-title {
         max-width: 100%;
         overflow: hidden;
         color: #fff;
-        font-size: 13px;
+        font-size: 14px;
         line-height: 1.15;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -469,7 +437,7 @@
         max-width: 100%;
         overflow: hidden;
         color: #9aa7bc;
-        font-size: 11.5px;
+        font-size: 12px;
         line-height: 1.15;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -2165,16 +2133,17 @@
         const emoji = activityEmoji(activity);
         const title = kind === "custom"
           ? [emoji, firstActivityText(activity.state, activity.details, activity.name)].filter(Boolean).join(" ")
-          : firstActivityText(activity.details, activity.song, activity.track, activity.name, activity.game);
+          : kind === "spotify"
+            ? firstActivityText(activity.details, activity.song, activity.track, activity.name)
+            : firstActivityText(activity.name, activity.game, activity.details, activity.state);
         const sub = kind === "spotify"
-          ? firstActivityText(activity.state, activity.artist, activity.artists, activity.name)
-          : firstActivityText(activity.state, activity.details && activity.name !== activity.details ? activity.name : "");
-        const imageSrc = activityImageUrl(activity);
-        const image = imageSrc ? `<img class="presence-image" src="${escapeHtml(imageSrc)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : "";
+          ? firstActivityText(activity.state, activity.artist, activity.artists)
+          : kind === "custom"
+            ? ""
+            : firstActivityText(activity.details, activity.state);
         box.className = `presence-bubble ${kind}`;
         box.hidden = false;
         box.innerHTML = `
-          ${image}<span class="presence-icon">${activityIcon(kind)}</span>
           <span class="presence-main">
             <span class="presence-kind">${escapeHtml(activityLabel(kind))}</span>
             <span class="presence-title">${escapeHtml(title || activityLabel(kind))}</span>
