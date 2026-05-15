@@ -1863,9 +1863,9 @@
 
       function statusLabel(s, clientStatus) {
         s = normalizeStatus(s, clientStatus);
-        if (s === "online") return "Çevrimiçi";
+        if (s === "online") return "Online";
         if (s === "idle") return "Boşta";
-        if (s === "dnd") return "Rahatsız Etme";
+        if (s === "dnd") return "Rahatsız Etmeyin";
         return "Çevrimdışı";
       }
 
@@ -2650,9 +2650,10 @@
         // Status dot
         const statusDot = el("statusDot");
         statusDot.className = "status-dot " + statusClass(profileStatus, profileDevices);
-        const statusTooltip = deviceText && deviceText !== "Bilinmiyor" ? deviceText : presenceText;
+        const statusTooltip = presenceText;
         statusDot.dataset.label = statusTooltip;
         statusDot.title = statusTooltip;
+        statusDot.setAttribute("aria-label", statusTooltip);
         statusDot.tabIndex = 0;
         el("viewCount").textContent = data.view_count != null ? data.view_count : "0";
 
