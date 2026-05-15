@@ -2041,12 +2041,17 @@
         return "playing";
       }
 
-      function activityLabel(kind) {
-        if (kind === "spotify") return "Spotify Dinliyor.";
-        if (kind === "streaming") return "Yayın Yapıyor.";
-        if (kind === "watching") return "İzliyor.";
-        if (kind === "custom") return "Durum.";
-        return "Oynuyor.";
+      function formatActivityBubbleText(kind, activity) {
+        const playingTitle = firstActivityText(activity?.name, activity?.game, activity?.details);
+        const mediaTitle = firstActivityText(activity?.details, activity?.song, activity?.track, activity?.name);
+        if (kind === "spotify") return mediaTitle ? `${mediaTitle} Spotify Dinliyor.` : "Spotify Dinliyor.";
+        if (kind === "streaming") return playingTitle ? `${playingTitle} Yayın Yapıyor.` : "Yayın Yapıyor.";
+        if (kind === "watching") return playingTitle ? `${playingTitle} İzliyor.` : "İzliyor.";
+        if (kind === "custom") {
+          const text = [activityEmoji(activity), firstActivityText(activity?.state, activity?.details, activity?.name)].filter(Boolean).join(" ");
+          return text || "Durum.";
+        }
+        return playingTitle ? `${playingTitle} Oynuyor.` : "Oynuyor.";
       }
 
       function activityImageUrl(activity) {
@@ -2113,11 +2118,12 @@
           return;
         }
         const kind = activityKind(activity);
+        const text = formatActivityBubbleText(kind, activity);
         box.className = `presence-bubble ${kind}`;
         box.hidden = false;
         box.innerHTML = `
           <span class="presence-main">
-            <span class="presence-kind">${escapeHtml(activityLabel(kind))}</span>
+            <span class="presence-kind">${escapeHtml(text)}</span>
           </span>
         `;
       }
