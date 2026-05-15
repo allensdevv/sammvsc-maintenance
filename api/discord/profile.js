@@ -14,11 +14,12 @@ const DCSV_PUBLIC_BASE = "https://dcsv.me/users";
 const CACHE_TTL = 60 * 30;
 const PARTIAL_CACHE_TTL = 60;
 const STALE_CACHE_TTL = 60 * 60 * 12;
+const LIVE_CACHE_MAX_AGE = Number(process.env.DISCORD_PROFILE_LIVE_CACHE_MAX_AGE || 75);
 const STATBOT_CACHE_TTL = Number(process.env.STATBOT_CACHE_TTL || 60 * 10);
 const STATBOT_MAX_GUILDS = Number(process.env.STATBOT_MAX_GUILDS || 8);
 const STATBOT_API_BASE = String(process.env.STATBOT_API_BASE || "https://api.statbot.net").replace(/\/+$/, "");
 const EXTERNAL_TIMEOUT_MS = 9000;
-const CACHE_VERSION = "v16";
+const CACHE_VERSION = "v17";
 const LEGACY_CACHE_VERSIONS = [];
 const DISCORD_PROFILE_PAUSED = false;
 const TRANSIENT_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
@@ -139,6 +140,93 @@ function firstObject(...values) {
     if (isPlainObject(value)) return value;
   }
   return {};
+}
+
+function keyMatches(key, names) {
+  const normalized = String(key || "").replace(/[^a-z0-9]/gi, "").toLowerCase();
+  return names.some(name => normalized === String(name || "").replace(/[^a-z0-9]/gi, "").toLowerCase());
+}
+
+function deepFind(value, names, predicate, maxDepth = 5, seen = new Set()) {
+  if (!value || maxDepth < 0) return null;
+  if (seen.has(value)) return null;
+  if (typeof value === "object") seen.add(value);
+
+  if (isPlainObject(value)) {
+    for (const [key, item] of Object.entries(value)) {
+      if (keyMatches(key, names) && predicate(item)) return item;
+    }
+    for (const item of Object.values(value)) {
+      const found = deepFind(item, names, predicate, maxDepth - 1, seen);
+      if (found !== null && found !== undefined) return found;
+    }
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = deepFind(item, names, predicate, maxDepth - 1, seen);
+      if (found !== null && found !== undefined) return found;
+    }
+  }
+
+  return null;
+}
+
+function deepFirstValue(value, names, maxDepth = 5) {
+  return deepFind(value, names, item => item !== undefined && item !== null && item !== "", maxDepth);
+}
+
+function deepFirstObject(value, names, maxDepth = 5) {
+  return deepFind(value, names, item => isPlainObject(item), maxDepth) || {};
+}
+
+function deepFirstList(value, names, maxDepth = 5) {
+  const found = deepFind(value, names, item => listFrom(item).length > 0, maxDepth);
+  return found ? listFrom(found) : [];
+}
+
+function numberValue(value, fallback = 0) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "boolean") return value ? 1 : 0;
+  if (typeof value === "string") {
+    const clean = value.trim();
+    if (/^\d+$/.test(clean)) return Number(clean);
+  }
+  return fallback;
+}
+
+function premiumTypeFrom(...values) {
+  for (const value of values) {
+    if (value === undefined || value === null || value === "") continue;
+    if (typeof value === "boolean") return value ? 2 : 0;
+    if (typeof value === "number") return value > 0 ? value : 0;
+    if (isPlainObject(value)) {
+      const nested = premiumTypeFrom(
+        value.type,
+        value.Type,
+        value.name,
+        value.Name,
+        value.premium_type,
+        value.premiumType,
+        value.UserPremiumType,
+        value.nitro_type,
+        value.nitroType,
+        value.active,
+        value.is_active,
+        value.since,
+        value.started_at
+      );
+      if (nested) return nested;
+      continue;
+    }
+    const text = String(value).trim().toLowerCase();
+    if (!text || text === "0" || text === "false" || text === "none" || text === "yok") continue;
+    if (/^\d+$/.test(text)) return Number(text);
+    if (/classic/.test(text)) return 1;
+    if (/basic/.test(text)) return 3;
+    if (/nitro|premium|abone|subscriber|subscription|true/.test(text)) return 2;
+  }
+  return 0;
 }
 
 function clientStatusArray(...values) {
@@ -956,7 +1044,21 @@ function parseCreatedAt(uid) {
 }
 
 function normalizeDcsv(d) {
-  const uid = String(d.id || d.user_id || "");
+  const user = firstObject(
+    d.user,
+    d.User,
+    d.discord_user,
+    d.discordUser,
+    d.DiscordUser,
+    d.profile,
+    d.Profile,
+    d.data?.user,
+    d.data?.User,
+    d.data?.profile,
+    deepFirstObject(d, ["user", "discord_user", "discordUser", "DiscordUser", "profile", "Profile", "UserInfo"], 4)
+  );
+  d = { ...d, ...user };
+  const uid = String(firstValue(d.id, d.user_id, d.UserID, d.UserId, deepFirstValue(d, ["id", "user_id", "UserID", "UserId"], 4), "") || "");
   const avatarHash = d.avatar || d.avatar_hash || null;
   const bannerHash = d.banner || d.banner_hash || null;
   const dcsvServers = mergeServerArrays(
@@ -972,7 +1074,9 @@ function normalizeDcsv(d) {
     d.GuildStats,
     d.server_stats,
     d.serverStats,
-    d.ServerStats
+    d.ServerStats,
+    deepFirstList(d, ["guilds", "Guilds", "servers", "Servers", "mutual_guilds", "mutualGuilds", "MutualGuilds"], 4),
+    deepFirstList(d, ["guild_stats", "guildStats", "GuildStats", "server_stats", "serverStats", "ServerStats"], 4)
   );
   const rawStatus = firstValue(
     d.status,
@@ -996,6 +1100,7 @@ function normalizeDcsv(d) {
     d.online === true ? "online" : null,
     d.is_online === true ? "online" : null,
     d.isOnline === true ? "online" : null,
+    deepFirstValue(d, ["status", "Status", "discord_status", "DiscordStatus", "online_status", "OnlineStatus", "presence_status", "PresenceStatus", "state", "State"], 4),
     "offline"
   );
   const clientStatus = effectiveClientStatus(
@@ -1019,9 +1124,21 @@ function normalizeDcsv(d) {
     d.presence?.client_status,
     d.presence?.clientStatus,
     d.presence?.Devices,
-    d.presence?.devices
+    d.presence?.devices,
+    deepFirstValue(d, ["client_status", "clientStatus", "ClientStatus", "client_statuses", "clientStatuses", "ClientStatuses", "devices", "Devices", "device", "Device", "active_on", "activeOn"], 4)
   );
   const status = normalizeStatus(rawStatus, clientStatus);
+  const premiumType = premiumTypeFrom(
+    d.premium_type,
+    d.premiumType,
+    d.PremiumType,
+    d.UserPremiumType,
+    d.nitro_type,
+    d.nitroType,
+    d.is_premium,
+    d.isPremium,
+    deepFirstValue(d, ["premium_type", "premiumType", "PremiumType", "UserPremiumType", "nitro_type", "nitroType", "is_premium", "isPremium"], 4)
+  );
   return stabilizePresence({
     id: uid,
     username: d.username || "",
@@ -1031,12 +1148,12 @@ function normalizeDcsv(d) {
     accent_color: d.accent_color || null,
     status,
     client_status: clientStatus,
-    public_flags: d.public_flags || 0,
-    premium_type: d.premium_type || (d.is_premium ? 2 : 0),
-    premium_since: toIso(d.premium_since || d.nitro_since),
-    boost_since: toIso(d.boost_since || d.guild_boost_since),
+    public_flags: numberValue(firstValue(d.public_flags, d.publicFlags, d.PublicFlags, d.UserPublicFlags, d.userPublicFlags, d.flags, d.Flags, deepFirstValue(d, ["public_flags", "publicFlags", "PublicFlags", "UserPublicFlags", "userPublicFlags", "flags", "Flags"], 4)), 0),
+    premium_type: premiumType,
+    premium_since: toIso(firstValue(d.premium_since, d.premiumSince, d.NitroSince, d.nitro_since, d.nitroSince, deepFirstValue(d, ["premium_since", "premiumSince", "PremiumSince", "nitro_since", "nitroSince", "NitroSince"], 4))),
+    boost_since: toIso(firstValue(d.boost_since, d.boostSince, d.guild_boost_since, d.guildBoostSince, d.BoostSince, deepFirstValue(d, ["boost_since", "boostSince", "BoostSince", "guild_boost_since", "guildBoostSince", "GuildBoostSince"], 4))),
     legacy_username: d.legacy_username || d.LegacyUserName || null,
-    badges: d.badges || [],
+    badges: firstList(d.badges, d.Badges, d.UserBadge, d.UserBadges, deepFirstList(d, ["badges", "Badges", "UserBadge", "UserBadges", "profile_badges", "profileBadges"], 4)),
     created_at: parseCreatedAt(uid),
     age: d.age || null,
     gender: d.gender || null,
@@ -1065,7 +1182,8 @@ function normalizeDcsv(d) {
       d.presence?.activities,
       d.presence?.activity,
       d.presence?.Activities,
-      d.presence?.Activity
+      d.presence?.Activity,
+      deepFirstList(d, ["activities", "Activities", "presence_activities", "PresenceActivities", "activity", "Activity", "current_activity", "currentActivity", "CurrentActivity", "rich_presence", "richPresence", "RichPresence", "spotify", "Spotify"], 4)
     ),
     activity: d.activity || d.activities || null,
     punishments: d.punishments || [],
@@ -1081,8 +1199,35 @@ function normalizeDcsv(d) {
 
 function normalizeFindcord(fc) {
   if (isPlainObject(fc?.data)) fc = { ...fc.data, ...fc };
-  const user = fc.UserInfo || fc.user || fc.User || fc.data?.UserInfo || fc;
-  const uid = String(firstValue(user.UserID, user.UserId, user.id, user.user_id, fc.UserID, fc.UserId, fc.id, fc.user_id, "") || "");
+  const user = firstObject(
+    fc.UserInfo,
+    fc.Userinfo,
+    fc.userInfo,
+    fc.user,
+    fc.User,
+    fc.discord_user,
+    fc.discordUser,
+    fc.Profile,
+    fc.profile,
+    fc.data?.UserInfo,
+    fc.data?.user,
+    fc.data?.User,
+    deepFirstObject(fc, ["UserInfo", "userInfo", "user", "User", "discord_user", "discordUser", "Profile", "profile"], 5),
+    fc
+  );
+  const uid = String(firstValue(
+    user.UserID,
+    user.UserId,
+    user.id,
+    user.user_id,
+    fc.UserID,
+    fc.UserId,
+    fc.id,
+    fc.user_id,
+    fc._query_id,
+    deepFirstValue(fc, ["UserID", "UserId", "user_id", "discord_id", "discordId", "id"], 5),
+    ""
+  ) || "");
   const guilds = firstList(
     fc.Guilds,
     fc.guilds,
@@ -1100,7 +1245,8 @@ function normalizeFindcord(fc) {
     user.servers,
     user.MutualGuilds,
     user.mutualGuilds,
-    user.mutual_guilds
+    user.mutual_guilds,
+    deepFirstList(fc, ["Guilds", "guilds", "Servers", "servers", "MutualGuilds", "mutualGuilds", "mutual_guilds", "MutualServers", "mutualServers"], 5)
   );
   const guildStats = firstList(
     fc.GuildStats,
@@ -1117,7 +1263,8 @@ function normalizeFindcord(fc) {
     user.guild_stats,
     user.ServerStats,
     user.serverStats,
-    user.server_stats
+    user.server_stats,
+    deepFirstList(fc, ["GuildStats", "guildStats", "guild_stats", "ServerStats", "serverStats", "server_stats", "MutualGuildStats", "mutualGuildStats", "mutual_guild_stats"], 5)
   );
   const findcordHasGuilds = guilds.length > 0 || guildStats.length > 0;
   const guildStatsById = new Map(guildStats.map(g => [String(firstValue(g.GuildID, g.GuildId, g.guild_id, g.id, "")), g]));
@@ -1183,19 +1330,36 @@ function normalizeFindcord(fc) {
     }
   }
 
-  const badges = firstList(user.UserBadge, user.Badges, user.badges, fc.UserBadge, fc.Badges, fc.badges).map(b => ({
-    id: firstValue(b.id, b.name, b.description, b.hash, b.icon, ""),
-    hash: firstValue(b.icon, b.hash, b.BadgeIcon, b.BadgeHash),
-    icon: firstValue(b.icon, b.hash, b.BadgeIcon, b.BadgeHash),
-    name: firstValue(b.description, b.name, b.label, b.id, "Badge"),
-    description: firstValue(b.description, b.name, b.label, b.id, ""),
-    tooltip: firstValue(b.tooltip, b.title, b.description, b.name),
-    type: firstValue(b.type, b.badge_type, b.kind),
-    tier: firstValue(b.tier, b.level, b.rank),
-    months: firstValue(b.months, b.durationMonths, b.subscription_months),
-    earned_at: toIso(firstValue(b.earned_at, b.obtained_at, b.acquired_at, b.created_at, b.createdAt, b.date, b.since, b.timestamp)),
-    since: toIso(firstValue(b.since, b.started_at, b.startDate, b.boost_since, b.premium_since))
-  }));
+  const badges = firstList(
+    user.UserBadge,
+    user.UserBadges,
+    user.Badges,
+    user.badges,
+    user.profile_badges,
+    user.profileBadges,
+    fc.UserBadge,
+    fc.UserBadges,
+    fc.Badges,
+    fc.badges,
+    fc.profile_badges,
+    fc.profileBadges,
+    deepFirstList(fc, ["UserBadge", "UserBadges", "Badges", "badges", "profile_badges", "profileBadges"], 5)
+  ).map(b => {
+    const badge = isPlainObject(b) ? b : { name: String(b || ""), id: String(b || "") };
+    return {
+      id: firstValue(badge.id, badge.ID, badge.name, badge.Name, badge.description, badge.Description, badge.hash, badge.icon, ""),
+      hash: firstValue(badge.icon, badge.hash, badge.BadgeIcon, badge.BadgeHash, badge.Icon, badge.Hash, badge.url, badge.URL),
+      icon: firstValue(badge.icon, badge.hash, badge.BadgeIcon, badge.BadgeHash, badge.Icon, badge.Hash, badge.url, badge.URL),
+      name: firstValue(badge.description, badge.Description, badge.name, badge.Name, badge.label, badge.Label, badge.id, "Badge"),
+      description: firstValue(badge.description, badge.Description, badge.name, badge.Name, badge.label, badge.Label, badge.id, ""),
+      tooltip: firstValue(badge.tooltip, badge.Tooltip, badge.title, badge.Title, badge.description, badge.Description, badge.name, badge.Name),
+      type: firstValue(badge.type, badge.Type, badge.badge_type, badge.badgeType, badge.kind, badge.Kind),
+      tier: firstValue(badge.tier, badge.Tier, badge.level, badge.Level, badge.rank, badge.Rank),
+      months: firstValue(badge.months, badge.Months, badge.durationMonths, badge.subscription_months, badge.subscriptionMonths),
+      earned_at: toIso(firstValue(badge.earned_at, badge.earnedAt, badge.obtained_at, badge.obtainedAt, badge.acquired_at, badge.acquiredAt, badge.created_at, badge.createdAt, badge.date, badge.Date, badge.since, badge.timestamp)),
+      since: toIso(firstValue(badge.since, badge.Since, badge.started_at, badge.startedAt, badge.startDate, badge.boost_since, badge.boostSince, badge.premium_since, badge.premiumSince))
+    };
+  }).filter(b => b.name || b.hash || b.icon);
 
   const lastSeen = firstObject(fc.LastSeen, fc.lastSeen, fc.last_seen, user.LastSeen, user.lastSeen);
   const messageHistory = firstList(
@@ -1449,6 +1613,7 @@ function normalizeFindcord(fc) {
     fc.online === true ? "online" : null,
     fc.is_online === true ? "online" : null,
     fc.isOnline === true ? "online" : null,
+    deepFirstValue(fc, ["status", "Status", "discord_status", "DiscordStatus", "online_status", "OnlineStatus", "presence_status", "PresenceStatus", "state", "State"], 5),
     "offline"
   );
   const clientStatus = effectiveClientStatus(
@@ -1490,7 +1655,8 @@ function normalizeFindcord(fc) {
     fc.presence?.client_status,
     fc.presence?.clientStatus,
     fc.presence?.Devices,
-    fc.presence?.devices
+    fc.presence?.devices,
+    deepFirstValue(fc, ["client_status", "clientStatus", "ClientStatus", "client_statuses", "clientStatuses", "ClientStatuses", "devices", "Devices", "device", "Device", "active_on", "activeOn", "platforms", "Platforms"], 5)
   );
   const status = normalizeStatus(rawStatus, clientStatus);
   const presenceActivities = normalizePresenceActivities(
@@ -1525,9 +1691,31 @@ function normalizeFindcord(fc) {
     fc.presence?.Activities,
     fc.presence?.activities,
     fc.presence?.Activity,
-    fc.presence?.activity
+    fc.presence?.activity,
+    deepFirstList(fc, ["activities", "Activities", "presence_activities", "PresenceActivities", "activity", "Activity", "current_activity", "currentActivity", "CurrentActivity", "rich_presence", "richPresence", "RichPresence", "spotify", "Spotify", "playing", "Playing"], 5)
   );
   const customActivity = presenceActivities.find(activity => activity.type === "custom");
+  const premiumType = premiumTypeFrom(
+    user.UserPremiumType,
+    user.PremiumType,
+    user.premium_type,
+    user.premiumType,
+    user.NitroType,
+    user.nitro_type,
+    user.nitroType,
+    user.IsPremium,
+    user.isPremium,
+    fc.UserPremiumType,
+    fc.PremiumType,
+    fc.premium_type,
+    fc.premiumType,
+    fc.NitroType,
+    fc.nitro_type,
+    fc.nitroType,
+    fc.IsPremium,
+    fc.isPremium,
+    deepFirstValue(fc, ["UserPremiumType", "PremiumType", "premium_type", "premiumType", "NitroType", "nitro_type", "nitroType", "IsPremium", "isPremium"], 5)
+  );
 
   return stabilizePresence({
     id: uid,
@@ -1542,17 +1730,17 @@ function normalizeFindcord(fc) {
     status,
     client_status: clientStatus,
     guild_tag: user.GuildTag || fc.guild_tag || null,
-    public_flags: user.public_flags || fc.public_flags || 0,
-    premium_type: Number(firstValue(user.UserPremiumType, user.PremiumType, user.premium_type, fc.UserPremiumType, fc.PremiumType, fc.premium_type, 0)) || 0,
-    premium_since: toIso(firstValue(user.PremiumSince, user.PremiumSinceAt, user.UserPremiumSince, user.NitroSince, user.NitroSinceAt, fc.PremiumSince, fc.PremiumSinceAt, fc.UserPremiumSince, fc.nitro_since, fc.premium_since)),
-    boost_since: toIso(firstValue(user.BoostSince, user.BoostSinceAt, user.UserBoostSince, user.GuildBoostSince, fc.BoostSince, fc.BoostSinceAt, fc.UserBoostSince, fc.GuildBoostSince, fc.boost_since)),
+    public_flags: numberValue(firstValue(user.public_flags, user.publicFlags, user.PublicFlags, user.UserPublicFlags, user.userPublicFlags, user.flags, user.Flags, fc.public_flags, fc.publicFlags, fc.PublicFlags, fc.UserPublicFlags, fc.userPublicFlags, fc.flags, fc.Flags, deepFirstValue(fc, ["public_flags", "publicFlags", "PublicFlags", "UserPublicFlags", "userPublicFlags", "flags", "Flags"], 5)), 0),
+    premium_type: premiumType,
+    premium_since: toIso(firstValue(user.PremiumSince, user.PremiumSinceAt, user.UserPremiumSince, user.NitroSince, user.NitroSinceAt, user.premium_since, user.premiumSince, user.nitro_since, user.nitroSince, fc.PremiumSince, fc.PremiumSinceAt, fc.UserPremiumSince, fc.nitro_since, fc.nitroSince, fc.premium_since, fc.premiumSince, deepFirstValue(fc, ["PremiumSince", "PremiumSinceAt", "UserPremiumSince", "NitroSince", "NitroSinceAt", "premium_since", "premiumSince", "nitro_since", "nitroSince"], 5))),
+    boost_since: toIso(firstValue(user.BoostSince, user.BoostSinceAt, user.UserBoostSince, user.GuildBoostSince, user.boost_since, user.boostSince, user.guild_boost_since, user.guildBoostSince, fc.BoostSince, fc.BoostSinceAt, fc.UserBoostSince, fc.GuildBoostSince, fc.boost_since, fc.boostSince, fc.guild_boost_since, fc.guildBoostSince, deepFirstValue(fc, ["BoostSince", "BoostSinceAt", "UserBoostSince", "GuildBoostSince", "boost_since", "boostSince", "guild_boost_since", "guildBoostSince"], 5))),
     badges,
     created_at: toIso(user.UserCreatedTimestamp) || toIso(user.UserCreated) || parseCreatedAt(uid),
     age: firstValue(fc.TopAge, user.age),
     gender: firstValue(fc.TopSex, user.gender),
     bio: firstValue(user.UserBio, user.bio, fc.bio, fc.about_me),
     pronouns: user.UserPronouns || null,
-    custom_status: firstValue(customActivity?.state, customActivity?.details, user.Activities?.find?.(a => a?.state)?.state, fc.custom_status),
+    custom_status: firstValue(customActivity?.state, customActivity?.details, user.Activities?.find?.(a => a?.state)?.state, fc.custom_status, fc.customStatus, user.custom_status, user.customStatus, deepFirstValue(fc, ["custom_status", "customStatus", "CustomStatus"], 5)),
     other_names: firstArray(fc.displayNames, user.previous_usernames, fc.previous_usernames)
       .map(n => (typeof n === "string" ? n : firstValue(n.name, n.displayName, n.UserName, n.toString?.())))
       .filter(Boolean),
@@ -1615,6 +1803,8 @@ function mergeProfiles(dcsv, findcord) {
     status: mergedStatus,
     client_status: finalClientStatus,
     guild_tag: firstValue(findcord.guild_tag, dcsv.guild_tag),
+    public_flags: numberValue(findcord.public_flags, 0) || numberValue(dcsv.public_flags, 0),
+    premium_type: premiumTypeFrom(findcord.premium_type) || premiumTypeFrom(dcsv.premium_type),
     custom_status: firstValue(findcord.custom_status, dcsv.custom_status),
     presence_activities: hasItems(findcord.presence_activities) ? findcord.presence_activities : dcsv.presence_activities,
     premium_since: firstValue(findcord.premium_since, dcsv.premium_since),
@@ -1660,6 +1850,19 @@ function isCompleteProfile(profile) {
   if (profile.findcord_loaded && (hasItems(profile.voice_friends) || hasItems(profile.message_friends))) return true;
   if (profile.findcord_loaded && (hasItems(profile.punishments) || hasMeaningfulActiveHours(profile))) return true;
   return false;
+}
+
+function cacheAgeSeconds(profile) {
+  if (!profile?.cached_at) return Number.POSITIVE_INFINITY;
+  const time = new Date(profile.cached_at).getTime();
+  if (!Number.isFinite(time)) return Number.POSITIVE_INFINITY;
+  return Math.max(0, Math.round((Date.now() - time) / 1000));
+}
+
+function shouldServeProfileCache(profile) {
+  if (!isCompleteProfile(profile)) return false;
+  const maxAge = Number.isFinite(LIVE_CACHE_MAX_AGE) && LIVE_CACHE_MAX_AGE > 0 ? LIVE_CACHE_MAX_AGE : 75;
+  return cacheAgeSeconds(profile) <= maxAge;
 }
 
 function profileCompletenessScore(profile) {
@@ -1814,7 +2017,7 @@ module.exports = async (req, res) => {
     staleProfile,
     await getProfileFromCacheVersions(query).catch(() => null)
   );
-  if (bestCachedProfile && isCompleteProfile(bestCachedProfile)) {
+  if (bestCachedProfile && shouldServeProfileCache(bestCachedProfile)) {
     return sendCachedProfile(res, query, bestCachedProfile, "cache", session);
   }
 
@@ -1832,7 +2035,7 @@ module.exports = async (req, res) => {
       cachedProfile = pickRicherProfile(cachedProfile, await getJson(cacheKey(resolvedId)).catch(() => null), resolvedCachedProfile);
       staleProfile = pickRicherProfile(staleProfile, await getJson(staleCacheKey(resolvedId)).catch(() => null), resolvedCachedProfile);
       bestCachedProfile = pickRicherProfile(bestCachedProfile, cachedProfile, staleProfile, resolvedCachedProfile);
-      if (bestCachedProfile && isCompleteProfile(bestCachedProfile)) {
+      if (bestCachedProfile && shouldServeProfileCache(bestCachedProfile)) {
         return sendCachedProfile(res, query, bestCachedProfile, "cache", session);
       }
     }
@@ -1842,7 +2045,8 @@ module.exports = async (req, res) => {
 
   if (resolvedId) {
     try {
-      findcordProfile = normalizeFindcord(await fetchFindcordById(resolvedId));
+      const findcordRaw = await fetchFindcordById(resolvedId);
+      findcordProfile = normalizeFindcord({ ...(findcordRaw || {}), _query_id: resolvedId });
     } catch (err) {
       errors.push(`Findcord: ${err.message}`);
     }
