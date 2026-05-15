@@ -16,6 +16,7 @@ const PARTIAL_CACHE_TTL = 60;
 const STALE_CACHE_TTL = 60 * 60 * 12;
 const EXTERNAL_TIMEOUT_MS = 9000;
 const CACHE_VERSION = "v14";
+const LEGACY_CACHE_VERSIONS = ["v13", "v12", "v11"];
 const DISCORD_PROFILE_PAUSED = false;
 const TRANSIENT_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 
@@ -29,12 +30,20 @@ function sendJson(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
+function cacheKeyForVersion(version, id) {
+  return `discord:profile:${version}:${String(id).toLowerCase()}`;
+}
+
+function staleCacheKeyForVersion(version, id) {
+  return `discord:profile:${version}:stale:${String(id).toLowerCase()}`;
+}
+
 function cacheKey(id) {
-  return `discord:profile:${CACHE_VERSION}:${String(id).toLowerCase()}`;
+  return cacheKeyForVersion(CACHE_VERSION, id);
 }
 
 function staleCacheKey(id) {
-  return `discord:profile:${CACHE_VERSION}:stale:${String(id).toLowerCase()}`;
+  return staleCacheKeyForVersion(CACHE_VERSION, id);
 }
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = EXTERNAL_TIMEOUT_MS) {
@@ -1133,10 +1142,73 @@ function hasMeaningfulActiveHours(profile) {
 
 function isCompleteProfile(profile) {
   if (!profile?.id || !profile?.username) return false;
+  if (hasItems(profile.servers)) return true;
+  if (hasItems(profile.voice_friends) || hasItems(profile.message_friends)) return true;
+  if (hasItems(profile.voice_history) || hasItems(profile.message_history)) return true;
+  if (hasItems(profile.punishments) || hasMeaningfulActiveHours(profile)) return true;
   if (profile.findcord_loaded && profile.findcord_has_guilds) return true;
   if (profile.findcord_loaded && (hasItems(profile.voice_friends) || hasItems(profile.message_friends))) return true;
   if (profile.findcord_loaded && (hasItems(profile.punishments) || hasMeaningfulActiveHours(profile))) return true;
   return false;
+}
+
+function profileCompletenessScore(profile) {
+  if (!profile || typeof profile !== "object") return 0;
+
+  const servers = Array.isArray(profile.servers) ? profile.servers.length : 0;
+  const serverCount = Number(profile.server_count || 0);
+  const voiceFriends = Array.isArray(profile.voice_friends) ? profile.voice_friends.length : 0;
+  const messageFriends = Array.isArray(profile.message_friends) ? profile.message_friends.length : 0;
+  const voiceHistory = Array.isArray(profile.voice_history) ? profile.voice_history.length : 0;
+  const messageHistory = Array.isArray(profile.message_history) ? profile.message_history.length : 0;
+  const punishments = Array.isArray(profile.punishments) ? profile.punishments.length : 0;
+  const badges = Array.isArray(profile.badges) ? profile.badges.length : 0;
+  const names = Array.isArray(profile.other_names) ? profile.other_names.length : 0;
+  const activities = Array.isArray(profile.presence_activities) ? profile.presence_activities.length : 0;
+
+  let score = 0;
+  if (profile.id) score += 20;
+  if (profile.username) score += 20;
+  if (profile.global_name) score += 6;
+  if (profile.avatar_url) score += 5;
+  if (profile.banner_url) score += 4;
+  if (profile.created_at) score += 4;
+  if (profile.status && profile.status !== "offline") score += 6;
+  if (hasItems(profile.client_status)) score += 6;
+  if (profile.custom_status) score += 5;
+  if (profile.bio) score += 5;
+  if (profile.age) score += 3;
+  if (profile.gender) score += 3;
+  if (profile.premium_since) score += 4;
+  if (profile.boost_since) score += 4;
+  if (profile.findcord_loaded) score += 12;
+  if (profile.findcord_has_guilds) score += 24;
+
+  score += servers ? 35 + Math.min(servers, 30) * 3 : Math.min(serverCount, 30);
+  score += voiceFriends ? 18 + Math.min(voiceFriends, 20) : 0;
+  score += messageFriends ? 18 + Math.min(messageFriends, 20) : 0;
+  score += voiceHistory ? 12 + Math.min(voiceHistory, 20) : 0;
+  score += messageHistory ? 12 + Math.min(messageHistory, 20) : 0;
+  score += punishments ? 8 + Math.min(punishments, 20) : 0;
+  score += badges ? 4 + Math.min(badges, 20) : 0;
+  score += names ? 4 + Math.min(names, 20) : 0;
+  score += activities ? 8 + Math.min(activities, 10) : 0;
+  if (hasMeaningfulActiveHours(profile)) score += 16;
+
+  return score;
+}
+
+function pickRicherProfile(...profiles) {
+  let best = null;
+  let bestScore = -1;
+  for (const profile of profiles) {
+    const score = profileCompletenessScore(profile);
+    if (score > bestScore) {
+      best = profile || null;
+      bestScore = score;
+    }
+  }
+  return best;
 }
 
 function markProfile(profile, source) {
@@ -1149,6 +1221,19 @@ function markProfile(profile, source) {
   };
 }
 
+async function getProfileFromCacheVersions(query) {
+  if (!query) return null;
+  const versions = [CACHE_VERSION, ...LEGACY_CACHE_VERSIONS];
+  const profiles = [];
+  for (const version of versions) {
+    const cached = await getJson(cacheKeyForVersion(version, query)).catch(() => null);
+    if (cached) profiles.push(cached);
+    const stale = await getJson(staleCacheKeyForVersion(version, query)).catch(() => null);
+    if (stale) profiles.push(stale);
+  }
+  return pickRicherProfile(...profiles);
+}
+
 async function cacheProfileAliases(query, profile) {
   if (!profile) return;
   const complete = isCompleteProfile(profile);
@@ -1159,6 +1244,12 @@ async function cacheProfileAliases(query, profile) {
     await setJson(staleCacheKey(query), profile, STALE_CACHE_TTL).catch(() => {});
     if (profile.id && profile.id !== query) await setJson(staleCacheKey(profile.id), profile, STALE_CACHE_TTL).catch(() => {});
   }
+}
+
+async function sendCachedProfile(res, query, profile, source = "cache", session = null) {
+  const marked = markProfile(applySessionPresenceFallback(profile, session), source);
+  await cacheProfileAliases(query, marked);
+  return sendJson(res, 200, { status: "ready", source, partial: marked.partial, data: marked });
 }
 
 async function fetchDcsvProfile(query, isId) {
@@ -1207,8 +1298,13 @@ module.exports = async (req, res) => {
 
   let cachedProfile = await getJson(cacheKey(query)).catch(() => null);
   let staleProfile = await getJson(staleCacheKey(query)).catch(() => null);
-  if (cachedProfile && isCompleteProfile(cachedProfile)) {
-    return sendJson(res, 200, { status: "ready", source: "cache", data: cachedProfile });
+  let bestCachedProfile = pickRicherProfile(
+    cachedProfile,
+    staleProfile,
+    await getProfileFromCacheVersions(query).catch(() => null)
+  );
+  if (bestCachedProfile && isCompleteProfile(bestCachedProfile)) {
+    return sendCachedProfile(res, query, bestCachedProfile, "cache", session);
   }
 
   const isId = /^\d{15,20}$/.test(query);
@@ -1221,10 +1317,12 @@ module.exports = async (req, res) => {
     dcsvProfile = await fetchDcsvProfile(query, isId);
     resolvedId = dcsvProfile.id || resolvedId;
     if (resolvedId && resolvedId !== query) {
-      cachedProfile = cachedProfile || await getJson(cacheKey(resolvedId)).catch(() => null);
-      staleProfile = staleProfile || await getJson(staleCacheKey(resolvedId)).catch(() => null);
-      if (cachedProfile && isCompleteProfile(cachedProfile)) {
-        return sendJson(res, 200, { status: "ready", source: "cache", data: cachedProfile });
+      const resolvedCachedProfile = await getProfileFromCacheVersions(resolvedId).catch(() => null);
+      cachedProfile = pickRicherProfile(cachedProfile, await getJson(cacheKey(resolvedId)).catch(() => null), resolvedCachedProfile);
+      staleProfile = pickRicherProfile(staleProfile, await getJson(staleCacheKey(resolvedId)).catch(() => null), resolvedCachedProfile);
+      bestCachedProfile = pickRicherProfile(bestCachedProfile, cachedProfile, staleProfile, resolvedCachedProfile);
+      if (bestCachedProfile && isCompleteProfile(bestCachedProfile)) {
+        return sendCachedProfile(res, query, bestCachedProfile, "cache", session);
       }
     }
   } catch (err) {
@@ -1240,8 +1338,8 @@ module.exports = async (req, res) => {
   }
 
   const liveProfile = mergeProfiles(dcsvProfile, findcordProfile);
-  const cachedBase = isCompleteProfile(cachedProfile) ? cachedProfile : staleProfile;
-  const profile = applySessionPresenceFallback(mergeProfiles(cachedBase, liveProfile) || cachedProfile || liveProfile, session);
+  const cachedBase = pickRicherProfile(cachedProfile, staleProfile, bestCachedProfile);
+  const profile = applySessionPresenceFallback(mergeProfiles(cachedBase, liveProfile) || cachedBase || liveProfile, session);
   if (profile) {
     const source = isCompleteProfile(liveProfile)
       ? (liveProfile.source || (findcordProfile ? "findcord" : "dcsv"))
