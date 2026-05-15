@@ -207,7 +207,7 @@
         background: #181818;
         color: #fff;
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 400;
         line-height: 1.35;
         white-space: normal;
         text-align: left;
@@ -357,26 +357,28 @@
       .device-icon::after {
         content: attr(data-label);
         position: absolute;
-        left: 50%;
-        bottom: calc(100% + 10px);
-        transform: translateX(-50%) translateY(4px);
+        left: calc(100% + 10px);
+        top: 50%;
+        transform: translateX(-4px) translateY(-50%);
         padding: 8px 10px;
         border-radius: 8px;
         border: 1px solid rgba(255,255,255,0.12);
         background: #181818;
         color: #fff;
         font-size: 13px;
-        font-weight: 700;
+        font-weight: 400;
+        line-height: 1;
         white-space: nowrap;
         box-shadow: 0 14px 34px rgba(0,0,0,0.42);
         opacity: 0;
         pointer-events: none;
         transition: opacity 140ms ease, transform 140ms ease;
+        z-index: 24;
       }
       .device-icon.show:hover::after,
       .device-icon.show:focus-visible::after {
         opacity: 1;
-        transform: translateX(-50%) translateY(0);
+        transform: translateX(0) translateY(-50%);
       }
       .identity-tag {
         display: none;
@@ -393,6 +395,85 @@
       }
       .identity-tag.show { display: inline-flex; }
       .identity-tag img { width: 16px; height: 16px; object-fit: contain; }
+      .presence-bubble {
+        position: absolute;
+        left: 168px;
+        top: 28px;
+        max-width: min(360px, calc(100% - 210px));
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px 8px 9px;
+        border: 1px solid rgba(255,255,255,0.11);
+        border-radius: 12px;
+        background: rgba(18,18,18,0.9);
+        color: #f8fafc;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.34);
+        backdrop-filter: blur(16px);
+        z-index: 8;
+      }
+      .presence-bubble[hidden] { display: none; }
+      .presence-icon {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        border-radius: 8px;
+        background: rgba(88,101,242,0.14);
+        color: #a78bfa;
+      }
+      .presence-bubble.spotify .presence-icon {
+        background: rgba(34,197,94,0.14);
+        color: #22c55e;
+      }
+      .presence-bubble.playing .presence-icon {
+        background: rgba(139,92,246,0.15);
+        color: #c4b5fd;
+      }
+      .presence-bubble.custom .presence-icon {
+        background: rgba(244,114,182,0.13);
+        color: #f9a8d4;
+      }
+      .presence-icon svg { width: 16px; height: 16px; }
+      .presence-image + .presence-icon { display: none; }
+      .presence-image {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        object-fit: cover;
+        flex: 0 0 auto;
+      }
+      .presence-main {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .presence-kind {
+        color: #7f8da3;
+        font-size: 10.5px;
+        line-height: 1.1;
+      }
+      .presence-title {
+        max-width: 100%;
+        overflow: hidden;
+        color: #fff;
+        font-size: 13px;
+        line-height: 1.15;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .presence-sub {
+        max-width: 100%;
+        overflow: hidden;
+        color: #9aa7bc;
+        font-size: 11.5px;
+        line-height: 1.15;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
       .handle-text { color: #9ca3af; font-size: 12px; margin-top: 3px; }
       .meta-row {
         display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
@@ -1218,6 +1299,13 @@
         .hours-grid { grid-template-columns: repeat(12, minmax(24px, 1fr)); }
         .voice-table th:nth-child(n+4), .voice-table td:nth-child(n+4) { display: none; }
         .report-button { right: 14px; bottom: 14px; }
+        .presence-bubble {
+          position: relative;
+          left: auto;
+          top: auto;
+          max-width: 100%;
+          margin: -8px 24px 16px 118px;
+        }
       }
       @media (max-width: 479px) {
         .server-grid { grid-template-columns: 1fr; }
@@ -1314,6 +1402,7 @@
               <span class="status-dot offline" id="statusDot"></span>
             </div>
           </div>
+          <div class="presence-bubble" id="presenceBubble" hidden></div>
 
           <div class="hero-info-row">
             <div class="hero-info">
@@ -1951,6 +2040,147 @@
         node.dataset.label = label;
         node.title = icon ? label : "Aktif cihaz bilinmiyor";
         node.tabIndex = icon ? 0 : -1;
+      }
+
+      function activityListFrom(value) {
+        if (!value) return [];
+        if (Array.isArray(value)) return value.flatMap(activityListFrom);
+        if (typeof value !== "object") return [];
+        const directKeys = [
+          "type", "activity_type", "kind", "name", "details", "state", "emoji", "image_url",
+          "title", "song", "track", "artist", "artists", "game", "application_name", "applicationName"
+        ];
+        const hasDirectValue = directKeys.some(key => value[key] !== undefined && value[key] !== null && String(value[key]).trim() !== "");
+        if (hasDirectValue) return [value];
+        return [
+          "presence_activities", "activities", "activity", "current_activity", "currentActivity", "rich_presence", "richPresence",
+          "spotify", "playing", "listening", "current"
+        ].flatMap(key => activityListFrom(value[key]));
+      }
+
+      function firstActivityText(...values) {
+        for (const value of values) {
+          if (value === undefined || value === null) continue;
+          if (typeof value === "object") {
+            const nested = firstActivityText(value.name, value.text, value.label);
+            if (nested) return nested;
+            continue;
+          }
+          const text = String(value).trim();
+          if (text) return text;
+        }
+        return "";
+      }
+
+      function activityEmoji(activity) {
+        const emoji = activity?.emoji;
+        if (!emoji) return "";
+        return typeof emoji === "object" ? firstActivityText(emoji.name, emoji.Name) : String(emoji);
+      }
+
+      function activityKind(activity) {
+        const raw = String(activity?.type ?? activity?.activity_type ?? activity?.kind ?? "").toLowerCase();
+        const name = firstActivityText(activity?.name, activity?.Name).toLowerCase();
+        const hasSpotifyFields = ["song", "track", "artist", "artists", "album_image_url", "albumImageUrl", "spotify_track_id", "spotifyTrackId"]
+          .some(key => activity?.[key]);
+        if (raw === "2" || raw === "listening" || raw === "spotify" || name.includes("spotify") || hasSpotifyFields) return "spotify";
+        if (raw === "4" || raw === "custom" || raw === "custom_status") return "custom";
+        if (raw === "1" || raw === "streaming") return "streaming";
+        if (raw === "3" || raw === "watching") return "watching";
+        return "playing";
+      }
+
+      function activityLabel(kind) {
+        if (kind === "spotify") return "Spotify dinliyor";
+        if (kind === "streaming") return "Yayın yapıyor";
+        if (kind === "watching") return "İzliyor";
+        if (kind === "custom") return "Durum";
+        return "Oynuyor";
+      }
+
+      function activityImageUrl(activity) {
+        let src = firstActivityText(
+          activity?.image_url,
+          activity?.imageUrl,
+          activity?.large_image_url,
+          activity?.largeImageURL,
+          activity?.assets?.large_image_url,
+          activity?.assets?.largeImageURL,
+          activity?.assets?.large_image,
+          activity?.assets?.largeImage,
+          activity?.album_image_url,
+          activity?.albumImageUrl
+        );
+        if (/^spotify:/i.test(src)) src = `https://i.scdn.co/image/${src.split(":").pop()}`;
+        return /^https?:\/\//i.test(src) ? src : "";
+      }
+
+      function activityIcon(kind) {
+        if (kind === "spotify") {
+          return `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm4.58 14.42a.72.72 0 0 1-.99.24c-2.7-1.65-6.1-2.02-10.1-1.1a.72.72 0 1 1-.32-1.4c4.38-1 8.14-.57 11.17 1.28.34.2.45.64.24.98Zm1.25-2.77a.9.9 0 0 1-1.24.3c-3.09-1.9-7.8-2.45-11.45-1.34a.9.9 0 1 1-.52-1.72c4.17-1.26 9.36-.65 12.9 1.52.42.25.55.8.31 1.24Zm.1-2.88C14.23 8.57 8.13 8.36 4.6 9.44a1.08 1.08 0 1 1-.63-2.06c4.05-1.23 10.8-.98 15.07 1.55a1.08 1.08 0 1 1-1.1 1.84Z"/></svg>`;
+        }
+        if (kind === "custom") {
+          return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 7h.01M17 7h.01M7 17h.01M17 17h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
+        }
+        if (kind === "streaming") {
+          return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m23 7-7 5 7 5V7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect width="15" height="14" x="1" y="5" rx="2" stroke="currentColor" stroke-width="2"/></svg>`;
+        }
+        return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 12h4m-2-2v4m6-1h.01M17 10h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7.5 7h9A4.5 4.5 0 0 1 21 11.5v2A4.5 4.5 0 0 1 16.5 18h-9A4.5 4.5 0 0 1 3 13.5v-2A4.5 4.5 0 0 1 7.5 7Z" stroke="currentColor" stroke-width="1.8"/></svg>`;
+      }
+
+      function pickPresenceActivity(data) {
+        const list = [
+          ...activityListFrom(data.presence_activities),
+          ...activityListFrom(data.activities),
+          ...activityListFrom(data.activity),
+          ...activityListFrom(data.current_activity),
+          ...activityListFrom(data.rich_presence),
+          ...activityListFrom(data.spotify)
+        ].filter(item => {
+          const text = firstActivityText(item.name, item.details, item.state, item.emoji, item.song, item.track, item.artist);
+          return text && !/last[_\s-]?(message|voice)/i.test(text);
+        });
+        const customStatus = firstActivityText(data.custom_status);
+        if (customStatus && customStatus !== "—" && customStatus.toLowerCase() !== "bilinmiyor") {
+          list.push({ type: "custom", name: "Özel Durum", state: customStatus });
+        }
+        return list.find(item => activityKind(item) === "spotify")
+          || list.find(item => activityKind(item) === "playing")
+          || list.find(item => activityKind(item) === "streaming")
+          || list.find(item => activityKind(item) === "watching")
+          || list.find(item => activityKind(item) === "custom")
+          || null;
+      }
+
+      function renderPresenceBubble(data) {
+        const box = el("presenceBubble");
+        if (!box) return;
+        const activity = pickPresenceActivity(data || {});
+        if (!activity) {
+          box.hidden = true;
+          box.innerHTML = "";
+          return;
+        }
+        const kind = activityKind(activity);
+        const emoji = activityEmoji(activity);
+        const title = kind === "custom"
+          ? [emoji, firstActivityText(activity.state, activity.details, activity.name)].filter(Boolean).join(" ")
+          : firstActivityText(activity.details, activity.song, activity.track, activity.name, activity.game);
+        const sub = kind === "spotify"
+          ? firstActivityText(activity.state, activity.artist, activity.artists, activity.name)
+          : firstActivityText(activity.state, activity.details && activity.name !== activity.details ? activity.name : "");
+        const imageSrc = activityImageUrl(activity);
+        const image = imageSrc ? `<img class="presence-image" src="${escapeHtml(imageSrc)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : "";
+        box.className = `presence-bubble ${kind}`;
+        box.hidden = false;
+        box.innerHTML = `
+          ${image}<span class="presence-icon">${activityIcon(kind)}</span>
+          <span class="presence-main">
+            <span class="presence-kind">${escapeHtml(activityLabel(kind))}</span>
+            <span class="presence-title">${escapeHtml(title || activityLabel(kind))}</span>
+            ${sub && sub !== title ? `<span class="presence-sub">${escapeHtml(sub)}</span>` : ""}
+          </span>
+        `;
       }
 
       function imageFromTag(tag) {
@@ -2628,6 +2858,7 @@
         renderDeviceIcon(profileDevices);
         el("deviceIcon").className = "device-icon " + statusClass(profileStatus, profileDevices) + (deviceIconSvg(profileDevices) ? " show" : "");
         renderIdentityTag(data.guild_tag);
+        renderPresenceBubble(data);
 
         // Created at
         const createdText = data.created_at ? fmtDate(data.created_at) : "—";

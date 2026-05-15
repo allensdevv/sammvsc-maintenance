@@ -15,7 +15,7 @@ const CACHE_TTL = 60 * 30;
 const PARTIAL_CACHE_TTL = 60;
 const STALE_CACHE_TTL = 60 * 60 * 12;
 const EXTERNAL_TIMEOUT_MS = 9000;
-const CACHE_VERSION = "v12";
+const CACHE_VERSION = "v13";
 const DISCORD_PROFILE_PAUSED = false;
 const TRANSIENT_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 
@@ -139,6 +139,105 @@ function effectiveClientStatus(status, ...values) {
   const devices = clientStatusArray(...values);
   if (devices.length > 0) return devices;
   return normalizeStatus(status) !== "offline" ? ["desktop"] : [];
+}
+
+function activityListFrom(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.flatMap(activityListFrom);
+  if (!isPlainObject(value)) return [];
+
+  const directKeys = [
+    "name", "Name", "details", "Details", "state", "State", "type", "Type", "emoji", "Emoji",
+    "title", "Title", "song", "Song", "track", "Track", "artist", "Artist", "artists", "Artists",
+    "game", "Game", "application_name", "applicationName", "ApplicationName"
+  ];
+  if (directKeys.some(key => value[key] !== undefined && value[key] !== null && value[key] !== "")) {
+    return [value];
+  }
+
+  const listKeys = [
+    "activities", "Activities", "activity", "Activity", "current_activity", "currentActivity", "CurrentActivity",
+    "presence_activities", "PresenceActivities", "rich_presence", "richPresence", "RichPresence",
+    "spotify", "Spotify", "playing", "Playing", "listening", "Listening", "data", "items", "list"
+  ];
+  const out = [];
+  for (const key of listKeys) {
+    if (value[key]) out.push(...activityListFrom(value[key]));
+  }
+  return out;
+}
+
+function normalizeActivityType(value) {
+  const raw = String(value ?? "").trim().toLowerCase();
+  if (raw === "0" || raw === "playing" || raw === "game") return "playing";
+  if (raw === "1" || raw === "streaming") return "streaming";
+  if (raw === "2" || raw === "listening" || raw === "spotify") return "listening";
+  if (raw === "3" || raw === "watching") return "watching";
+  if (raw === "4" || raw === "custom" || raw === "custom_status") return "custom";
+  if (raw === "5" || raw === "competing") return "competing";
+  return raw || "playing";
+}
+
+function activityImageUrl(activity) {
+  const assets = firstObject(activity.assets, activity.Assets);
+  const raw = firstValue(
+    activity.image_url,
+    activity.imageUrl,
+    activity.large_image_url,
+    activity.largeImageURL,
+    assets.large_image_url,
+    assets.largeImageURL,
+    assets.large_image,
+    assets.largeImage,
+    activity.album_image_url,
+    activity.albumImageUrl
+  );
+  if (!raw) return null;
+  const value = String(raw);
+  if (/^spotify:/i.test(value)) return `https://i.scdn.co/image/${value.split(":").pop()}`;
+  if (/^https?:\/\//i.test(value)) return value;
+  return null;
+}
+
+function normalizePresenceActivities(...values) {
+  const raw = values.flatMap(activityListFrom);
+  const seen = new Set();
+  return raw.map(activity => {
+    if (!isPlainObject(activity)) return null;
+    let type = normalizeActivityType(firstValue(activity.type, activity.Type, activity.activity_type, activity.ActivityType, activity.kind, activity.Kind));
+    const emoji = isPlainObject(activity.emoji)
+      ? firstValue(activity.emoji.name, activity.emoji.Name)
+      : firstValue(activity.emoji, activity.Emoji);
+    const name = firstValue(activity.name, activity.Name, activity.application_name, activity.applicationName, activity.ApplicationName, activity.game, activity.Game, activity.title, activity.Title);
+    const details = firstValue(activity.details, activity.Details, activity.detail, activity.song, activity.track, activity.title);
+    const state = firstValue(activity.state, activity.State, activity.artist, activity.artists, activity.subtitle, activity.custom_status);
+    const url = firstValue(activity.url, activity.Url, activity.spotify_track_url, activity.track_url, activity.link);
+    const startedAt = toIso(firstValue(activity.created_at, activity.createdAt, activity.started_at, activity.startedAt, activity.timestamps?.start, activity.Timestamps?.Start));
+    const endedAt = toIso(firstValue(activity.ended_at, activity.endedAt, activity.timestamps?.end, activity.Timestamps?.End));
+    const text = firstValue(details, state, name, emoji);
+    if (!text) return null;
+    const spotifyLike = [activity.spotify, activity.Spotify, activity.spotify_track_id, activity.spotifyTrackId, activity.album_image_url, activity.albumImageUrl, activity.artist, activity.artists, activity.song, activity.track, name]
+      .some(value => String(value || "").toLowerCase().includes("spotify") || Boolean(value && value !== name));
+    if ((type === "playing" || !type) && spotifyLike && (activity.song || activity.track || activity.artist || activity.artists || String(name || "").toLowerCase().includes("spotify"))) {
+      type = "listening";
+    }
+    if (/last[_\s-]?(message|voice)/i.test(String(name || ""))) return null;
+    const normalized = {
+      type,
+      name: name || (type === "custom" ? "Özel Durum" : ""),
+      details: details || null,
+      state: state || null,
+      emoji: emoji || null,
+      url: url || null,
+      image_url: activityImageUrl(activity),
+      started_at: startedAt,
+      ended_at: endedAt
+    };
+    const key = [normalized.type, normalized.name, normalized.details, normalized.state, normalized.emoji].join("|");
+    if (seen.has(key)) return null;
+    seen.add(key);
+    return normalized;
+  }).filter(Boolean).slice(0, 5);
 }
 
 function applySessionPresenceFallback(profile, session) {
@@ -438,6 +537,26 @@ function normalizeDcsv(d) {
     voice_friend_count: d.voice_friends?.length ?? d.voice_friend_count ?? null,
     punishment_count: d.punishments?.length ?? d.punishment_count ?? null,
     servers: mergeServerArrays(d.mutual_guilds, d.guilds, d.servers, d.Guilds),
+    presence_activities: normalizePresenceActivities(
+      d.activities,
+      d.Activities,
+      d.activity,
+      d.Activity,
+      d.current_activity,
+      d.currentActivity,
+      d.CurrentActivity,
+      d.rich_presence,
+      d.richPresence,
+      d.RichPresence,
+      d.spotify,
+      d.Spotify,
+      d.Presence?.Activities,
+      d.Presence?.Activity,
+      d.presence?.activities,
+      d.presence?.activity,
+      d.presence?.Activities,
+      d.presence?.Activity
+    ),
     activity: d.activity || d.activities || null,
     punishments: d.punishments || [],
     admin_servers: d.admin_guilds || d.managed_guilds || [],
@@ -753,6 +872,8 @@ function normalizeFindcord(fc) {
   const rawStatus = firstValue(
     user.Presence?.Status,
     user.Presence?.status,
+    user.presence?.Status,
+    user.presence?.status,
     user.Status,
     user.status,
     user.presence_status,
@@ -763,6 +884,8 @@ function normalizeFindcord(fc) {
     fc.PresenceStatus,
     fc.Presence?.Status,
     fc.Presence?.status,
+    fc.presence?.Status,
+    fc.presence?.status,
     fc.online === true ? "online" : null,
     fc.is_online === true ? "online" : null,
     fc.isOnline === true ? "online" : null,
@@ -773,6 +896,9 @@ function normalizeFindcord(fc) {
     user.Presence?.Type,
     user.Presence?.ClientStatus,
     user.Presence?.client_status,
+    user.presence?.Type,
+    user.presence?.ClientStatus,
+    user.presence?.client_status,
     user.ClientStatus,
     user.clientStatus,
     user.devices,
@@ -783,9 +909,47 @@ function normalizeFindcord(fc) {
     fc.device,
     fc.Presence?.Type,
     fc.Presence?.ClientStatus,
-    fc.Presence?.client_status
+    fc.Presence?.client_status,
+    fc.presence?.Type,
+    fc.presence?.ClientStatus,
+    fc.presence?.client_status
   );
   const status = normalizeStatus(rawStatus, clientStatus);
+  const presenceActivities = normalizePresenceActivities(
+    user.Activities,
+    user.activities,
+    user.Activity,
+    user.activity,
+    user.CurrentActivity,
+    user.current_activity,
+    user.RichPresence,
+    user.rich_presence,
+    user.Spotify,
+    user.spotify,
+    user.Presence?.Activities,
+    user.Presence?.Activity,
+    user.presence?.Activities,
+    user.presence?.activities,
+    user.presence?.Activity,
+    user.presence?.activity,
+    fc.Activities,
+    fc.activities,
+    fc.Activity,
+    fc.activity,
+    fc.CurrentActivity,
+    fc.current_activity,
+    fc.RichPresence,
+    fc.rich_presence,
+    fc.Spotify,
+    fc.spotify,
+    fc.Presence?.Activities,
+    fc.Presence?.Activity,
+    fc.presence?.Activities,
+    fc.presence?.activities,
+    fc.presence?.Activity,
+    fc.presence?.activity
+  );
+  const customActivity = presenceActivities.find(activity => activity.type === "custom");
 
   return {
     id: uid,
@@ -810,7 +974,7 @@ function normalizeFindcord(fc) {
     gender: firstValue(fc.TopSex, user.gender),
     bio: firstValue(user.UserBio, user.bio, fc.bio, fc.about_me),
     pronouns: user.UserPronouns || null,
-    custom_status: user.Activities?.find?.(a => a?.state)?.state || fc.custom_status || null,
+    custom_status: firstValue(customActivity?.state, customActivity?.details, user.Activities?.find?.(a => a?.state)?.state, fc.custom_status),
     other_names: firstArray(fc.displayNames, user.previous_usernames, fc.previous_usernames)
       .map(n => (typeof n === "string" ? n : firstValue(n.name, n.displayName, n.UserName, n.toString?.())))
       .filter(Boolean),
@@ -825,6 +989,7 @@ function normalizeFindcord(fc) {
       detailed: detailedHours
     },
     view_count: views?.allTime?.total || views?.total || fc.LastViewing?.uniqueVisitors || null,
+    presence_activities: presenceActivities,
     activity: { last_message: messageHistory[0] || null, last_voice: voiceHistory[0] || null },
     punishments: punishmentItems.map(p => ({
       guild_name: p.GuildName || p.guild_name,
@@ -873,6 +1038,7 @@ function mergeProfiles(dcsv, findcord) {
     client_status: finalClientStatus,
     guild_tag: firstValue(findcord.guild_tag, dcsv.guild_tag),
     custom_status: firstValue(findcord.custom_status, dcsv.custom_status),
+    presence_activities: hasItems(findcord.presence_activities) ? findcord.presence_activities : dcsv.presence_activities,
     premium_since: firstValue(findcord.premium_since, dcsv.premium_since),
     boost_since: firstValue(findcord.boost_since, dcsv.boost_since),
     legacy_username: firstValue(findcord.legacy_username, dcsv.legacy_username),
