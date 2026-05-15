@@ -7,7 +7,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "check": "node --check site-nav.js && node --check leaderboard.js && node --check api/instagram.js && node --check api/instagram/profile.js && node --check api/instagram/views.js && node --check api/discord/invite.js && node --check api/discord/guild.js && node --check api/discord/profile.js && node --check api/auth/discord.js && node --check api/auth/discord/callback.js && node --check api/auth/me.js && node --check api/auth/logout.js && node --check api/debug/instagram.js && node --check lib/cache.js && node --check lib/instagramPrivateApi.js && node --check lib/session.js"
+    "check": "node --check site-nav.js && node --check leaderboard.js && node --check api/instagram.js && node --check api/instagram/profile.js && node --check api/instagram/views.js && node --check api/discord/invite.js && node --check api/discord/guild.js && node --check api/discord/leaderboard.js && node --check api/discord/profile.js && node --check api/auth/discord.js && node --check api/auth/discord/callback.js && node --check api/auth/me.js && node --check api/auth/logout.js && node --check api/debug/instagram.js && node --check lib/cache.js && node --check lib/instagramPrivateApi.js && node --check lib/session.js"
   },
   "dependencies": {
     "instagram-private-api": "^1.46.1"

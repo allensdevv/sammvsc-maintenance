@@ -242,6 +242,17 @@
       gap: 14px;
     }
 
+    @keyframes leaderRowIn {
+      from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
     .leader-row {
       position: relative;
       min-height: 108px;
@@ -250,6 +261,66 @@
       border-radius: 14px;
       background: #0b0b0c;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+      will-change: transform;
+      transition: border-color 180ms ease, box-shadow 180ms ease, transform 560ms cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .leader-row.is-new {
+      animation: leaderRowIn 420ms ease both;
+    }
+
+    .leader-row-skeleton {
+      min-height: 108px;
+      background: linear-gradient(90deg, #0c0c0d, #101014, #0c0c0d);
+      animation: leaderRowIn 360ms ease both;
+    }
+
+    .leader-skeleton-rank,
+    .leader-skeleton-avatar,
+    .leader-skeleton-lines span,
+    .leader-skeleton-lines em,
+    .leader-skeleton-score {
+      display: block;
+      border-radius: 12px;
+      background: linear-gradient(90deg, rgba(255,255,255,.045), rgba(255,255,255,.085), rgba(255,255,255,.045));
+      background-size: 220% 100%;
+      animation: leaderSkeleton 1.3s ease-in-out infinite;
+    }
+
+    @keyframes leaderSkeleton {
+      0% { background-position: 120% 0; }
+      100% { background-position: -120% 0; }
+    }
+
+    .leader-skeleton-rank {
+      width: 42px;
+      height: 42px;
+    }
+
+    .leader-skeleton-avatar {
+      width: 58px;
+      height: 58px;
+    }
+
+    .leader-skeleton-lines {
+      display: grid;
+      gap: 10px;
+    }
+
+    .leader-skeleton-lines span {
+      width: min(270px, 60vw);
+      height: 18px;
+    }
+
+    .leader-skeleton-lines em {
+      width: min(430px, 68vw);
+      height: 13px;
+    }
+
+    .leader-skeleton-score {
+      justify-self: end;
+      width: 76px;
+      height: 34px;
     }
 
     .leader-row-link {

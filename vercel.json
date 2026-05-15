@@ -108,6 +108,10 @@
     {
       "source": "/api/discord/guild",
       "destination": "/api/discord/guild.js"
+    },
+    {
+      "source": "/api/discord/leaderboard",
+      "destination": "/api/discord/leaderboard.js"
     }
   ],
   "headers": [

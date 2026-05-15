@@ -51,7 +51,7 @@
     }
   ];
 
-  const servers = [
+  const fallbackServers = [
     {
       name: "† Dark Paradise",
       icon: "DP",
@@ -179,11 +179,67 @@
     close: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
   };
 
+  const REFRESH_SECONDS = 5;
+
   let activeMetric = "realVoice";
+  let servers = [];
+  let refreshInProgress = false;
+  let countdownValue = 1;
   const guildHydration = new Map();
 
   function formatNumber(value) {
     return new Intl.NumberFormat("tr-TR").format(value || 0);
+  }
+
+  function toNumber(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : 0;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function initials(value) {
+    const text = String(value || "DC")
+      .replace(/[^\p{L}\p{N}\s]+/gu, " ")
+      .trim();
+    const parts = text ? text.split(/\s+/) : ["DC"];
+    return parts.map(part => part[0]).join("").slice(0, 2).toUpperCase() || "DC";
+  }
+
+  function serverKey(server) {
+    return String(server.guildId || server.id || server.name || "").trim();
+  }
+
+  function normalizeServer(server, index) {
+    const name = String(server.name || server.guildName || `Sunucu ${index + 1}`).trim();
+    return {
+      ...server,
+      id: String(server.id || server.guildId || name || index),
+      guildId: String(server.guildId || server.id || "").trim(),
+      name,
+      icon: String(server.icon || initials(name)).slice(0, 3).toUpperCase(),
+      iconUrl: server.iconUrl || server.icon_url || server.avatar || server.avatar_url || "",
+      bannerUrl: server.bannerUrl || server.banner_url || server.banner || "",
+      members: toNumber(server.members ?? server.memberCount),
+      boosts: toNumber(server.boosts ?? server.boostCount),
+      totalVoice: toNumber(server.totalVoice),
+      realVoice: toNumber(server.realVoice ?? server.RealVoiceCount),
+      voice: toNumber(server.voice ?? server.voiceCount),
+      muted: toNumber(server.muted ?? server.afkCount),
+      bots: toNumber(server.bots ?? server.tokenCount),
+      stream: toNumber(server.stream ?? server.streamCount),
+      camera: toNumber(server.camera ?? server.cameraCount),
+      sourceRank: toNumber(server.source_rank ?? server.sourceRank ?? index + 1) || index + 1,
+      source: server.source || "api",
+      hydrate: server.hydrate === true
+    };
   }
 
   function metricById(id) {
@@ -199,11 +255,11 @@
   }
 
   function guildIconUrl(server) {
-    return server.liveIconUrl || discordGuildAsset("icons", server, server.iconHash, 128);
+    return server.iconUrl || server.icon_url || server.liveIconUrl || discordGuildAsset("icons", server, server.iconHash, 128);
   }
 
   function guildBannerUrl(server) {
-    return server.liveBannerUrl || discordGuildAsset("banners", server, server.bannerHash, 1024);
+    return server.bannerUrl || server.banner_url || server.liveBannerUrl || discordGuildAsset("banners", server, server.bannerHash, 1024);
   }
 
   function rowBackground(server) {
@@ -215,7 +271,7 @@
 
   async function hydrateGuildAssets() {
     const jobs = servers
-      .filter(server => server.guildId && !guildHydration.has(server.guildId))
+      .filter(server => server.guildId && (server.source === "fallback" || server.hydrate) && !guildHydration.has(server.guildId))
       .map(async server => {
         guildHydration.set(server.guildId, "pending");
 
@@ -250,7 +306,7 @@
       });
 
     const changed = (await Promise.all(jobs)).some(Boolean);
-    if (changed) renderRows();
+    if (changed) renderRows({ animate: true });
   }
 
   function renderMetricButtons() {
@@ -264,41 +320,110 @@
     `).join("");
   }
 
-  function renderRows() {
+  function renderSkeletonRows(count = 10) {
     const list = document.getElementById("leaderRows");
     if (!list) return;
-    const metric = metricById(activeMetric);
-    const sorted = [...servers].sort((a, b) => (b[activeMetric] || 0) - (a[activeMetric] || 0));
-    list.innerHTML = sorted.map((server, index) => rowTemplate(server, index + 1, metric)).join("");
+    list.innerHTML = Array.from({ length: count }).map((_, index) => `
+      <article class="leader-row leader-row-skeleton" aria-hidden="true" style="animation-delay:${index * 35}ms">
+        <div class="leader-row-main">
+          <div class="leader-skeleton-rank"></div>
+          <div class="leader-skeleton-avatar"></div>
+          <div class="leader-skeleton-lines">
+            <span></span>
+            <em></em>
+          </div>
+          <div class="leader-skeleton-score"></div>
+        </div>
+      </article>
+    `).join("");
   }
 
-  function rankTemplate(rank, server) {
-    if (server.rankStyle && server.rankStyle.startsWith("crown")) {
-      return `<span class="leader-crown ${server.rankStyle}" aria-label="${rank}. sira"></span>`;
+  function sortedServers() {
+    return [...servers].sort((a, b) => {
+      const delta = (b[activeMetric] || 0) - (a[activeMetric] || 0);
+      if (delta !== 0) return delta;
+      return (a.sourceRank || 0) - (b.sourceRank || 0);
+    });
+  }
+
+  function captureRowPositions(list) {
+    const positions = new Map();
+    list.querySelectorAll("[data-server-key]").forEach(row => {
+      positions.set(row.dataset.serverKey, row.getBoundingClientRect());
+    });
+    return positions;
+  }
+
+  function animateRowMoves(list, previousPositions) {
+    list.querySelectorAll("[data-server-key]").forEach(row => {
+      const previous = previousPositions.get(row.dataset.serverKey);
+      if (!previous) {
+        row.classList.add("is-new");
+        return;
+      }
+
+      const next = row.getBoundingClientRect();
+      const deltaY = previous.top - next.top;
+      if (Math.abs(deltaY) < 2) return;
+
+      row.style.transform = `translateY(${deltaY}px)`;
+      row.style.transition = "transform 0s";
+      row.getBoundingClientRect();
+
+      window.requestAnimationFrame(() => {
+        row.style.transition = "transform 560ms cubic-bezier(.22, 1, .36, 1), border-color 180ms ease, box-shadow 180ms ease";
+        row.style.transform = "";
+      });
+    });
+  }
+
+  function renderRows(options = {}) {
+    const list = document.getElementById("leaderRows");
+    if (!list) return;
+    if (!servers.length) {
+      renderSkeletonRows();
+      return;
     }
+    const metric = metricById(activeMetric);
+    const previousPositions = options.animate ? captureRowPositions(list) : new Map();
+    const sorted = sortedServers();
+    list.innerHTML = sorted.map((server, index) => rowTemplate(server, index + 1, metric)).join("");
+    if (options.animate) {
+      animateRowMoves(list, previousPositions);
+    }
+  }
+
+  function rankTemplate(rank) {
+    if (rank === 1) return `<span class="leader-crown crown-gold" aria-label="${rank}. sira"></span>`;
+    if (rank === 2) return `<span class="leader-crown crown-white" aria-label="${rank}. sira"></span>`;
+    if (rank === 3) return `<span class="leader-crown crown-orange" aria-label="${rank}. sira"></span>`;
     return `<span class="leader-rank-number">#${rank}</span>`;
   }
 
   function rowTemplate(server, rank, metric) {
     const avatarUrl = guildIconUrl(server);
+    const name = escapeHtml(server.name);
+    const key = escapeHtml(serverKey(server));
+    const iconText = escapeHtml(server.icon || initials(server.name));
+    const avatarSrc = escapeHtml(avatarUrl);
     const avatar = `
-      <span class="leader-icon-fallback">${server.icon}</span>
-      ${avatarUrl ? `<img src="${avatarUrl}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
+      <span class="leader-icon-fallback">${iconText}</span>
+      ${avatarUrl ? `<img src="${avatarSrc}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
     `;
 
     return `
-      <article class="leader-row" style="--row-bg:${rowBackground(server)}; --metric-color:${metric.accent}">
-        <a class="leader-row-link" href="/discord-profile?q=${encodeURIComponent(server.name)}" aria-label="${server.name} profilini ac">
+      <article class="leader-row" data-server-key="${key}" style="--row-bg:${rowBackground(server)}; --metric-color:${metric.accent}">
+        <a class="leader-row-link" href="/discord-profile?q=${encodeURIComponent(server.guildId || server.name)}" aria-label="${name} profilini ac">
           <div class="leader-row-bg"></div>
           <div class="leader-row-main">
-            <div class="leader-rank">${rankTemplate(rank, server)}</div>
+            <div class="leader-rank">${rankTemplate(rank)}</div>
             <div class="leader-avatar-wrap">
               <span class="leader-rank-chip">#${rank}</span>
               <div class="leader-icon">${avatar}</div>
             </div>
             <div class="leader-info">
               <div class="leader-name-line">
-                <h2>${server.name}</h2>
+                <h2>${name}</h2>
                 <span class="leader-open">${icons.external}</span>
               </div>
               <div class="leader-stats" aria-label="Sunucu istatistikleri">
@@ -323,29 +448,88 @@
     `;
   }
 
+  function mergeServers(nextServers) {
+    const previousByKey = new Map(servers.map(server => [serverKey(server), server]));
+    return nextServers.map((server, index) => {
+      const normalized = normalizeServer(server, index);
+      const previous = previousByKey.get(serverKey(normalized)) || {};
+      return {
+        ...previous,
+        ...normalized,
+        iconUrl: normalized.iconUrl || previous.iconUrl || previous.icon_url || "",
+        bannerUrl: normalized.bannerUrl || previous.bannerUrl || previous.banner_url || "",
+        liveIconUrl: previous.liveIconUrl,
+        liveBannerUrl: previous.liveBannerUrl
+      };
+    });
+  }
+
+  function updateCountdown(text) {
+    const target = document.getElementById("leaderCountdown");
+    if (target) target.textContent = text;
+  }
+
+  async function refreshLeaderboard(options = {}) {
+    if (refreshInProgress) return;
+    refreshInProgress = true;
+    let nextDelay = REFRESH_SECONDS;
+    if (!options.silent) updateCountdown("Canlı veri alınıyor");
+
+    try {
+      const response = await fetch(`/api/discord/leaderboard?metric=${encodeURIComponent(activeMetric)}${options.force ? "&refresh=1" : ""}`, {
+        cache: "no-store",
+        headers: { Accept: "application/json" }
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.status !== "ready") {
+        if (payload.error === "leaderboard_fetch_failed") nextDelay = 30;
+        throw new Error(payload.message || "Leaderboard verisi alınamadı.");
+      }
+
+      const nextServers = Array.isArray(payload.data?.servers) ? payload.data.servers : [];
+      if (nextServers.length) {
+        servers = mergeServers(nextServers);
+        renderRows({ animate: true });
+      }
+    } catch (error) {
+      if (!servers.length) {
+        servers = fallbackServers.map((server, index) => normalizeServer({ ...server, source: "fallback", hydrate: true }, index));
+        renderRows({ animate: true });
+        hydrateGuildAssets();
+      }
+      if (!options.silent) console.warn(error);
+    } finally {
+      refreshInProgress = false;
+      countdownValue = nextDelay;
+      updateCountdown(`${countdownValue} saniye sonra güncelleme`);
+    }
+  }
+
   function wireFilters() {
     document.getElementById("leaderMetricButtons")?.addEventListener("click", event => {
       const button = event.target.closest("[data-metric]");
       if (!button) return;
       activeMetric = button.dataset.metric || "realVoice";
       renderMetricButtons();
-      renderRows();
+      renderRows({ animate: true });
+      refreshLeaderboard({ silent: true });
     });
   }
 
-  function startCountdown() {
-    const target = document.getElementById("leaderCountdown");
-    if (!target) return;
-    let value = 1;
+  function startLiveCountdown() {
     window.setInterval(() => {
-      value = value <= 1 ? 30 : value - 1;
-      target.textContent = `${value} saniye sonra güncelleme`;
+      countdownValue -= 1;
+      if (countdownValue <= 0) {
+        refreshLeaderboard({ silent: true, force: true });
+        return;
+      }
+      updateCountdown(`${countdownValue} saniye sonra güncelleme`);
     }, 1000);
   }
 
   renderMetricButtons();
-  renderRows();
-  hydrateGuildAssets();
+  renderSkeletonRows();
   wireFilters();
-  startCountdown();
+  startLiveCountdown();
+  refreshLeaderboard({ silent: false });
 })();
