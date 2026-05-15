@@ -436,6 +436,8 @@
       .stat.is-hidden { display: none; }
       .stat-num { margin: 0; font-size: 20px; font-weight: 700; color: #fff; line-height: 1; }
       .stat-label { margin: 2px 0 0; font-size: 10px; color: #9ca3af; }
+      .stat.danger .stat-num,
+      .stat.danger .stat-label { color: #ff4d57; }
 
       /* ── TABS ── */
       .tabs {
@@ -1368,7 +1370,7 @@
                 <p class="stat-num" id="statVoice">—</p>
                 <p class="stat-label">Ses Arkadaşı</p>
               </div>
-              <div class="stat is-hidden" id="statPunishItem">
+              <div class="stat danger is-hidden" id="statPunishItem">
                 <p class="stat-num" id="statPunish">—</p>
                 <p class="stat-label">Ceza</p>
               </div>
