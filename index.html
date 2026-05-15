@@ -315,19 +315,19 @@
         width: 40px;
         height: 40px;
         border-radius: 9px;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        background: rgba(15, 16, 20, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: #101010;
         color: #9aa6ba;
         display: grid;
         place-items: center;
-        transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+        transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
       }
 
       .nav-icon-btn:hover,
       .nav-icon-btn.open {
-        border-color: rgba(139, 92, 246, 0.45);
-        background: rgba(139, 92, 246, 0.12);
-        color: #e4e8f2;
+        border-color: rgba(255,255,255,0.18);
+        background: #131313;
+        color: #ffffff;
       }
 
       .nav-icon-btn svg {
@@ -426,6 +426,10 @@
       .notification-menu {
         width: min(320px, calc(100vw - 32px));
         overflow: hidden;
+        border-radius: 13px;
+        border-color: rgba(255,255,255,0.13);
+        background: #111111;
+        box-shadow: 0 18px 46px rgba(0, 0, 0, 0.52);
       }
 
       .notification-head,
@@ -437,18 +441,24 @@
       }
 
       .notification-head strong {
-        color: #eef2fb;
+        color: #f4f4f5;
         font-size: 15px;
-        font-weight: 850;
+        font-weight: 700;
       }
 
       .notification-head button,
       .notification-foot a {
         border: 0;
         background: transparent;
-        color: #9b8cff;
+        color: #8f98a8;
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 650;
+        transition: color 150ms ease;
+      }
+
+      .notification-head button:hover,
+      .notification-foot a:hover {
+        color: #ffffff;
       }
 
       .notification-item {
@@ -458,7 +468,7 @@
         padding: 14px 16px;
         border-top: 1px solid rgba(255,255,255,0.07);
         border-bottom: 1px solid rgba(255,255,255,0.07);
-        background: rgba(139, 92, 246, 0.08);
+        background: #151515;
       }
 
       .notification-icon {
@@ -467,8 +477,8 @@
         display: grid;
         place-items: center;
         border-radius: 999px;
-        background: rgba(139,92,246,0.18);
-        color: #a78bfa;
+        background: #202020;
+        color: #a8b0bf;
         font-size: 15px;
       }
 
@@ -482,7 +492,7 @@
       .notification-copy span {
         display: block;
         margin-top: 3px;
-        color: #768196;
+        color: #8f98a8;
         font-size: 12px;
       }
 
