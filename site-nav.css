@@ -13,6 +13,7 @@
   position: relative;
   z-index: 60;
   width: min(1220px, calc(100% - 32px));
+  min-height: 64px;
   margin: 0 auto;
 }
 
@@ -153,6 +154,18 @@
 
 .igme-nav-right {
   flex-shrink: 0;
+}
+
+@media (min-width: 761px) {
+  .igme-nav-right {
+    min-width: 188px;
+    justify-content: flex-end;
+  }
+
+  #igmeNavAuthArea {
+    min-width: 138px;
+    justify-content: flex-end;
+  }
 }
 
 .igme-discord-login-btn {
