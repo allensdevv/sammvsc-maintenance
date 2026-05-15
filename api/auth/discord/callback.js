@@ -4,7 +4,7 @@ const { createSession, setCookieHeader } = require('../../../lib/session');
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || 'https://www.sammvsc.top/api/auth/discord/callback';
-const DISCORD_AUTH_PAUSED = true;
+const DISCORD_AUTH_PAUSED = false;
 
 function safeNext(value) {
   const next = typeof value === 'string' ? value : '/?auth=profile';

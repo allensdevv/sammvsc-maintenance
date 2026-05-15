@@ -16,7 +16,7 @@ const PARTIAL_CACHE_TTL = 60;
 const STALE_CACHE_TTL = 60 * 60 * 12;
 const EXTERNAL_TIMEOUT_MS = 9000;
 const CACHE_VERSION = "v12";
-const DISCORD_PROFILE_PAUSED = true;
+const DISCORD_PROFILE_PAUSED = false;
 const TRANSIENT_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 
 function sendJson(res, status, payload) {
