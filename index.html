@@ -1654,6 +1654,22 @@
         color: #c4b5fd;
       }
 
+      .lang-flag {
+        width: 21px;
+        height: 14px;
+        display: inline-flex;
+        border-radius: 3px;
+        overflow: hidden;
+        flex: 0 0 21px;
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.16), 0 4px 12px rgba(0,0,0,0.24);
+      }
+
+      .lang-flag svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
       .lang-opt .check {
         width: 13px;
         height: 13px;
@@ -1798,13 +1814,35 @@
           <div class="settings-label" data-i18n="labelLang">DİL SEÇİMİ</div>
           <div class="lang-grid">
             <button class="lang-opt active" id="langTr" data-lang="tr" type="button">
-              🇹🇷 Türkçe
+              <span class="lang-flag" aria-hidden="true">
+                <svg viewBox="0 0 30 20" role="img">
+                  <rect width="30" height="20" fill="#e30a17"/>
+                  <circle cx="13" cy="10" r="5.8" fill="#fff"/>
+                  <circle cx="14.8" cy="10" r="4.6" fill="#e30a17"/>
+                  <path fill="#fff" d="m21 10 1.15 1.54 1.8-.58-1.1 1.55 1.12 1.53-1.81-.55L21.04 15l-.02-1.89-1.8-.57 1.79-.61L21 10Z"/>
+                </svg>
+              </span>
+              <span>Türkçe</span>
               <svg class="check" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </button>
             <button class="lang-opt" id="langEn" data-lang="en" type="button">
-              🇺🇸 English
+              <span class="lang-flag" aria-hidden="true">
+                <svg viewBox="0 0 30 20" role="img">
+                  <rect width="30" height="20" fill="#fff"/>
+                  <path fill="#b22234" d="M0 0h30v1.54H0zm0 3.08h30v1.54H0zm0 3.07h30v1.54H0zm0 3.08h30v1.54H0zm0 3.08h30v1.54H0zm0 3.07h30v1.54H0zm0 3.08h30V20H0z"/>
+                  <rect width="12.6" height="10.77" fill="#3c3b6e"/>
+                  <g fill="#fff">
+                    <circle cx="1.8" cy="1.55" r=".45"/><circle cx="4.1" cy="1.55" r=".45"/><circle cx="6.4" cy="1.55" r=".45"/><circle cx="8.7" cy="1.55" r=".45"/><circle cx="11" cy="1.55" r=".45"/>
+                    <circle cx="2.95" cy="3.25" r=".45"/><circle cx="5.25" cy="3.25" r=".45"/><circle cx="7.55" cy="3.25" r=".45"/><circle cx="9.85" cy="3.25" r=".45"/>
+                    <circle cx="1.8" cy="4.95" r=".45"/><circle cx="4.1" cy="4.95" r=".45"/><circle cx="6.4" cy="4.95" r=".45"/><circle cx="8.7" cy="4.95" r=".45"/><circle cx="11" cy="4.95" r=".45"/>
+                    <circle cx="2.95" cy="6.65" r=".45"/><circle cx="5.25" cy="6.65" r=".45"/><circle cx="7.55" cy="6.65" r=".45"/><circle cx="9.85" cy="6.65" r=".45"/>
+                    <circle cx="1.8" cy="8.35" r=".45"/><circle cx="4.1" cy="8.35" r=".45"/><circle cx="6.4" cy="8.35" r=".45"/><circle cx="8.7" cy="8.35" r=".45"/><circle cx="11" cy="8.35" r=".45"/>
+                  </g>
+                </svg>
+              </span>
+              <span>English</span>
               <svg class="check" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
