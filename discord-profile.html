@@ -397,18 +397,30 @@
       .identity-tag img { width: 16px; height: 16px; object-fit: contain; }
       .presence-bubble {
         position: absolute;
-        left: 154px;
-        top: 20px;
-        max-width: min(190px, calc(100% - 190px));
+        left: calc(100% - 2px);
+        bottom: 18px;
+        max-width: min(220px, calc(100vw - 210px));
         display: block;
-        padding: 8px 12px;
+        padding: 7px 11px;
         border: 1px solid rgba(255,255,255,0.13);
         border-radius: 10px;
         background: rgba(22,22,24,0.94);
         color: #f8fafc;
         box-shadow: 0 14px 32px rgba(0,0,0,0.36);
         backdrop-filter: blur(16px);
-        z-index: 8;
+        z-index: 12;
+      }
+      .presence-bubble::before {
+        content: "";
+        position: absolute;
+        left: -9px;
+        top: 9px;
+        width: 11px;
+        height: 11px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.13);
+        background: rgba(22,22,24,0.94);
+        box-shadow: 0 8px 18px rgba(0,0,0,0.3);
       }
       .presence-bubble[hidden] { display: none; }
       .presence-main {
@@ -420,7 +432,7 @@
         display: block;
         max-width: 100%;
         overflow: hidden;
-        font-size: 13px;
+        font-size: 12px;
         line-height: 1.25;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -1251,11 +1263,12 @@
         .voice-table th:nth-child(n+4), .voice-table td:nth-child(n+4) { display: none; }
         .report-button { right: 14px; bottom: 14px; }
         .presence-bubble {
-          position: relative;
-          left: auto;
+          position: absolute;
+          left: calc(100% - 2px);
           top: auto;
-          max-width: 100%;
-          margin: -8px 24px 16px 118px;
+          bottom: 14px;
+          max-width: min(180px, calc(100vw - 172px));
+          margin: 0;
         }
       }
       @media (max-width: 479px) {
@@ -1352,8 +1365,8 @@
               D
               <span class="status-dot offline" id="statusDot"></span>
             </div>
+            <div class="presence-bubble" id="presenceBubble" hidden></div>
           </div>
-          <div class="presence-bubble" id="presenceBubble" hidden></div>
 
           <div class="hero-info-row">
             <div class="hero-info">
