@@ -194,6 +194,15 @@
       ]
     },
     {
+      "source": "/thin-typography.css",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
       "source": "/api/(.*)",
       "headers": [
         {

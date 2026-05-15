@@ -1,0 +1,51 @@
+html,
+body,
+body * {
+  font-weight: 400 !important;
+  font-synthesis-weight: none;
+  font-variation-settings: "wght" 400;
+}
+
+body *::before,
+body *::after,
+body input::placeholder,
+body textarea::placeholder {
+  font-weight: 400 !important;
+  font-synthesis-weight: none;
+  font-variation-settings: "wght" 400;
+}
+
+strong,
+b,
+th,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+input,
+textarea,
+select,
+label,
+.brand-beta,
+.igme-brand-beta,
+.badge,
+.pill,
+.tag,
+.role-pill,
+.tab,
+.profile-balance,
+.stat-num,
+.stat strong,
+.info-row strong,
+.info-row .val,
+.server-stat-value,
+.server-role,
+.voice-total,
+.friend-stat-val {
+  font-weight: 400 !important;
+  font-synthesis-weight: none;
+  font-variation-settings: "wght" 400;
+}
