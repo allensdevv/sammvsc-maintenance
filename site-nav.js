@@ -25,6 +25,7 @@
 
   const flagTr = `<svg class="igme-flag" viewBox="0 0 36 26" aria-hidden="true"><rect width="36" height="26" fill="#e30a17"/><circle cx="15" cy="13" r="7" fill="#fff"/><circle cx="17.4" cy="13" r="5.5" fill="#e30a17"/><path d="m23.5 9.2 1 2.2 2.4.2-1.8 1.6.5 2.3-2.1-1.2-2.1 1.2.5-2.3-1.8-1.6 2.4-.2 1-2.2Z" fill="#fff"/></svg>`;
   const flagUs = `<svg class="igme-flag" viewBox="0 0 36 26" aria-hidden="true"><rect width="36" height="26" fill="#b22234"/><path d="M0 2h36v2H0zm0 4h36v2H0zm0 4h36v2H0zm0 4h36v2H0zm0 4h36v2H0zm0 4h36v2H0z" fill="#fff"/><rect width="16" height="14" fill="#3c3b6e"/></svg>`;
+  const promoText = '🎉 Premium ve Özel Analiz kısa süreliğine %10 indirim almak için "analiz10" kodunu kullanın!';
 
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, ch => ({
@@ -132,6 +133,10 @@
   }
 
   function renderShell() {
+    if (!document.querySelector(".promo-bar")) {
+      mount.insertAdjacentHTML("beforebegin", `<div class="promo-bar">${escapeHtml(promoText)}</div>`);
+    }
+
     mount.innerHTML = `
       <header class="igme-shared-topbar">
         <a class="igme-nav-brand" href="/" aria-label="IGME ana sayfa">
