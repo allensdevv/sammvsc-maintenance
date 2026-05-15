@@ -3,6 +3,7 @@
   if (!mount) return;
 
   const AUTH_PAUSED = false;
+  const activeSection = mount.dataset.active || "";
   let discordSession = null;
   let authChecked = false;
   let authPanelNext = "/?auth=profile";
@@ -146,6 +147,10 @@
         </a>
 
         <nav class="igme-nav-links" aria-label="Ana menü">
+          <a class="igme-nav-link ${activeSection === "leaderboard" ? "active" : ""}" href="/leaderboard">
+            ${icons.trophy}
+            <span>Top 50</span>
+          </a>
           <a class="igme-nav-link gold" href="/">
             ${icons.trophy}
             <span>Bakım</span>

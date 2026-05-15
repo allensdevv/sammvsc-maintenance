@@ -46,6 +46,10 @@
       "destination": "/discord-profile.html"
     },
     {
+      "source": "/leaderboard",
+      "destination": "/leaderboard.html"
+    },
+    {
       "source": "/gizlilik-politikasi",
       "destination": "/gizlilik-politikasi.html"
     },
@@ -140,6 +144,15 @@
       ]
     },
     {
+      "source": "/leaderboard",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
       "source": "/gizlilik-politikasi",
       "headers": [
         {
@@ -186,6 +199,15 @@
     },
     {
       "source": "/site-nav.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/leaderboard.js",
       "headers": [
         {
           "key": "Cache-Control",

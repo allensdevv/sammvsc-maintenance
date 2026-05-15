@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050505">
+  <title>IGME | Top 50 Sunucu Sıralaması</title>
+  <meta name="description" content="IGME Top 50 sunucu sıralaması, ses, üye, takviye, kamera ve yayın istatistikleri.">
+  <link rel="icon" href="assets/si.png">
+  <link rel="stylesheet" href="site-nav.css">
+  <style>
+    :root {
+      --leader-bg: #050505;
+      --leader-panel: #111111;
+      --leader-panel-2: #171717;
+      --leader-line: rgba(255, 255, 255, 0.08);
+      --leader-line-strong: rgba(255, 255, 255, 0.14);
+      --leader-text: #f5f7fb;
+      --leader-muted: #8b95a7;
+      --leader-soft: #566075;
+      --leader-blue: #3b82f6;
+      --leader-violet: #8b5cf6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--leader-bg);
+      color-scheme: dark;
+    }
+
+    body {
+      min-height: 100%;
+      margin: 0;
+      background:
+        linear-gradient(180deg, rgba(37, 99, 235, 0.055), transparent 260px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255, 255, 255, 0.014) 1px, transparent 1px),
+        #050505;
+      background-size: auto, 52px 52px, 52px 52px, auto;
+      color: var(--leader-text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .leader-page {
+      position: relative;
+      min-height: 100vh;
+      padding: 0 0 92px;
+      isolation: isolate;
+    }
+
+    .leader-page::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.055), transparent),
+        radial-gradient(circle at 72% 12%, rgba(88, 101, 242, 0.1), transparent 26%);
+      opacity: 0.9;
+      z-index: -1;
+    }
+
+    .leader-main {
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      padding-top: 34px;
+    }
+
+    .leader-subnav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 0 auto 34px;
+      color: #b9c1d2;
+    }
+
+    .leader-subnav a {
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 15px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      color: #aab4c8;
+      text-decoration: none;
+      font-size: 14px;
+      white-space: nowrap;
+      transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+    }
+
+    .leader-subnav a:hover,
+    .leader-subnav a.active {
+      border-color: rgba(59, 130, 246, 0.35);
+      background: rgba(59, 130, 246, 0.16);
+      color: #f5f7ff;
+    }
+
+    .leader-subnav svg,
+    .leader-title-icon svg,
+    .leader-filter svg,
+    .leader-stats svg,
+    .leader-open svg {
+      width: 17px;
+      height: 17px;
+      display: block;
+      flex: 0 0 auto;
+    }
+
+    .leader-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      margin-bottom: 26px;
+    }
+
+    .leader-heading-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .leader-title-icon {
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(59, 130, 246, 0.36);
+      border-radius: 14px;
+      background: rgba(59, 130, 246, 0.14);
+      color: #60a5fa;
+      box-shadow: 0 18px 42px rgba(59, 130, 246, 0.08);
+    }
+
+    .leader-title-icon svg {
+      width: 27px;
+      height: 27px;
+    }
+
+    .leader-kicker {
+      margin: 0 0 2px;
+      color: #6f7a8e;
+      font-size: 13px;
+    }
+
+    .leader-heading h1 {
+      margin: 0;
+      color: #ffffff;
+      font-size: clamp(28px, 4vw, 38px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .leader-heading p {
+      margin: 8px 0 0;
+      color: #8c96aa;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .leader-live-pill {
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      color: #d9deea;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .leader-live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #00d084;
+      box-shadow: 0 0 18px rgba(0, 208, 132, 0.62);
+    }
+
+    .leader-filters {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .leader-filter {
+      min-height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.035);
+      color: #909bad;
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, color 160ms ease;
+    }
+
+    .leader-filter:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.055);
+    }
+
+    .leader-filter.active {
+      border-color: color-mix(in srgb, var(--metric-color) 65%, transparent);
+      background: color-mix(in srgb, var(--metric-color) 20%, transparent);
+      color: #ffffff;
+      box-shadow: 0 18px 42px color-mix(in srgb, var(--metric-color) 12%, transparent);
+    }
+
+    .leader-filter-icon {
+      color: var(--metric-color);
+    }
+
+    .leader-rows {
+      display: grid;
+      gap: 14px;
+    }
+
+    .leader-row {
+      position: relative;
+      min-height: 108px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      background: #0b0b0c;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+    }
+
+    .leader-row-link {
+      position: relative;
+      min-height: 108px;
+      display: block;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .leader-row-bg {
+      position: absolute;
+      inset: 0;
+      background: var(--row-bg);
+      opacity: 1;
+      transform: scale(1.02);
+      transition: transform 260ms ease, opacity 260ms ease;
+    }
+
+    .leader-row-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.5), transparent 35%, rgba(0, 0, 0, 0.42)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.18));
+    }
+
+    .leader-row:hover .leader-row-bg {
+      transform: scale(1.04);
+      opacity: 0.98;
+    }
+
+    .leader-row-main {
+      position: relative;
+      min-height: 108px;
+      display: grid;
+      grid-template-columns: 78px 66px minmax(0, 1fr) minmax(126px, 170px);
+      align-items: center;
+      gap: 18px;
+      padding: 18px 24px;
+    }
+
+    .leader-rank {
+      position: relative;
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+    }
+
+    .leader-crown {
+      position: relative;
+      width: 48px;
+      height: 42px;
+      transform: rotate(-18deg);
+      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+    }
+
+    .leader-crown::before,
+    .leader-crown::after {
+      content: "";
+      position: absolute;
+      inset: 4px 6px 8px;
+      border: 4px solid currentColor;
+      border-top: 0;
+      border-radius: 0 0 8px 8px;
+    }
+
+    .leader-crown::after {
+      inset: 0 3px 16px;
+      border: 4px solid currentColor;
+      border-bottom: 0;
+      clip-path: polygon(0 100%, 16% 16%, 38% 58%, 50% 0, 62% 58%, 84% 16%, 100% 100%);
+      border-radius: 0;
+    }
+
+    .crown-gold {
+      color: #facc15;
+    }
+
+    .crown-white {
+      color: #e5e7eb;
+    }
+
+    .crown-orange {
+      color: #f97316;
+    }
+
+    .leader-rank-number {
+      min-width: 42px;
+      height: 42px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #f4f6fb;
+      font-size: 15px;
+    }
+
+    .leader-icon {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent),
+        linear-gradient(135deg, #1f2937, #050505);
+      color: #ffffff;
+      font-size: 16px;
+      letter-spacing: 0.05em;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.34);
+    }
+
+    .leader-info {
+      min-width: 0;
+    }
+
+    .leader-name-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      margin-bottom: 10px;
+    }
+
+    .leader-name-line h2 {
+      min-width: 0;
+      margin: 0;
+      overflow: hidden;
+      color: #ffffff;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: clamp(16px, 2.2vw, 19px);
+      line-height: 1.2;
+      letter-spacing: 0.08em;
+    }
+
+    .leader-open {
+      width: 20px;
+      height: 20px;
+      display: inline-grid;
+      place-items: center;
+      color: #7f889a;
+    }
+
+    .leader-open svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .leader-stats {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px 12px;
+      color: #c5ccd8;
+      font-size: 13px;
+      line-height: 1;
+    }
+
+    .leader-stats span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .leader-stats svg {
+      width: 15px;
+      height: 15px;
+      color: #aab4c6;
+    }
+
+    .leader-stats .boost svg {
+      color: #f472b6;
+    }
+
+    .leader-stats .danger svg,
+    .leader-stats .danger {
+      color: #ef4444;
+    }
+
+    .leader-focus-stat {
+      justify-self: end;
+      display: grid;
+      gap: 4px;
+      text-align: right;
+    }
+
+    .leader-focus-stat span {
+      color: #7d8798;
+      font-size: 12px;
+    }
+
+    .leader-focus-stat strong {
+      color: #ffffff;
+      font-size: clamp(23px, 3vw, 34px);
+      line-height: 1;
+    }
+
+    .leader-sponsor {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      z-index: 55;
+      width: min(450px, calc(100% - 28px));
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      background: rgba(12, 14, 18, 0.84);
+      color: #ffffff;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.42);
+    }
+
+    .leader-sponsor.hidden {
+      display: none;
+    }
+
+    .leader-sponsor-logo {
+      width: 50px;
+      height: 50px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(0, 0, 0, 0.4));
+      color: #60a5fa;
+    }
+
+    .leader-sponsor-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .leader-sponsor-title {
+      margin: 0 0 5px;
+      color: #ffffff;
+      font-size: 16px;
+      letter-spacing: 0.12em;
+    }
+
+    .leader-sponsor-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      color: #aeb7c8;
+      font-size: 13px;
+    }
+
+    .leader-sponsor-meta b {
+      color: #22c55e;
+    }
+
+    .leader-sponsor-badge {
+      min-height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 13px;
+      border: 1px solid rgba(250, 204, 21, 0.42);
+      border-radius: 999px;
+      color: #facc15;
+      background: rgba(250, 204, 21, 0.08);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .leader-sponsor-close {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: #7f8797;
+      cursor: pointer;
+    }
+
+    .leader-sponsor-close:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .leader-sponsor-close svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    @media (max-width: 980px) {
+      .leader-main {
+        padding-top: 24px;
+      }
+
+      .leader-subnav {
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+
+      .leader-heading {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .leader-filters {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+
+      .leader-filter {
+        min-width: 150px;
+      }
+
+      .leader-row-main {
+        grid-template-columns: 52px 58px minmax(0, 1fr);
+        gap: 13px;
+        padding: 16px;
+      }
+
+      .leader-rank {
+        width: 46px;
+      }
+
+      .leader-focus-stat {
+        grid-column: 3 / 4;
+        justify-self: start;
+        text-align: left;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .leader-focus-stat strong {
+        font-size: 21px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .leader-main {
+        width: min(100% - 20px, 1220px);
+      }
+
+      .leader-title-icon {
+        width: 46px;
+        height: 46px;
+      }
+
+      .leader-heading-left {
+        align-items: flex-start;
+      }
+
+      .leader-heading h1 {
+        font-size: 28px;
+      }
+
+      .leader-heading p {
+        font-size: 14px;
+      }
+
+      .leader-row-main {
+        grid-template-columns: 44px 52px minmax(0, 1fr);
+        min-height: 134px;
+        gap: 10px;
+        padding: 14px;
+      }
+
+      .leader-crown {
+        width: 38px;
+        height: 34px;
+      }
+
+      .leader-rank-number {
+        min-width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        font-size: 13px;
+      }
+
+      .leader-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        font-size: 14px;
+      }
+
+      .leader-stats {
+        gap: 9px;
+        font-size: 12px;
+      }
+
+      .leader-stats span:nth-last-child(-n + 3) {
+        display: none;
+      }
+
+      .leader-sponsor {
+        align-items: flex-start;
+      }
+
+      .leader-sponsor-badge {
+        display: none;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="thin-typography.css">
+  <script defer src="site-nav.js"></script>
+  <script defer src="leaderboard.js"></script>
+</head>
+<body>
+  <div class="leader-page">
+    <div id="sharedNav" data-active="leaderboard"></div>
+
+    <main class="leader-main">
+      <nav class="leader-subnav" aria-label="Sıralama sayfaları">
+        <a class="active" href="/leaderboard">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 7H4a3 3 0 0 0 3 3M17 7h3a3 3 0 0 1-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Top 50
+        </a>
+        <a href="/leaderboard?tab=users">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.2a4 4 0 0 1 0 7.6M22 21v-2a4 4 0 0 0-3-3.8M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Kullanıcı Sıralaması
+        </a>
+        <a href="/leaderboard?tab=servers">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="m15.5 8.5-2.1 5a1.5 1.5 0 0 1-.9.9l-5 2.1 2.1-5a1.5 1.5 0 0 1 .9-.9l5-2.1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          Sunucular
+        </a>
+      </nav>
+
+      <section class="leader-heading" aria-labelledby="leaderTitle">
+        <div class="leader-heading-left">
+          <div class="leader-title-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M3 17 9 11l4 4 8-8M15 7h6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <p class="leader-kicker">Top 50</p>
+            <h1 id="leaderTitle">Sıralama Tablosu</h1>
+            <p>Canlı sunucu istatistikleri, ses yoğunluğu ve topluluk metrikleri.</p>
+          </div>
+        </div>
+        <div class="leader-live-pill" aria-live="polite">
+          <span class="leader-live-dot" aria-hidden="true"></span>
+          <span id="leaderCountdown">1 saniye sonra güncelleme</span>
+        </div>
+      </section>
+
+      <section class="leader-filters" id="leaderMetricButtons" aria-label="Sıralama filtreleri"></section>
+
+      <section class="leader-rows" id="leaderRows" aria-label="Sunucu sıralaması"></section>
+    </main>
+
+    <aside class="leader-sponsor" aria-label="Sponsor sunucu">
+      <div class="leader-sponsor-logo" aria-hidden="true">✦</div>
+      <div class="leader-sponsor-copy">
+        <p class="leader-sponsor-title">MINAS</p>
+        <div class="leader-sponsor-meta">
+          <span><b>●</b> 696</span>
+          <span>Üyeler 5.345</span>
+          <span>Takviye 118</span>
+        </div>
+      </div>
+      <span class="leader-sponsor-badge">SPONSOR</span>
+      <button class="leader-sponsor-close" id="leaderSponsorClose" type="button" aria-label="Sponsor kutusunu kapat">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </aside>
+  </div>
+</body>
+</html>
