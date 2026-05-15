@@ -2647,6 +2647,18 @@
         }
       });
 
+      (function syncInlineAuthQuery(){
+        const url = new URL(location.href);
+        const authReason = url.searchParams.get("auth") || url.searchParams.get("reason");
+        if (authReason !== "discord") return;
+        const next = safeAuthNext(url.searchParams.get("next") || "/?auth=profile");
+        window.setTimeout(() => openAuthPanel(next, "discord"), 0);
+        url.searchParams.delete("auth");
+        url.searchParams.delete("reason");
+        url.searchParams.delete("next");
+        history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+      })();
+
       function closeNavMenus() {
         document.querySelectorAll(".nav-popover.open").forEach(menu => menu.classList.remove("open"));
         document.querySelectorAll(".nav-menu-trigger.open").forEach(btn => {

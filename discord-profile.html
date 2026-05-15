@@ -6,6 +6,8 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#0A0A0A">
     <title>IGME | Discord Profil Analizi</title>
+    <link rel="stylesheet" href="site-nav.css">
+    <script defer src="site-nav.js"></script>
     <style>
       *, *::before, *::after { box-sizing: border-box; }
       html { scroll-behavior: smooth; }
@@ -1237,8 +1239,9 @@
       <div class="amb-2"></div>
     </div>
 
-    <!-- Topbar -->
-    <header class="topbar">
+    <div id="sharedNav" data-active="discord"></div>
+    <!-- Legacy topbar kept disabled while shared navbar renders every page. -->
+    <!-- <header class="topbar">
       <div class="topbar-inner">
         <a class="brand" href="/" aria-label="IGME ana sayfa">
           <img class="brand-logo" src="assets/si.png" alt="">
@@ -1255,7 +1258,7 @@
           Discord
         </span>
       </div>
-    </header>
+    </header> -->
 
     <!-- Main -->
     <div class="page">
@@ -1718,7 +1721,7 @@
       const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
       }[ch]));
-      const loginUrl = () => `/login?reason=discord&next=${encodeURIComponent(location.pathname + location.search)}`;
+      const loginUrl = () => `/?auth=discord&next=${encodeURIComponent(location.pathname + location.search)}`;
       const setLoading = state => document.body.classList.toggle("discord-loading", Boolean(state));
 
       async function fetchProfileJson(apiParam) {
