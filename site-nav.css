@@ -7,6 +7,15 @@
   --igme-ink: #f7f9ff;
   --igme-violet: #8b5cf6;
   --igme-gold: #facc15;
+  --igme-page-background:
+    radial-gradient(circle at 50% 0%, rgba(88, 101, 242, 0.12), transparent 28rem),
+    linear-gradient(180deg, rgba(5, 5, 5, 0.04), rgba(5, 5, 5, 0.86) 480px),
+    #050505;
+}
+
+.igme-theme-bg {
+  background: var(--igme-page-background);
+  background-attachment: fixed;
 }
 
 #sharedNav {
