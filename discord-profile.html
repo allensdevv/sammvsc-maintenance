@@ -1922,31 +1922,103 @@
       }
 
       function deviceList(value) {
-        const source = Array.isArray(value) ? value : (value ? String(value).split(/[,\s]+/) : []);
         const ignored = new Set(["offline", "invisible", "online", "idle", "dnd", "cevrimici", "bosta", "rahatsiz", "etme", "active", "aktif"]);
-        return source.filter(Boolean).map(v => {
+        const normalizeDevice = v => {
           const token = String(v).toLowerCase();
-          if (["pc", "computer", "windows", "mac", "macos", "linux", "client"].includes(token)) return "desktop";
-          if (["phone", "ios", "android", "tablet"].includes(token)) return "mobile";
-          if (["browser"].includes(token)) return "web";
+          const compact = token.replace(/[^a-z0-9]/g, "");
+          if (["pc", "computer", "windows", "mac", "macos", "linux", "client"].includes(token) || /desktop|computer|windows|macos|linux|pc/.test(compact)) return "desktop";
+          if (["phone", "ios", "android", "tablet"].includes(token) || /mobile|phone|android|ios|tablet/.test(compact)) return "mobile";
+          if (["browser"].includes(token) || /web|browser/.test(compact)) return "web";
           return token;
-        }).filter(token => token && !ignored.has(token));
+        };
+        if (Array.isArray(value)) {
+          return value.filter(Boolean).map(normalizeDevice).filter(token => token && !ignored.has(token));
+        }
+        if (value && typeof value === "object") {
+          return Object.entries(value)
+            .filter(([, state]) => state && String(state).toLowerCase() !== "offline")
+            .map(([device]) => normalizeDevice(device))
+            .filter(token => token && !ignored.has(token));
+        }
+        const source = value ? String(value).split(/[,\s]+/) : [];
+        return source.filter(Boolean).map(normalizeDevice).filter(token => token && !ignored.has(token));
+      }
+
+      function foldStatusText(value) {
+        return String(value ?? "")
+          .trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/ı/g, "i")
+          .replace(/ğ/g, "g")
+          .replace(/ü/g, "u")
+          .replace(/ş/g, "s")
+          .replace(/ö/g, "o")
+          .replace(/ç/g, "c")
+          .replace(/\s+/g, " ");
+      }
+
+      function normalizeStatusToken(value) {
+        const plain = foldStatusText(value);
+        if (!plain) return "";
+        if (["online", "cevrimici", "active", "aktif"].includes(plain)) return "online";
+        if (["idle", "bosta", "away"].includes(plain)) return "idle";
+        if (["dnd", "rahatsiz etme", "rahatsiz etmeyin", "do not disturb", "busy"].includes(plain)) return "dnd";
+        if (["offline", "cevrimdisi", "invisible", "gorunmez"].includes(plain)) return "offline";
+        if (/rahatsiz|disturb|busy/.test(plain)) return "dnd";
+        if (/bosta|idle|away/.test(plain)) return "idle";
+        if (/cevrimici|online|active|aktif/.test(plain)) return "online";
+        if (/cevrimdisi|offline|invisible|gorunmez/.test(plain)) return "offline";
+        return "";
+      }
+
+      function statusFromClientStatus(value) {
+        const rank = { online: 1, idle: 2, dnd: 3 };
+        let best = "";
+        const consider = v => {
+          const token = normalizeStatusToken(v);
+          if (token && token !== "offline" && rank[token] > (rank[best] || 0)) best = token;
+        };
+        const visit = v => {
+          if (v === undefined || v === null || v === "") return;
+          if (Array.isArray(v)) {
+            v.forEach(visit);
+            return;
+          }
+          if (typeof v === "object") {
+            Object.entries(v).forEach(([key, item]) => {
+              if (item === true) consider(normalizeStatusToken(key) || "online");
+              else visit(item);
+            });
+            return;
+          }
+          String(v).split(/[,\s]+/).forEach(consider);
+        };
+        visit(value);
+        return best;
       }
 
       function normalizeStatus(value, clientStatus) {
-        const raw = String(value ?? "").trim().toLowerCase();
-        const plain = raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        if (["online", "cevrimici", "active", "aktif"].includes(plain)) return "online";
-        if (["idle", "bosta", "away"].includes(plain)) return "idle";
-        if (["dnd", "rahatsiz etme", "busy"].includes(plain)) return "dnd";
+        const token = normalizeStatusToken(value);
+        if (token && token !== "offline") return token;
+        const clientToken = statusFromClientStatus(clientStatus);
+        if (clientToken) return clientToken;
         if (deviceList(clientStatus).length > 0) return "online";
         return "offline";
+      }
+
+      function hasPresenceSignal(data) {
+        if (!data) return false;
+        if (Array.isArray(data.presence_activities) && data.presence_activities.length > 0) return true;
+        const custom = String(data.custom_status || "").trim();
+        return Boolean(custom && custom !== "—" && custom !== "-");
       }
 
       function effectiveClientStatus(value, status) {
         const devices = deviceList(value);
         if (devices.length > 0) return devices;
-        return normalizeStatus(status) !== "offline" ? ["desktop"] : [];
+        return (statusFromClientStatus(value) || normalizeStatus(status)) !== "offline" ? ["desktop"] : [];
       }
 
       function browserDeviceFallback() {
@@ -2849,7 +2921,8 @@
         el("displayName").textContent = data.global_name || data.username || "—";
         el("handleText").textContent = `@${data.username || ""}`;
         el("handle").textContent = data.id || "";
-        const profileStatus = normalizeStatus(data.status, data.client_status);
+        let profileStatus = normalizeStatus(data.status, data.client_status);
+        if (profileStatus === "offline" && hasPresenceSignal(data)) profileStatus = "online";
         const profileDevices = effectiveClientStatus(data.client_status, profileStatus);
         renderDeviceIcon(profileDevices);
         el("deviceIcon").className = "device-icon " + statusClass(profileStatus, profileDevices) + (deviceIconSvg(profileDevices) ? " show" : "");

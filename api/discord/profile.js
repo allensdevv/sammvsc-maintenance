@@ -8,7 +8,7 @@ const FINDCORD_KEYS = Array.from(new Set([
   process.env.FINCORD_API_KEY,
   FALLBACK_FINDCORD_KEY
 ].map(v => String(v || "").trim()).filter(Boolean)));
-const DCSV_KEY = process.env.DCSV_API_KEY || "dcsv_ca6ca829a717d342d2a5e2a48fed0fcef33f1ab3098a1a9a";
+const DCSV_KEY = String(process.env.DCSV_API_KEY || process.env.DCSVME_API_KEY || process.env.DCSV_ME_API_KEY || "").trim();
 const DCSV_API_BASE = "https://dcsv.me/api/v1/user";
 const DCSV_PUBLIC_BASE = "https://dcsv.me/users";
 const CACHE_TTL = 60 * 30;
@@ -18,8 +18,8 @@ const STATBOT_CACHE_TTL = Number(process.env.STATBOT_CACHE_TTL || 60 * 10);
 const STATBOT_MAX_GUILDS = Number(process.env.STATBOT_MAX_GUILDS || 8);
 const STATBOT_API_BASE = String(process.env.STATBOT_API_BASE || "https://api.statbot.net").replace(/\/+$/, "");
 const EXTERNAL_TIMEOUT_MS = 9000;
-const CACHE_VERSION = "v14";
-const LEGACY_CACHE_VERSIONS = ["v13", "v12", "v11"];
+const CACHE_VERSION = "v16";
+const LEGACY_CACHE_VERSIONS = [];
 const DISCORD_PROFILE_PAUSED = false;
 const TRANSIENT_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 const STATBOT_GUILD_KEYS = parseStatbotGuildKeys();
@@ -145,9 +145,10 @@ function clientStatusArray(...values) {
   const ignored = new Set(["offline", "invisible", "online", "idle", "dnd", "cevrimici", "bosta", "rahatsiz", "etme", "active", "aktif"]);
   const normalizeDevice = value => {
     const token = String(value || "").trim().toLowerCase();
-    if (["pc", "computer", "windows", "mac", "macos", "linux", "client"].includes(token)) return "desktop";
-    if (["phone", "ios", "android", "tablet"].includes(token)) return "mobile";
-    if (token === "browser") return "web";
+    const compact = token.replace(/[^a-z0-9]/g, "");
+    if (["pc", "computer", "windows", "mac", "macos", "linux", "client"].includes(token) || /desktop|computer|windows|macos|linux|pc/.test(compact)) return "desktop";
+    if (["phone", "ios", "android", "tablet"].includes(token) || /mobile|phone|android|ios|tablet/.test(compact)) return "mobile";
+    if (token === "browser" || /web|browser/.test(compact)) return "web";
     return token;
   };
   for (const value of values) {
@@ -170,16 +171,76 @@ function clientStatusArray(...values) {
   return [];
 }
 
+function foldStatusText(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ı/g, "i")
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c")
+    .replace(/\s+/g, " ");
+}
+
+function normalizeStatusToken(value) {
+  const plain = foldStatusText(value);
+  if (!plain) return "";
+  if (["online", "cevrimici", "active", "aktif"].includes(plain)) return "online";
+  if (["idle", "bosta", "away"].includes(plain)) return "idle";
+  if (["dnd", "rahatsiz etme", "rahatsiz etmeyin", "do not disturb", "busy"].includes(plain)) return "dnd";
+  if (["offline", "cevrimdisi", "invisible", "gorunmez"].includes(plain)) return "offline";
+  if (/rahatsiz|disturb|busy/.test(plain)) return "dnd";
+  if (/bosta|idle|away/.test(plain)) return "idle";
+  if (/cevrimici|online|active|aktif/.test(plain)) return "online";
+  if (/cevrimdisi|offline|invisible|gorunmez/.test(plain)) return "offline";
+  return "";
+}
+
+function statusFromClientStatus(...values) {
+  const rank = { online: 1, idle: 2, dnd: 3 };
+  let best = "";
+  const consider = value => {
+    const token = normalizeStatusToken(value);
+    if (token && token !== "offline" && rank[token] > (rank[best] || 0)) best = token;
+  };
+
+  const visit = value => {
+    if (value === undefined || value === null || value === "") return;
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+      return;
+    }
+    if (isPlainObject(value)) {
+      for (const key of ["status", "Status", "state", "State", "presence_status", "PresenceStatus", "statusType", "StatusType", "userStatus", "UserStatus", "onlineStatus", "OnlineStatus"]) {
+        consider(value[key]);
+      }
+      for (const [key, state] of Object.entries(value)) {
+        if (state === true) consider(normalizeStatusToken(key) || "online");
+        else if (typeof state === "string" || typeof state === "number") consider(state);
+        else if (isPlainObject(state) || Array.isArray(state)) visit(state);
+      }
+      return;
+    }
+    String(value).split(/[,\s]+/).forEach(consider);
+  };
+
+  values.forEach(visit);
+  return best;
+}
+
 function normalizeStatus(value, clientStatus = []) {
   let rawValue = value;
   if (isPlainObject(value)) {
     rawValue = firstValue(value.Status, value.status, value.State, value.state, value.presence, ...Object.values(value));
   }
-  const raw = String(rawValue || "").trim().toLowerCase();
-  const plain = raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  if (["online", "cevrimici", "active", "aktif"].includes(plain)) return "online";
-  if (["idle", "bosta", "away"].includes(plain)) return "idle";
-  if (["dnd", "rahatsiz etme", "busy"].includes(plain)) return "dnd";
+  const token = normalizeStatusToken(rawValue);
+  if (token && token !== "offline") return token;
+  const clientToken = statusFromClientStatus(clientStatus, value);
+  if (clientToken) return clientToken;
   if (clientStatusArray(clientStatus).length > 0) return "online";
   return "offline";
 }
@@ -187,7 +248,29 @@ function normalizeStatus(value, clientStatus = []) {
 function effectiveClientStatus(status, ...values) {
   const devices = clientStatusArray(...values);
   if (devices.length > 0) return devices;
-  return normalizeStatus(status) !== "offline" ? ["desktop"] : [];
+  const activeStatus = statusFromClientStatus(...values) || normalizeStatus(status);
+  return activeStatus !== "offline" ? ["desktop"] : [];
+}
+
+function hasPresenceSignal(profile) {
+  if (!profile) return false;
+  if (hasItems(profile.presence_activities)) return true;
+  const custom = String(profile.custom_status || "").trim();
+  return Boolean(custom && custom !== "—" && custom !== "-");
+}
+
+function stabilizePresence(profile) {
+  if (!profile) return profile;
+  const status = normalizeStatus(profile.status, profile.client_status);
+  if (status !== "offline") {
+    return { ...profile, status, client_status: effectiveClientStatus(status, profile.client_status) };
+  }
+  if (!hasPresenceSignal(profile)) return profile;
+  return {
+    ...profile,
+    status: "online",
+    client_status: effectiveClientStatus("online", profile.client_status)
+  };
 }
 
 function activityListFrom(value) {
@@ -446,6 +529,9 @@ function imageUrl(gid, hashOrUrl, kind = "icons", size = 128) {
 }
 
 async function fetchDcsvUser(query) {
+  if (!DCSV_KEY) {
+    throw new Error("DCSV_API_KEY tanimli degil");
+  }
   const token = DCSV_KEY.startsWith("Bearer ") ? DCSV_KEY : `Bearer ${DCSV_KEY}`;
   const res = await fetchWithTimeout(`${DCSV_API_BASE}/${encodeURIComponent(query)}`, {
     headers: {
@@ -873,16 +959,40 @@ function normalizeDcsv(d) {
   const uid = String(d.id || d.user_id || "");
   const avatarHash = d.avatar || d.avatar_hash || null;
   const bannerHash = d.banner || d.banner_hash || null;
+  const dcsvServers = mergeServerArrays(
+    d.mutual_guilds,
+    d.mutualGuilds,
+    d.MutualGuilds,
+    d.guilds,
+    d.Guilds,
+    d.servers,
+    d.Servers,
+    d.guild_stats,
+    d.guildStats,
+    d.GuildStats,
+    d.server_stats,
+    d.serverStats,
+    d.ServerStats
+  );
   const rawStatus = firstValue(
     d.status,
     d.Status,
+    d.discord_status,
+    d.discordStatus,
+    d.DiscordStatus,
+    d.online_status,
+    d.onlineStatus,
+    d.OnlineStatus,
     d.presence_status,
     d.PresenceStatus,
-    d.DiscordStatus,
     d.Presence?.Status,
     d.Presence?.status,
     d.presence?.Status,
     d.presence?.status,
+    d.Presence?.client_status?.status,
+    d.Presence?.clientStatus?.status,
+    d.presence?.client_status?.status,
+    d.presence?.clientStatus?.status,
     d.online === true ? "online" : null,
     d.is_online === true ? "online" : null,
     d.isOnline === true ? "online" : null,
@@ -892,17 +1002,27 @@ function normalizeDcsv(d) {
     rawStatus,
     d.client_status,
     d.clientStatus,
+    d.ClientStatus,
+    d.client_statuses,
+    d.clientStatuses,
     d.devices,
     d.device,
+    d.Device,
     d.Presence?.Type,
     d.Presence?.ClientStatus,
     d.Presence?.client_status,
+    d.Presence?.clientStatus,
+    d.Presence?.Devices,
+    d.Presence?.devices,
     d.presence?.Type,
     d.presence?.ClientStatus,
-    d.presence?.client_status
+    d.presence?.client_status,
+    d.presence?.clientStatus,
+    d.presence?.Devices,
+    d.presence?.devices
   );
   const status = normalizeStatus(rawStatus, clientStatus);
-  return {
+  return stabilizePresence({
     id: uid,
     username: d.username || "",
     global_name: d.global_name || d.display_name || d.username || "",
@@ -923,10 +1043,10 @@ function normalizeDcsv(d) {
     bio: d.bio || d.about_me || null,
     custom_status: d.custom_status || null,
     other_names: d.other_names || d.previous_usernames || [],
-    server_count: d.mutual_guilds?.length ?? d.guild_count ?? d.server_count ?? null,
+    server_count: dcsvServers.length || d.guild_count || d.server_count || null,
     voice_friend_count: d.voice_friends?.length ?? d.voice_friend_count ?? null,
     punishment_count: d.punishments?.length ?? d.punishment_count ?? null,
-    servers: mergeServerArrays(d.mutual_guilds, d.guilds, d.servers, d.Guilds),
+    servers: dcsvServers,
     presence_activities: normalizePresenceActivities(
       d.activities,
       d.Activities,
@@ -956,15 +1076,49 @@ function normalizeDcsv(d) {
     message_friends: d.message_friends || d.friends || [],
     findcord_loaded: false,
     findcord_has_guilds: false
-  };
+  });
 }
 
 function normalizeFindcord(fc) {
   if (isPlainObject(fc?.data)) fc = { ...fc.data, ...fc };
   const user = fc.UserInfo || fc.user || fc.User || fc.data?.UserInfo || fc;
-  const uid = String(firstValue(user.UserID, fc.id, fc.user_id, "") || "");
-  const guilds = firstList(fc.Guilds, fc.guilds, fc.Servers, fc.servers, fc.MutualGuilds, fc.mutual_guilds, user.Guilds);
-  const guildStats = firstList(fc.GuildStats, fc.guildStats, fc.guild_stats, fc.ServerStats, fc.serverStats, fc.server_stats, user.GuildStats);
+  const uid = String(firstValue(user.UserID, user.UserId, user.id, user.user_id, fc.UserID, fc.UserId, fc.id, fc.user_id, "") || "");
+  const guilds = firstList(
+    fc.Guilds,
+    fc.guilds,
+    fc.Servers,
+    fc.servers,
+    fc.MutualGuilds,
+    fc.mutualGuilds,
+    fc.mutual_guilds,
+    fc.MutualServers,
+    fc.mutualServers,
+    fc.mutual_servers,
+    user.Guilds,
+    user.guilds,
+    user.Servers,
+    user.servers,
+    user.MutualGuilds,
+    user.mutualGuilds,
+    user.mutual_guilds
+  );
+  const guildStats = firstList(
+    fc.GuildStats,
+    fc.guildStats,
+    fc.guild_stats,
+    fc.ServerStats,
+    fc.serverStats,
+    fc.server_stats,
+    fc.MutualGuildStats,
+    fc.mutualGuildStats,
+    fc.mutual_guild_stats,
+    user.GuildStats,
+    user.guildStats,
+    user.guild_stats,
+    user.ServerStats,
+    user.serverStats,
+    user.server_stats
+  );
   const findcordHasGuilds = guilds.length > 0 || guildStats.length > 0;
   const guildStatsById = new Map(guildStats.map(g => [String(firstValue(g.GuildID, g.GuildId, g.guild_id, g.id, "")), g]));
 
@@ -975,12 +1129,12 @@ function normalizeFindcord(fc) {
     return {
       id: gid,
       guild_id: gid,
-      name: firstValue(g.GuildName, stat.GuildName, g.name, "Sunucu"),
-      guild_name: firstValue(g.GuildName, stat.GuildName, g.name, "Sunucu"),
-      icon_url: firstValue(g.GuildIcon, stat.GuildIcon, g.icon_url, g.icon, stat.icon_url, stat.icon),
-      banner_url: firstValue(g.GuildBanner, stat.GuildBanner, g.banner_url, g.banner, stat.banner_url, stat.banner),
-      nick: firstValue(g.displayName, g.nick, g.nickname),
-      joined_at: toIso(firstValue(g.JoinTime, g.joined_at)),
+      name: firstValue(g.GuildName, stat.GuildName, g.guild_name, stat.guild_name, g.name, stat.name, "Sunucu"),
+      guild_name: firstValue(g.GuildName, stat.GuildName, g.guild_name, stat.guild_name, g.name, stat.name, "Sunucu"),
+      icon_url: firstValue(g.GuildIcon, stat.GuildIcon, g.guild_icon_url, stat.guild_icon_url, g.icon_url, g.icon, g.iconHash, stat.icon_url, stat.icon, stat.iconHash),
+      banner_url: firstValue(g.GuildBanner, stat.GuildBanner, g.guild_banner_url, stat.guild_banner_url, g.banner_url, g.banner, g.bannerHash, stat.banner_url, stat.banner, stat.bannerHash),
+      nick: firstValue(g.displayName, g.displayname, g.nick, g.nickname),
+      joined_at: toIso(firstValue(g.JoinTime, g.joined_at, g.joinedAt, g.JoinedAt)),
       booster: Boolean(g.Booster),
       roles: firstList(g.Roles, g.roles, stat.Roles, stat.roles),
       messages: firstValue(userStats.total?.messages, stat.MessageStat, stat.messages, g.messages, 0) || 0,
@@ -1264,12 +1418,28 @@ function normalizeFindcord(fc) {
     user.Presence?.status,
     user.presence?.Status,
     user.presence?.status,
+    user.Presence?.client_status?.status,
+    user.Presence?.clientStatus?.status,
+    user.presence?.client_status?.status,
+    user.presence?.clientStatus?.status,
     user.Status,
     user.status,
+    user.DiscordStatus,
+    user.discord_status,
+    user.discordStatus,
+    user.OnlineStatus,
+    user.online_status,
+    user.onlineStatus,
     user.presence_status,
     user.PresenceStatus,
     fc.status,
     fc.Status,
+    fc.DiscordStatus,
+    fc.discord_status,
+    fc.discordStatus,
+    fc.OnlineStatus,
+    fc.online_status,
+    fc.onlineStatus,
     fc.presence_status,
     fc.PresenceStatus,
     fc.Presence?.Status,
@@ -1286,23 +1456,41 @@ function normalizeFindcord(fc) {
     user.Presence?.Type,
     user.Presence?.ClientStatus,
     user.Presence?.client_status,
+    user.Presence?.clientStatus,
+    user.Presence?.Devices,
+    user.Presence?.devices,
     user.presence?.Type,
     user.presence?.ClientStatus,
     user.presence?.client_status,
+    user.presence?.clientStatus,
+    user.presence?.Devices,
+    user.presence?.devices,
     user.ClientStatus,
     user.clientStatus,
+    user.client_status,
+    user.ClientStatuses,
+    user.clientStatuses,
     user.devices,
     user.device,
     fc.client_status,
     fc.clientStatus,
+    fc.ClientStatus,
+    fc.ClientStatuses,
+    fc.clientStatuses,
     fc.devices,
     fc.device,
     fc.Presence?.Type,
     fc.Presence?.ClientStatus,
     fc.Presence?.client_status,
+    fc.Presence?.clientStatus,
+    fc.Presence?.Devices,
+    fc.Presence?.devices,
     fc.presence?.Type,
     fc.presence?.ClientStatus,
-    fc.presence?.client_status
+    fc.presence?.client_status,
+    fc.presence?.clientStatus,
+    fc.presence?.Devices,
+    fc.presence?.devices
   );
   const status = normalizeStatus(rawStatus, clientStatus);
   const presenceActivities = normalizePresenceActivities(
@@ -1341,7 +1529,7 @@ function normalizeFindcord(fc) {
   );
   const customActivity = presenceActivities.find(activity => activity.type === "custom");
 
-  return {
+  return stabilizePresence({
     id: uid,
     findcord_loaded: true,
     findcord_has_guilds: findcordHasGuilds,
@@ -1399,7 +1587,7 @@ function normalizeFindcord(fc) {
     voice_history: voiceHistory,
     message_history: messageHistory,
     message_friends: messageFriends
-  };
+  });
 }
 
 function hasItems(value) {
@@ -1415,7 +1603,7 @@ function mergeProfiles(dcsv, findcord) {
   const fallbackStatus = normalizeStatus(dcsv.status, mergedClientStatus);
   const mergedStatus = preferredStatus !== "offline" ? preferredStatus : fallbackStatus;
   const finalClientStatus = effectiveClientStatus(mergedStatus, mergedClientStatus);
-  return {
+  return stabilizePresence({
     ...dcsv,
     ...Object.fromEntries(Object.entries(findcord).filter(([, value]) => value !== null && value !== undefined && value !== "")),
     id: firstValue(findcord.id, dcsv.id),
@@ -1450,7 +1638,7 @@ function mergeProfiles(dcsv, findcord) {
     findcord_loaded: Boolean(findcord.findcord_loaded || dcsv.findcord_loaded),
     findcord_has_guilds: Boolean(findcord.findcord_has_guilds || dcsv.findcord_has_guilds),
     source: "dcsv+findcord"
-  };
+  });
 }
 
 function hasMeaningfulActiveHours(profile) {
@@ -1578,18 +1766,16 @@ async function sendCachedProfile(res, query, profile, source = "cache", session 
 }
 
 async function fetchDcsvProfile(query, isId) {
-  if (isId) {
-    const apiProfile = await fetchDcsvUser(query);
-    const publicProfile = await fetchDcsvPublicProfile(query).catch(() => null);
-    return normalizeDcsv({ ...apiProfile, ...(publicProfile || {}), id: query });
-  }
-
-  const publicProfile = await fetchDcsvPublicProfile(query);
+  const publicProfile = await fetchDcsvPublicProfile(query).catch(() => null);
   let apiProfile = null;
-  if (publicProfile.id) {
-    apiProfile = await fetchDcsvUser(publicProfile.id).catch(() => null);
+  const apiQuery = isId ? query : publicProfile?.id;
+  if (apiQuery) {
+    apiProfile = await fetchDcsvUser(apiQuery).catch(() => null);
   }
-  return normalizeDcsv({ ...(apiProfile || {}), ...publicProfile, id: publicProfile.id || apiProfile?.id });
+  if (!publicProfile && !apiProfile) {
+    throw new Error(isId && !DCSV_KEY ? "DCSV_API_KEY tanimli degil" : "DCSV profili alinamadi");
+  }
+  return normalizeDcsv({ ...(apiProfile || {}), ...(publicProfile || {}), id: publicProfile?.id || apiProfile?.id || query });
 }
 
 module.exports = async (req, res) => {

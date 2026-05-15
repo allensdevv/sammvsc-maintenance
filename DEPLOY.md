@@ -18,6 +18,15 @@ Provider keys stay private on the backend.
 Discord identity/profile data comes from the existing Discord, DCSV, and Findcord fallback flow.
 Server activity statistics can be enriched with Statbot when a guild has Statbot API access.
 
+Required for the full DCSV.ME profile fallback:
+
+```env
+DCSV_API_KEY=your_dcsv_api_key
+```
+
+Without `DCSV_API_KEY`, the profile API still tries public DCSV.ME pages and Findcord, but DCSV-only
+server memberships and some live presence fields can be missing.
+
 Statbot keys are guild scoped. Add either a JSON map:
 
 ```env
