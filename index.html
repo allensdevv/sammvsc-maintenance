@@ -2433,8 +2433,6 @@
       const recentCount = document.querySelector("#recentCount");
       const clearRecent = document.querySelector("#clearRecent");
       const toggleRecent = document.querySelector("#toggleRecent");
-      const initialParams = new URLSearchParams(window.location.search);
-      const openProfileAfterAuth = initialParams.get("auth") === "profile";
       let recentVisible = true;
 
       function cleanUrl() {
@@ -2637,6 +2635,36 @@
         });
       }
 
+      function loginNoticeReadKey(session = discordSession) {
+        return `igme_discord_login_notice_read:${session?.discord_id || "guest"}`;
+      }
+
+      function isLoginNoticeRead(session = discordSession) {
+        try {
+          return window.localStorage.getItem(loginNoticeReadKey(session)) === "1";
+        } catch {
+          return false;
+        }
+      }
+
+      function markLoginNoticeRead(session = discordSession) {
+        try {
+          window.localStorage.setItem(loginNoticeReadKey(session), "1");
+        } catch {}
+      }
+
+      function emptyNotificationHtml() {
+        return `
+          <div class="notification-item">
+            <span class="notification-icon">✓</span>
+            <span class="notification-copy">
+              <strong>Bildirim kalmadı</strong>
+              <span>Her şey temiz görünüyor.</span>
+            </span>
+          </div>
+        `;
+      }
+
       function wireMenuButton(btnId, menuId) {
         const btn = document.getElementById(btnId);
         const menu = document.getElementById(menuId);
@@ -2660,16 +2688,9 @@
 
         const clearBtn = document.getElementById("clearNotifications");
         clearBtn?.addEventListener("click", () => {
+          markLoginNoticeRead();
           document.querySelector(".nav-status-dot")?.remove();
-          document.getElementById("notificationList").innerHTML = `
-            <div class="notification-item">
-              <span class="notification-icon">✓</span>
-              <span class="notification-copy">
-                <strong>Bildirim kalmadı</strong>
-                <span>Her şey temiz görünüyor.</span>
-              </span>
-            </div>
-          `;
+          document.getElementById("notificationList").innerHTML = emptyNotificationHtml();
         });
 
         document.getElementById("profileSettingsBtn")?.addEventListener("click", () => {
@@ -2699,19 +2720,8 @@
           const avatarUrl = getDiscordAvatar(discordSession);
           const displayName = escapeHtml(discordSession.global_name || discordSession.username);
           const profileHref = `/discord-profile?id=${encodeURIComponent(discordSession.discord_id)}`;
-          navAuthArea.innerHTML = `
-            <div class="nav-session-actions">
-              <div class="nav-menu-wrap">
-                <button class="nav-icon-btn nav-menu-trigger" id="notificationBtn" type="button" aria-label="Bildirimler" aria-expanded="false">
-                  ${icon("bell")}
-                  <span class="nav-status-dot">1</span>
-                </button>
-                <div class="nav-popover notification-menu" id="notificationMenu">
-                  <div class="notification-head">
-                    <strong>Bildirimler</strong>
-                    <button type="button" id="clearNotifications">Okundu işaretle</button>
-                  </div>
-                  <div id="notificationList">
+          const loginNoticeRead = isLoginNoticeRead(discordSession);
+          const loginNoticeMarkup = loginNoticeRead ? emptyNotificationHtml() : `
                     <div class="notification-item">
                       <span class="notification-icon">🎉</span>
                       <span class="notification-copy">
@@ -2719,6 +2729,21 @@
                         <span>Profil menün hazır, hoş geldin ${displayName}.</span>
                       </span>
                     </div>
+                  `;
+          navAuthArea.innerHTML = `
+            <div class="nav-session-actions">
+              <div class="nav-menu-wrap">
+                <button class="nav-icon-btn nav-menu-trigger" id="notificationBtn" type="button" aria-label="Bildirimler" aria-expanded="false">
+                  ${icon("bell")}
+                  ${loginNoticeRead ? "" : '<span class="nav-status-dot">1</span>'}
+                </button>
+                <div class="nav-popover notification-menu" id="notificationMenu">
+                  <div class="notification-head">
+                    <strong>Bildirimler</strong>
+                    <button type="button" id="clearNotifications">Okundu işaretle</button>
+                  </div>
+                  <div id="notificationList">
+                    ${loginNoticeMarkup}
                   </div>
                   <div class="notification-foot">
                     <a href="/">Tüm bildirimleri görüntüle</a>
@@ -2741,9 +2766,6 @@
             </div>
           `;
           bindNavControls();
-          if (openProfileAfterAuth) {
-            setTimeout(() => document.getElementById("profileMenuBtn")?.click(), 80);
-          }
         } else {
           navAuthArea.innerHTML = `
             <button class="discord-login-btn" type="button" data-auth-open data-auth-next="/?auth=profile" data-auth-reason="profile">
